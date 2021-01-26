@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Communication on Yang Xinxin&#39;s Blog</title>
+    <link>http://localhost:1313/tags/communication/</link>
+    <description>Recent content in Communication on Yang Xinxin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>Xinxin Yang</copyright>
+    <lastBuildDate>Tue, 26 Jan 2021 16:01:23 +0800</lastBuildDate><atom:link href="http://localhost:1313/tags/communication/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>MADDPG-Based-MCS</title>
+      <link>http://localhost:1313/post/maddpg-based-mcs/</link>
+      <pubDate>Tue, 26 Jan 2021 16:01:23 +0800</pubDate>
+      
+      <guid>http://localhost:1313/post/maddpg-based-mcs/</guid>
+      <description>今天分享自己的一片工作，也算是终于出版了！ 原文链接 Gu et al_2020. &amp;quot;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&amp;quot; IEEE Transactions on Industrial Informatics(2020) 背景 移动群感知是近些年发展比较热门的一个领域，主要是</description>
+    </item>
+    
+  </channel>
+</rss>

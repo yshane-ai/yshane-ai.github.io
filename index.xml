@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Yang Xinxin&#39;s Blog</title>
+    <link>http://localhost:1313/</link>
+    <description>Recent content on Yang Xinxin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>Xinxin Yang</copyright>
+    <lastBuildDate>Tue, 26 Jan 2021 16:01:23 +0800</lastBuildDate>
+    
+        <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>About</title>
+      <link>http://localhost:1313/about/</link>
+      <pubDate>Sun, 20 Aug 2017 21:38:52 +0800</pubDate>
+      
+      <guid>http://localhost:1313/about/</guid>
+      
+        <description>&lt;p&gt;Hugo is a static site engine written in Go.&lt;/p&gt;
+&lt;p&gt;It makes use of a variety of open source projects including:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/spf13/cobra&#34;&gt;Cobra&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/spf13/viper&#34;&gt;Viper&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/spf13/jWalterWeatherman&#34;&gt;J Walter Weatherman&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/spf13/cast&#34;&gt;Cast&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Learn more and contribute on &lt;a href=&#34;https://github.com/gohugoio&#34;&gt;GitHub&lt;/a&gt;.&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>MADDPG-Based-MCS</title>
+      <link>http://localhost:1313/post/maddpg-based-mcs/</link>
+      <pubDate>Tue, 26 Jan 2021 16:01:23 +0800</pubDate>
+      
+      <guid>http://localhost:1313/post/maddpg-based-mcs/</guid>
+      
+        <description>&lt;p&gt;今天分享自己的一片工作，也算是终于出版了！&lt;/p&gt;
+
+&lt;h2 id=&#34;原文链接&#34;&gt;原文链接&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://ieeexplore.ieee.org/document/9201550&#34;&gt;Gu et al_2020. &amp;quot;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&amp;quot; IEEE Transactions on Industrial Informatics(2020)&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
+
+&lt;p&gt;移动群感知是近些年发展比较热门的一个领域，主要是通过利用移动用户来感知周围环境，这样做有以下三点优势：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;能够充分利用移动用户的感知资源，降低了不必要的开销；&lt;/li&gt;
+&lt;li&gt;由于用户的可移动性，可以保证感知数据的样本丰富度；&lt;/li&gt;
+&lt;li&gt;通过一种奖励机制，可以在有限的预算内获取尽可能多的感知资源；&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;本文就是通过强化学习来学习这么一种奖励机制，让每个用户在观测信息不完全的状态下能够制定出一个比较好的价格策略。&lt;/p&gt;
+
+&lt;h2 id=&#34;过程&#34;&gt;过程&lt;/h2&gt;
+
+&lt;h4 id=&#34;模型&#34;&gt;模型&lt;/h4&gt;
+
+&lt;p&gt;整个场景可以描述为一个买卖双方博弈的模型：移动用户作为卖家，为自身的单位感知时间制定价格；任务发起者作为买家，在给定的预算内去购买移动用户的时间，收集感知数据。&lt;/p&gt;
+
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;http://localhost:1313/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;http://localhost:1313/image/20210126-architecture.png&#34; alt=&#34;群感知框架&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;http://localhost:1313/image/20210126-architecture.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;群感知框架&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;这里构建一个第三方平台，作为买家的代理，在卖家给出价格后，将整个社会的资源利用最大化作为优化目标（也称作Social Welfare），求解一种最优的购买方案。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;每个用户的报价&lt;span  class=&#34;math&#34;&gt;\(p_i\)&lt;/span&gt;是对执行感知任务每单位时间的预期回报，与任务种类无关；&lt;/li&gt;
+&lt;li&gt;每个用户对于不同的感知任务有不同的贡献价值，可表示为权重&lt;span  class=&#34;math&#34;&gt;\(w_{ij}\)&lt;/span&gt;；&lt;/li&gt;
+&lt;li&gt;每个用户在每个时间段只具备有限的感知时间，表示为&lt;span  class=&#34;math&#34;&gt;\(t_i\)&lt;/span&gt;，并且每个时间步只能执行一种感知任务，但这一段时间内可以轮流执行多种感知任务；&lt;/li&gt;
+&lt;li&gt;每个感知任务都只有有限的预算支付给移动用户，表示为&lt;span  class=&#34;math&#34;&gt;\(b_j\)&lt;/span&gt;；&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&#34;移动用户&#34;&gt;移动用户&lt;/h4&gt;
+
+&lt;p&gt;由于移动用户的自私属性，每个用户只想尽可能最大化自己的收益，可以表示为：
+&lt;span  class=&#34;math&#34;&gt;\(
+\psi_i\left(p_i, \bm{x}_i\right) = p_i \sum_{j\in \mathcal{V}} x_{ij}, \ \forall i\in \mathcal{U}
+\)&lt;/span&gt;
+其中&lt;span  class=&#34;math&#34;&gt;\(x_{ij}\)&lt;/span&gt;表示任务&lt;span  class=&#34;math&#34;&gt;\(j\)&lt;/span&gt;从用户&lt;span  class=&#34;math&#34;&gt;\(i\)&lt;/span&gt;处购买的时间，&lt;span  class=&#34;math&#34;&gt;\(p_i\)&lt;/span&gt;表示用户&lt;span  class=&#34;math&#34;&gt;\(i\)&lt;/span&gt;的报价；&lt;/p&gt;
+
+&lt;p&gt;这里将每个用户都作为一个智能体，从而构建一个多智能体竞争的场景。同时，每个用户的观测信息只有自己与平台的交易记录，而无法观测到其他用户的行为与动作。基于MADDPG，我们为每个用户都构建了一套网络用于训练，网络的输入输出可以表示为：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;输入: 前&lt;span  class=&#34;math&#34;&gt;\(L\)&lt;/span&gt;时间刻的交易信息，包括自己的报价&lt;span  class=&#34;math&#34;&gt;\(\{p_i^{t-k}\}_{k\in(1,L)}\)&lt;/span&gt;和平台购买的时间&lt;span  class=&#34;math&#34;&gt;\(\{\bm{x}_i^{t-k}\}_{k\in(1,L)}\)&lt;/span&gt;;&lt;/li&gt;
+&lt;li&gt;输出：当前的报价&lt;span  class=&#34;math&#34;&gt;\(p_i^t\)&lt;/span&gt;；&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;这里给出整体的训练模型，如下图所示：&lt;/p&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;http://localhost:1313/image/20210126-MAAC.png&#34; alt=&#34;MAAC模型架构&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;http://localhost:1313/image/20210126-MAAC.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;MAAC模型架构&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;h4 id=&#34;感知平台&#34;&gt;感知平台&lt;/h4&gt;
+
+&lt;p&gt;平台的优化目标可以表示为从移动用户处收集的数据价值，考虑到任务的资金预算和用户的时间，以上问题可以规划为一个限制条件下的凸优化问题：
+&lt;span  class=&#34;math&#34;&gt;\(
+\max \phi\left(\bm{x}, \bm{p}\right) = \sum_{j\in \mathcal{V}} \log\left(\sum_{i\in \mathcal{U}} \omega_{ij} x_{ij}\right)
+\)&lt;/span&gt;
+其中满足以下限制条件：
+&lt;span  class=&#34;math&#34;&gt;\(
+\sum_{j \in \mathcal{V}} x_{ij} \leq t_i, \ \forall i \in \mathcal{U} \\
+\sum_{i \in \mathcal{U}} p_i x_{ij} \leq b_j, \ \forall j\in \mathcal{V}
+\)&lt;/span&gt;
+通过拉格朗日法可以求解得最优购买策略&lt;span  class=&#34;math&#34;&gt;\(\bm{x}^*\)&lt;/span&gt;。&lt;/p&gt;
+
+&lt;h2 id=&#34;实验&#34;&gt;实验&lt;/h2&gt;
+
+&lt;p&gt;本文的场景为一个多智能体的竞争场景，每个用户制定的价格即不能太高，以至于平台不会购买他的时间；也不能过低，以至于获得的回报甚至无法弥补执行任务的成本。在这个动态的环境里，每个用户都需要跟其他的用户进行交互，最终达到一种理想的“按劳分配”的价格策略。&lt;/p&gt;
+
+&lt;p&gt;文章最终实验的结果也比较符合预期，在初期每个用户报价都比较低的时候，任务的预算还有剩余，提升报价可以提高自己的回报，因此每个用户都竞相提高报价。但在后期过高的报价导致平台不再从他这里购买时间，报价逐渐降低并趋于稳定。&lt;/p&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;http://localhost:1313/image/20210126-convergence.png&#34; alt=&#34;训练过程&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;http://localhost:1313/image/20210126-convergence.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;训练过程&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;由于用户之间的竞争关系，每个用户的价格也都相对合理，从而平台可以在有限的预算内，整体感知资源的利用接近于达到最大值。&lt;/p&gt;
+
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;其实MADDPG在是实际应用中会受限于训练与执行场景不同的短板，包括本文也是，训练时利用到的信息是全局的，但是非全局信息有可能导致不会收敛。&lt;/p&gt;
+
+&lt;p&gt;接下来还有很多工作要做，一起加油！！&lt;/p&gt;
+</description>
+      
+    </item>
+    
+  </channel>
+</rss>
