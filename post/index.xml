@@ -7,7 +7,16 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Tue, 26 Jan 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 26 Jan 2021 16:01:25 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>HRL&amp;Hindsight</title>
+      <link>https://yshane-ai.github.io/post/hrlhindsight/</link>
+      <pubDate>Tue, 26 Jan 2021 16:01:25 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/hrlhindsight/</guid>
+      <description>今天记录一篇利用hindsight方法加速分层强化学习的文章，发表于ICLR2019。 原文链接 Levy et al_2019_LEARNING MULTI-LEVEL HIERARCHIES WITH HINDSIGHT 背景 通常直接学习一个复杂任务是很</description>
+    </item>
+    
     <item>
       <title>MADDPG-Based-MCS</title>
       <link>https://yshane-ai.github.io/post/maddpg-based-mcs/</link>

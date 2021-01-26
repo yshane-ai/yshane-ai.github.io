@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Tue, 26 Jan 2021 16:01:23 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 26 Jan 2021 16:01:25 +0800</lastBuildDate>
     
         <atom:link href="https://yshane-ai.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -24,8 +24,261 @@
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial System&lt;/strong&gt;&lt;br&gt;
 Bo Gu, &lt;strong&gt;Xinxin Yang&lt;/strong&gt;, Ziqi Lin, Weiwei Hu, Mamoun Alazab and Rupak Kharel&lt;br&gt;
-IEEE Transactions on Industrial Informatics (&lt;a href=&#34;https://ieeexplore.ieee.org/document/9201550&#34;&gt;pdf&lt;/a&gt;)&lt;/li&gt;
+IEEE Transactions on Industrial Informatics &lt;a href=&#34;https://ieeexplore.ieee.org/document/9201550&#34;&gt;[pdf]&lt;/a&gt; &lt;a href=&#34;https://github.com/glab2019/MADDPG-Based-MCS&#34;&gt;[code]&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>HRL&amp;Hindsight</title>
+      <link>https://yshane-ai.github.io/post/hrlhindsight/</link>
+      <pubDate>Tue, 26 Jan 2021 16:01:25 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/hrlhindsight/</guid>
+      
+        <description>&lt;p&gt;今天记录一篇利用hindsight方法加速分层强化学习的文章，发表于ICLR2019。&lt;/p&gt;
+
+&lt;h2 id=&#34;原文链接&#34;&gt;原文链接&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://openreview.net/forum?id=ryzECoAcY7&#34;&gt;Levy et al_2019_LEARNING MULTI-LEVEL HIERARCHIES WITH HINDSIGHT&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
+
+&lt;p&gt;通常直接学习一个复杂任务是很困难的事，如下左图中，摇摆很难通过摸索到达黄色方块处。假如可以对操作对象加以正确引导，将一个长远目标分成几个小目标分阶段完成，那么整个任务处理起来就变得简单，如下右图中紫色方块作为阶段性目标，不断指引摇摆到达黄色方块处。&lt;/p&gt;
+
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-giphy.gif&#34; alt=&#34;左图无目标引导，右图紫色方块代表阶段性目标&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/30-giphy.gif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;左图无目标引导，右图紫色方块代表阶段性目标&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;分层强化学习就是利用这种思想，分别训练两个网络，上层网络用于生成阶段性目标，下层网络在给定目标的条件下直接与环境进行交互。然而直接使用分层方式进行训练会造成学习的不稳定，主要是因为不断变化的转换函数和奖励函数造成。&lt;/p&gt;
+
+&lt;h3 id=&#34;转换函数&#34;&gt;转换函数&lt;/h3&gt;
+
+&lt;p&gt;由于下层网络也在不断学习，在给定目标B的情况下，下层策略可能最终会到达C、D、E等位置，而随着学习的不断进行，状态转换函数也一直在变化，进而对上层网络的学习造成阻碍。如下图所示：&lt;/p&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-unstable.gif&#34; alt=&#34;Agent在给定目标B的情况下，每次产生的行为存在不一致的情况&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/30-unstable.gif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;Agent在给定目标B的情况下，每次产生的行为存在不一致的情况&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;h3 id=&#34;奖励函数&#34;&gt;奖励函数&lt;/h3&gt;
+
+&lt;p&gt;由于分层后，不同目标和动作导致的行进轨迹不同，进而得到的奖励不同，对模型整体的学习造成阻碍，如下图所示;&lt;/p&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-reward.gif&#34; alt=&#34;Agent可通过不同的轨迹到达同一个位置，此时的奖励应该是相似的&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/30-reward.gif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;Agent可通过不同的轨迹到达同一个位置，此时的奖励应该是相似的&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;总的来说，以上两个困难会导致&lt;/p&gt;
+
+&lt;p&gt;&lt;span  class=&#34;math&#34;&gt;\[
+Q_{Target}(s_t,a_t)=r_{t+1}+\tau V_\pi (s_{t+1})
+\]&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;中的&lt;span  class=&#34;math&#34;&gt;\(r_{t+1}\)&lt;/span&gt;和&lt;span  class=&#34;math&#34;&gt;\(s_{t+1}\)&lt;/span&gt;对于相同的状态-动作却没有相同的输出，进而阻碍网络的稳定训练。&lt;/p&gt;
+
+&lt;h2 id=&#34;过程&#34;&gt;过程&lt;/h2&gt;
+
+&lt;h3 id=&#34;结构&#34;&gt;结构&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;确定性的、基于目标的策略网络：对于第&lt;span  class=&#34;math&#34;&gt;\(i,0\leq i\leq k\)&lt;/span&gt;层策略，根据状态和目标生成动作，&lt;span  class=&#34;math&#34;&gt;\(\pi_i: s_i,g_i\to a_i\)&lt;/span&gt;，其中&lt;span  class=&#34;math&#34;&gt;\(g_i\)&lt;/span&gt;可以是一个或一组状态，是上层策略的输出；&lt;/li&gt;
+&lt;li&gt;动作空间：对于底层策略，其动作空间为设定的与环境交互的一系列动作，而非底层策略的动作空间则等于状态空间，即将选择某个状态或某组状态作为下一层的阶段目标；&lt;/li&gt;
+&lt;li&gt;嵌套策略：文章采用了嵌套（nested）结构，如下图所示：&lt;/li&gt;
+&lt;/ul&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-three_level_structure.png&#34; alt=&#34;3层的层次强化学习架构示意图&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/30-three_level_structure.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;3层的层次强化学习架构示意图&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;h3 id=&#34;模块&#34;&gt;模块&lt;/h3&gt;
+
+&lt;p&gt;接下来将结合一组具体的轨迹对Hindsight用法进行介绍，在下图中，红色圈代表每个阶段的goal，白色圈代表真实到达的状态，黄色代表目标终点。&lt;/p&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-trajectory.gif&#34; alt=&#34;Agent训练过程轨迹示意图&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/30-trajectory.gif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;Agent训练过程轨迹示意图&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;动作hindsight：高层网络的动作即为下层网络的目标，但高层策略给定目标后下层网络往往不能真正完成这些目标，因此通过hindsight方法将经验中的下层目标，即高层动作替换为真实到达的状态，充分利用这些经验达到学习的目的；该方法解决了前面提到的转换函数不稳定的挑战。&lt;/li&gt;
+&lt;li&gt;目标hindsight：当最终目标很难到达时，大部分经验的奖励都是负的，没有学习价值。通过将最终目标替换为真实到达的状态，可以有效增加可学习的样本，有效解决稀疏奖励的问题。&lt;/li&gt;
+&lt;/ul&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-high-level-goal.png&#34; alt=&#34;上层策略&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/30-high-level-goal.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;上层策略&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-low-level-goal.png&#34; alt=&#34;下层策略&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/30-low-level-goal.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;下层策略&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;目标检验：有时一些上层的目标下层根本无法达到，我们称这种目标为不好的目标，为了减少这类目标，本文采用了目标检验机制对这类目标进行惩罚。如在上图中agent位于&lt;span  class=&#34;math&#34;&gt;\(s_2\)&lt;/span&gt;时当前策略无法到达&lt;span  class=&#34;math&#34;&gt;\(g_2\)&lt;/span&gt;，则&lt;span  class=&#34;math&#34;&gt;\(g_2\)&lt;/span&gt;就是一个不好的目标，通过增加对不好目标的惩罚样本，可以有效解决Q值过高估计的问题。&lt;/li&gt;
+&lt;/ul&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-subgoal-testing.png&#34; alt=&#34;对不好的经验进行惩罚&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/30-subgoal-testing.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;对不好的经验进行惩罚&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;h2 id=&#34;实验&#34;&gt;实验&lt;/h2&gt;
+
+&lt;h3 id=&#34;对比&#34;&gt;对比&lt;/h3&gt;
+
+&lt;p&gt;文章首先在6种不同的环境下对比了分别采用1，2，3层策略的效果，结果显示，随着层数增加，agent的表现也越来越好：&lt;/p&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-comparison.png&#34; alt=&#34;分别采用1、2、3层策略的效果对比&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/30-comparison.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;分别采用1、2、3层策略的效果对比&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;h3 id=&#34;演示&#34;&gt;演示&lt;/h3&gt;
+
+&lt;p&gt;两层策略：&lt;/p&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-2_level.gif&#34; alt=&#34;结果演示&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/30-2_level.gif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;结果演示&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;三层策略：&lt;/p&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-3_level.gif&#34; alt=&#34;结果演示&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/30-3_level.gif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;结果演示&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;h2 id=&#34;结论&#34;&gt;结论&lt;/h2&gt;
+
+&lt;p&gt;文章提出一种使用hindsight方法解决分层强化学习训练中不稳定问题的方法，通过对历史样本的改造，增加样本的学习价值，可以有效加速模型的训练。&lt;/p&gt;
 </description>
       
     </item>

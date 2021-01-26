@@ -10,21 +10,56 @@
   
   <url>
     <loc>https://yshane-ai.github.io/categories/</loc>
-    <lastmod>2021-01-26T16:01:23+08:00</lastmod>
+    <lastmod>2021-01-26T16:01:25+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://yshane-ai.github.io/tags/communication/</loc>
-    <lastmod>2021-01-26T16:01:23+08:00</lastmod>
+    <loc>https://yshane-ai.github.io/tags/hierarchical-rl/</loc>
+    <lastmod>2021-01-26T16:01:25+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://yshane-ai.github.io/categories/communication/</loc>
-    <lastmod>2021-01-26T16:01:23+08:00</lastmod>
+    <loc>https://yshane-ai.github.io/post/hrlhindsight/</loc>
+    <lastmod>2021-01-26T16:01:25+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/</loc>
+    <lastmod>2021-01-26T16:01:25+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/tags/rl/</loc>
+    <lastmod>2021-01-26T16:01:25+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/categories/rl/</loc>
+    <lastmod>2021-01-26T16:01:25+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/tags/</loc>
+    <lastmod>2021-01-26T16:01:25+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/</loc>
+    <lastmod>2021-01-26T16:01:25+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -37,35 +72,14 @@
   </url>
   
   <url>
-    <loc>https://yshane-ai.github.io/post/</loc>
+    <loc>https://yshane-ai.github.io/tags/marl/</loc>
     <lastmod>2021-01-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://yshane-ai.github.io/tags/rl/</loc>
-    <lastmod>2021-01-26T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/categories/rl/</loc>
-    <lastmod>2021-01-26T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/tags/</loc>
-    <lastmod>2021-01-26T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/</loc>
+    <loc>https://yshane-ai.github.io/categories/publication/</loc>
     <lastmod>2021-01-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
