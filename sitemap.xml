@@ -1,71 +1,71 @@
-<?xml-stylesheet type="text/xsl" href="http://localhost:1313/sitemap.xsl"?>
+<?xml-stylesheet type="text/xsl" href="https://yshane-ai.github.io/sitemap.xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://localhost:1313/about/</loc>
-    <lastmod>2017-08-28T21:41:52+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>http://localhost:1313/categories/</loc>
+    <loc>https://yshane-ai.github.io/about/</loc>
     <lastmod>2021-01-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>http://localhost:1313/tags/communication/</loc>
+    <loc>https://yshane-ai.github.io/categories/</loc>
     <lastmod>2021-01-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>http://localhost:1313/categories/communication/</loc>
+    <loc>https://yshane-ai.github.io/tags/communication/</loc>
     <lastmod>2021-01-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>http://localhost:1313/post/maddpg-based-mcs/</loc>
+    <loc>https://yshane-ai.github.io/categories/communication/</loc>
     <lastmod>2021-01-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>http://localhost:1313/post/</loc>
+    <loc>https://yshane-ai.github.io/post/maddpg-based-mcs/</loc>
     <lastmod>2021-01-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>http://localhost:1313/tags/rl/</loc>
+    <loc>https://yshane-ai.github.io/post/</loc>
     <lastmod>2021-01-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>http://localhost:1313/categories/rl/</loc>
+    <loc>https://yshane-ai.github.io/tags/rl/</loc>
     <lastmod>2021-01-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>http://localhost:1313/tags/</loc>
+    <loc>https://yshane-ai.github.io/categories/rl/</loc>
     <lastmod>2021-01-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>http://localhost:1313/</loc>
+    <loc>https://yshane-ai.github.io/tags/</loc>
+    <lastmod>2021-01-26T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/</loc>
     <lastmod>2021-01-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
