@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Life on Yang Xinxin&#39;s Blog</title>
+    <link>https://yshane-ai.github.io/categories/life/</link>
+    <description>Recent content in Life on Yang Xinxin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>Xinxin Yang</copyright>
+    <lastBuildDate>Fri, 29 Jan 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/life/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>每日临帖</title>
+      <link>https://yshane-ai.github.io/post/calligraphy/</link>
+      <pubDate>Fri, 29 Jan 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/calligraphy/</guid>
+      <description>接下来在这里记录自己的每日临帖！ 让自己的生活丰富起来，而不是充斥着代码和各种各样的工作。 2021年1月29日 今天学习了撇和捺 2021年1月3</description>
+    </item>
+    
+  </channel>
+</rss>
