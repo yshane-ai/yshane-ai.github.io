@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Fri, 29 Jan 2021 16:01:23 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 31 Jan 2021 16:01:23 +0800</lastBuildDate>
     
         <atom:link href="https://yshane-ai.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -26,6 +26,18 @@
 Bo Gu, &lt;strong&gt;Xinxin Yang&lt;/strong&gt;, Ziqi Lin, Weiwei Hu, Mamoun Alazab and Rupak Kharel&lt;br&gt;
 IEEE Transactions on Industrial Informatics &lt;a href=&#34;https://ieeexplore.ieee.org/document/9201550&#34;&gt;[pdf]&lt;/a&gt; &lt;a href=&#34;https://github.com/glab2019/MADDPG-Based-MCS&#34;&gt;[code]&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>Incentive Mechanism in Mobile Crowdsensing</title>
+      <link>https://yshane-ai.github.io/post/incentive-mechanism-in-mobile-crowdsensing/</link>
+      <pubDate>Sun, 31 Jan 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/incentive-mechanism-in-mobile-crowdsensing/</guid>
+      
+        <description>&lt;p&gt;&lt;code&gt;如何有效的招募用户参与到感知任务中是移动群感知（Mobile Crowdsensing）的一个重要研究方向，本文对近年来群感知中激励机制设计的文章进行整理。&lt;/code&gt;&lt;/p&gt;
 </description>
       
     </item>
@@ -72,6 +84,24 @@ IEEE Transactions on Industrial Informatics &lt;a href=&#34;https://ieeexplore.i
     &lt;a href=&#34;https://yshane-ai.github.io/image/Writing-20210130.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
       &lt;figcaption&gt;
           &lt;p&gt;今天学习了钩&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;h2 id=&#34;2021年1月31日&#34;&gt;2021年1月31日&lt;/h2&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/Writing-20210131.jpg&#34; alt=&#34;今天学习了横钩、斜钩和卧钩&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/Writing-20210131.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;今天学习了横钩、斜钩和卧钩&lt;/p&gt;
       &lt;/figcaption&gt;
   &lt;/figure&gt;
 &lt;/div&gt;

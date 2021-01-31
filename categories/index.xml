@@ -7,7 +7,25 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Fri, 29 Jan 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 31 Jan 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>MCS</title>
+      <link>https://yshane-ai.github.io/categories/mcs/</link>
+      <pubDate>Sun, 31 Jan 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/categories/mcs/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Work</title>
+      <link>https://yshane-ai.github.io/categories/work/</link>
+      <pubDate>Sun, 31 Jan 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/categories/work/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>Life</title>
       <link>https://yshane-ai.github.io/categories/life/</link>
@@ -23,15 +41,6 @@
       <pubDate>Tue, 26 Jan 2021 16:01:25 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/categories/rl/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Publication</title>
-      <link>https://yshane-ai.github.io/categories/publication/</link>
-      <pubDate>Tue, 26 Jan 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/categories/publication/</guid>
       <description></description>
     </item>
     
