@@ -7,7 +7,25 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Tue, 02 Feb 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 26 Dec 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>MCTS</title>
+      <link>https://yshane-ai.github.io/tags/mcts/</link>
+      <pubDate>Sun, 26 Dec 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/tags/mcts/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>RL</title>
+      <link>https://yshane-ai.github.io/tags/rl/</link>
+      <pubDate>Sun, 26 Dec 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/tags/rl/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>Incentive Mechanism</title>
       <link>https://yshane-ai.github.io/tags/incentive-mechanism/</link>
@@ -32,15 +50,6 @@
       <pubDate>Tue, 26 Jan 2021 16:01:25 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/tags/hierarchical-rl/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>RL</title>
-      <link>https://yshane-ai.github.io/tags/rl/</link>
-      <pubDate>Tue, 26 Jan 2021 16:01:25 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/tags/rl/</guid>
       <description></description>
     </item>
     

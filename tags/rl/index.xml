@@ -7,7 +7,16 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Tue, 26 Jan 2021 16:01:25 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/tags/rl/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 26 Dec 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/tags/rl/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Alpha Go</title>
+      <link>https://yshane-ai.github.io/post/alpha-go/</link>
+      <pubDate>Sun, 26 Dec 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/alpha-go/</guid>
+      <description>Alpha Go 最近又回顾了一下之前经典的AlphaGo，有一种温故知新的感觉，在这里再记录下最新的想法。 原文传送门 Silver et al_2016_Mastering the game of Go with deep neural networks and tree search_Nature 背景 在A</description>
+    </item>
+    
     <item>
       <title>HRL&amp;Hindsight</title>
       <link>https://yshane-ai.github.io/post/hrlhindsight/</link>

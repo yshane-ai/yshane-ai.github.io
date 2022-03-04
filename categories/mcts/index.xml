@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>MCTS on Yang Xinxin&#39;s Blog</title>
+    <link>https://yshane-ai.github.io/categories/mcts/</link>
+    <description>Recent content in MCTS on Yang Xinxin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>Xinxin Yang</copyright>
+    <lastBuildDate>Sun, 26 Dec 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/mcts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Alpha Go</title>
+      <link>https://yshane-ai.github.io/post/alpha-go/</link>
+      <pubDate>Sun, 26 Dec 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/alpha-go/</guid>
+      <description>Alpha Go 最近又回顾了一下之前经典的AlphaGo，有一种温故知新的感觉，在这里再记录下最新的想法。 原文传送门 Silver et al_2016_Mastering the game of Go with deep neural networks and tree search_Nature 背景 在A</description>
+    </item>
+    
+  </channel>
+</rss>

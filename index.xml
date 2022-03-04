@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Tue, 02 Feb 2021 16:01:23 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 26 Dec 2021 16:01:23 +0800</lastBuildDate>
     
         <atom:link href="https://yshane-ai.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -15,17 +15,168 @@
     <item>
       <title>About</title>
       <link>https://yshane-ai.github.io/about/</link>
-      <pubDate>Tue, 26 Jan 2021 16:01:23 +0800</pubDate>
+      <pubDate>Wed, 26 Jan 2022 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/about/</guid>
       
-        <description>&lt;p&gt;&lt;strong&gt;Xinxin Yang&lt;/strong&gt; is currently a Master student working with &lt;a href=&#34;http://ise.sysu.edu.cn/teacher/teacher02/1359655.htm&#34;&gt;Prof. Bo Gu&lt;/a&gt; at &lt;a href=&#34;http://ise.sysu.edu.cn/index.htm&#34;&gt;School of Intelligent Systems Engineering&lt;/a&gt;, &lt;a href=&#34;http://www.sysu.edu.cn/cn/index.htm&#34;&gt;Sun Yat-Sen University&lt;/a&gt;. His primary research goal is to develop innovative models and methods to enable effective multi-agent cooperation, allowing a group of individuals to explore, communicate, and accomplish tasks of higher complexity. His research interests include multi-agent learning, reinforcement learning, and reasoning under uncertainty.&lt;/p&gt;
+        <description>&lt;p&gt;&lt;strong&gt;Xinxin Yang&lt;/strong&gt; is currently a Master student working with &lt;a href=&#34;http://ise.sysu.edu.cn/teacher/teacher02/1359655.htm&#34;&gt;Prof. Bo Gu&lt;/a&gt; at &lt;a href=&#34;http://ise.sysu.edu.cn/index.htm&#34;&gt;School of Intelligent Systems Engineering&lt;/a&gt;, &lt;a href=&#34;http://www.sysu.edu.cn/cn/index.htm&#34;&gt;Sun Yat-Sen University&lt;/a&gt;. His primary research goal is to develop innovative models and methods to enable effective multi-agent cooperation, allowing a group of individuals to explore, communicate, and accomplish tasks of higher complexity. His research interests include multi-agent learning, reinforcement learning, and game AI.&lt;/p&gt;
 &lt;h2 id=&#34;publications&#34;&gt;Publications&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial System&lt;/strong&gt;&lt;br&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial System&lt;/strong&gt;&lt;br&gt;
 Bo Gu, &lt;strong&gt;Xinxin Yang&lt;/strong&gt;, Ziqi Lin, Weiwei Hu, Mamoun Alazab and Rupak Kharel&lt;br&gt;
-IEEE Transactions on Industrial Informatics &lt;a href=&#34;https://ieeexplore.ieee.org/document/9201550&#34;&gt;[pdf]&lt;/a&gt; &lt;a href=&#34;https://github.com/glab2019/MADDPG-Based-MCS&#34;&gt;[code]&lt;/a&gt;&lt;/li&gt;
+IEEE Transactions on Industrial Informatics &lt;a href=&#34;https://ieeexplore.ieee.org/document/9201550&#34;&gt;[pdf]&lt;/a&gt; &lt;a href=&#34;https://github.com/glab2019/MADDPG-Based-MCS&#34;&gt;[code]&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Towards Incentive-Compatible Vehicular Crowdsensing: An Edge-Assisted Hierarchical Framework&lt;/strong&gt;&lt;br&gt;
+&lt;strong&gt;Xinxin Yang&lt;/strong&gt;, Bo Gu, Bingkun Zheng, Beichen Ding, Yu Han, Keping Yu&lt;br&gt;
+IEEE Network Magazine &lt;a href=&#34;&#34;&gt;[pdf]&lt;/a&gt; &lt;a href=&#34;&#34;&gt;[code]&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ul&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>Alpha Go</title>
+      <link>https://yshane-ai.github.io/post/alpha-go/</link>
+      <pubDate>Sun, 26 Dec 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/alpha-go/</guid>
+      
+        <description>&lt;h1 id=&#34;alpha-go&#34;&gt;Alpha Go&lt;/h1&gt;
+
+&lt;p&gt;最近又回顾了一下之前经典的AlphaGo，有一种温故知新的感觉，在这里再记录下最新的想法。&lt;/p&gt;
+
+&lt;h2 id=&#34;原文传送门&#34;&gt;原文传送门&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://www.nature.com/articles/nature16961&#34;&gt;Silver et al_2016_Mastering the game of Go with deep neural networks and tree search_Nature&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
+
+&lt;p&gt;在AlphaGo出现前，传统的电脑围棋策略是通过一种称为Monte Carlo Tree Search（MCTS）的方法实现，其主要思想是通过计算推算不同落子方式的胜负情况，类似于人类思想的“往后想几步”，然后选择获胜概率最大的落子方式来执行。&lt;/p&gt;
+
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20211226-Go.jpg&#34; alt=&#34;围棋（Go）&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/20211226-Go.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;围棋（Go）&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;但这种方法存在一个挑战就是，假如把所有的落子可能都进行计算，那么最多会有宽度为250，深度为150的树，以当前的算力，很难在1个小时内走出一步。因此，如何降低搜索树的size成为一个棘手的问题。&lt;/p&gt;
+
+&lt;p&gt;在深度学习和强化学习出现后，学者们把目光转向了使用机器学习方法，让机器自己学习各种情况可能带来的收益和风险，来最大程度降低搜索树的搜索深度和宽度。&lt;/p&gt;
+
+&lt;h2 id=&#34;方法&#34;&gt;方法&lt;/h2&gt;
+
+&lt;p&gt;总的来说，这篇工作一共使用了3种技术：监督学习，强化学习和MCTS。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;首先监督学习（SL）训练了一个落子网络$p_\sigma$和一个快速走子网络$p_\pi$，其中落子网络模型较大，需要耗费$3ms$来做出决策，而快速走子网络则仅需要$2\mu s$来做出决策，但是落子网络更像人类的下棋方法，具有57.0%的预测正确率，而快速走子网络则稍逊，仅有24.2%的正确率。&lt;/li&gt;
+&lt;li&gt;其次强化学习（RL）对训练好的落子网络$p_\sigma$进行提升，主要通过自博弈来提升网络的落子策略，其次再训练了一个价值网络$v_\theta(s)$，用于MCTS的剪枝操作。&lt;/li&gt;
+&lt;li&gt;最后使用MCTS执行最终的动作选择。&lt;/li&gt;
+&lt;/ol&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20211226-model.png&#34; alt=&#34;模型&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/20211226-model.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;模型&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;h3 id=&#34;1-监督学习过程&#34;&gt;1 监督学习过程&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;落子网络$p_\sigma$：使用人类棋类博弈时的数据，使用监督学习方法训练一个策略网络来预测人类落子的策略，通过不断缩小与人类真实策略之间的误差，使得当前网络的落子方式更像人类，从而学得基本的走棋策略。其参数更新可表示为：$\Delta \sigma\propto\frac{\partial\log p_\sigma(a|s)}{\partial \sigma}$。&lt;/li&gt;
+&lt;li&gt;快速走子网络$p_\pi$：和落子网络训练方式一致，但网络模型更小，选择动作更快。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;2-强化学习过程&#34;&gt;2 强化学习过程&lt;/h3&gt;
+
+&lt;p&gt;强化学习方法是一种通过不断试错来优化自身策略的方法，这里使用RL提升落子网络的性能：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;策略网络：通过复制训练好的落子网络得到初始网络$p_\rho$，权重为$\rho=\sigma$。&lt;/li&gt;
+&lt;li&gt;对手：每个模型通过与自身历史版本中随机的一个模型来搏弈，来决定当前策略的好坏，从而进行不断提升，选择随机版本主要是防止过拟合于单一的博弈对象。&lt;/li&gt;
+&lt;li&gt;reward：只在最终决定胜负后才会获得+1或者-1的奖励，其余步的奖励均为0。&lt;/li&gt;
+&lt;li&gt;训练：采用随机梯度上升的方法，来增大最后的期望回报：$\Delta \rho\propto\frac{\partial\log p_\rho(a_t|s_t)}{\partial \rho}$。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;在提升策略网络性能的同时，RL另外训练了一个价值网络$v^p(s)$来估计棋盘的胜率：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;价值网络：与策略网络类似，但输出由动作概率变为一个标量值，用来表示状态$s$的胜率。&lt;/li&gt;
+&lt;li&gt;优化目标：通过减小自身预测胜率$v_\theta(s)$与真实胜率$z$间的均方误差，来预测不同状态的真实胜率$\Delta \theta\propto\frac{\partial v_\theta(s)}{\partial \theta}(z-v_\theta(s))$。&lt;/li&gt;
+&lt;/ul&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20211226-1b-rl.png&#34; alt=&#34;策略网络和价值网络&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/20211226-1b-rl.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;策略网络和价值网络&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;h3 id=&#34;3-mcts&#34;&gt;3 MCTS&lt;/h3&gt;
+
+&lt;p&gt;MCTS是一种搜索树，通过访问不同动作导致的状态来推测各个动作的价值，然后选择价值最高的动作执行。MCTS的流程如下图所示：&lt;/p&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20211226-MCTS.png&#34; alt=&#34;MCTS&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/20211226-MCTS.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;MCTS&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;选择：每个节点保存两个值：Q(s,a)表示动作a在状态s下的价值；$u(s,a)$表示探索价值，与先验P值正相关，和探索次数负相关，该值越高说明这个动作越值得探索，尽管可能Q值不是很高，类似于人类的大胆尝试。在每一轮选择时，MCTS选择这两个值和最高的动作执行。&lt;/li&gt;
+&lt;li&gt;扩张：每选择一个动作后，都需要落子网络$p_\sigma$计算该状态下的动作概率，生成新的P值。&lt;/li&gt;
+&lt;li&gt;评价：在仿真结束时，对展开的叶子节点的价值进行计算，通过两种方式同时进行：价值网络$v^p(s)$的估计，以及快速走子网络快速模拟至游戏结束计算的价值。&lt;/li&gt;
+&lt;li&gt;回溯：利用展开的叶子结点的价值，更新根节点的动作价值。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;本以为是选择Q值最高的动作来执行，但论文中写“最终模型选择访问次数最多的动作来执行”，这里还不是很懂为什么？先记录一下，希望能得到解答。&lt;/p&gt;
+
+&lt;h2 id=&#34;结论&#34;&gt;结论&lt;/h2&gt;
+
+&lt;p&gt;本文只是对AlphaGo的知识点梳理了一下，具体的实施细节还是要查看论文，例如落子网络的输入，网络的结构，卷积核个数的影响等等。当前游戏AI的不少问题，仍然需要借鉴这篇著作的部分思想，包括搜索树的剪枝，自我博弈等等。&lt;/p&gt;
+
+&lt;p&gt;的确，生搬硬套强化学习方法来暴力解决游戏中遇到的问题并不实际，游戏和算法的发展仍然需要人类来不断推动。对游戏AI有兴趣的同学，可以在下方评论区进行讨论，也可以私信我，一起为强化学习/机器学习社区增添热闹。&lt;/p&gt;
 </description>
       
     </item>
