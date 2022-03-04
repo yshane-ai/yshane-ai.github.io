@@ -44,5 +44,23 @@
       <description>今天分享自己的一片工作，也算是终于出版了！ 原文链接 Gu et al_2020. &amp;quot;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&amp;quot; IEEE Transactions on Industrial Informatics(2020) 背景 移动群感知是近些年发展比较热门的一个领域，主要是</description>
     </item>
     
+    <item>
+      <title>Influence</title>
+      <link>https://yshane-ai.github.io/post/2-social-influence/</link>
+      <pubDate>Tue, 13 Oct 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/2-social-influence/</guid>
+      <description>今天分享一篇多智能体相关的工作，发表于ICML2019. 原文链接 Jaques et al_2019_Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement_ICML2019 背景 现在单智能体的任务已经可以处理的很好，如上半年提出</description>
+    </item>
+    
+    <item>
+      <title>CURL</title>
+      <link>https://yshane-ai.github.io/post/1-curl/</link>
+      <pubDate>Sun, 26 Apr 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/1-curl/</guid>
+      <description>分享的第一篇笔记，希望大家多多鼓励。 这篇文章来源于ICML2020。 原文链接： Srinivas, Aravind, Michael Laskin, and Pieter Abbeel. &amp;quot;Curl: Contrastive unsupervised representations for reinforcement learning.&amp;quot; arXiv preprint arXiv:2004.04136 (2020). 背景： 在强化学习领域，解决</description>
+    </item>
+    
   </channel>
 </rss>

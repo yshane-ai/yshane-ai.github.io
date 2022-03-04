@@ -776,5 +776,256 @@ Q_{Target}(s_t,a_t)=r_{t+1}+\tau V_\pi (s_{t+1})
       
     </item>
     
+    <item>
+      <title>Influence</title>
+      <link>https://yshane-ai.github.io/post/2-social-influence/</link>
+      <pubDate>Tue, 13 Oct 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/2-social-influence/</guid>
+      
+        <description>
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/02-Influence/000.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/02-Influence/000.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;今天分享一篇多智能体相关的工作，发表于ICML2019.&lt;/p&gt;
+
+&lt;h2 id=&#34;原文链接&#34;&gt;原文链接&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://arxiv.org/abs/1810.08647&#34;&gt;Jaques et al_2019_Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement_ICML2019&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
+
+&lt;p&gt;现在单智能体的任务已经可以处理的很好，如上半年提出的&lt;strong&gt;Atari57&lt;/strong&gt;，在Atari的所有任务上都表现出色。但多智能体相关的研究始终受困于状态空间巨大，动作协调困难等等原因，无法应用于大规模部署。因此，如何引导智能体产生更有意义的动作，比如合作型动作，成为一个很关键的问题。&lt;/p&gt;
+
+&lt;p&gt;本文提出一个很有意思的思路是考虑智能体动作的社会影响力，即对其他智能体的影响，产生有意义的动作则应给予一个奖励，从而达到诱使合作的目的。&lt;/p&gt;
+
+&lt;h2 id=&#34;过程&#34;&gt;过程&lt;/h2&gt;
+
+&lt;h4 id=&#34;动作模型&#34;&gt;动作模型&lt;/h4&gt;
+
+&lt;p&gt;这里提出将社会影响力作为一种内在奖励，即产生的动作对周围智能体有较大影响时，则相应给予一定的奖励。奖励函数可重新定义为：$r_t^k=\alpha e_t^k + \beta c_t&lt;sup&gt;k$，其中$e_t&lt;/sup&gt;k$和$c_t^k$分别表示外部奖励和内部奖励，内部奖励和社会影响力相关。&lt;/p&gt;
+
+&lt;p&gt;但如何评价这个动作是否有意义，或者有影响力呢？这里提出通过对比“当前动作”与“反动作”造成的周围智能体策略变化程度作为衡量标准，即考虑若不采取“当前动作”，周围智能体的动作是否会相应变化。智能体$k$的内在奖励公式上可以表示为：
+&lt;span  class=&#34;math&#34;&gt;\(
+\begin{aligned}
+c_t^k &amp;= \sum_{j=0,j\neq k}^N\left[D_{KL}[p(a_t^j|a_t^k,s_t^j)||\sum_{\tilde a_t^k}p(a_t^j|\tilde a_t^k,s_t^k)p(\tilde a_t^k|s_t^j)]\right] \\
+&amp;=\sum_{j=0,j\neq k}^N\left[D_{KL}[p(a_t^j|a_t^k,s_t^j)||p(a_t^j|s_t^j)]\right]
+\end{aligned}
+\)&lt;/span&gt;
+其中$\tilde a_t^k$表示“反动作”。&lt;/p&gt;
+
+&lt;p&gt;根据互信息的定义，上式等价于增大智能体$j$和$k$的动作相关性，即互信息$I(a&lt;sup&gt;k;a&lt;/sup&gt;j|s)$，从而诱使产生合作行为。但为了保证上式可以计算，本文提出两点条件：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;使用集中式训练的方法，在训练时可以直接利用对方的策略来观测“反动作”产生的策略变化；&lt;/li&gt;
+&lt;li&gt;这种影响力是单边的，即智能体之间的动作影响程度是非对称的。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&#34;通信模型&#34;&gt;通信模型&lt;/h4&gt;
+
+&lt;p&gt;此外，除了直接观测动作，本文还提出可以实现合作型通信，即智能体之间可以互相发送信息，通收集周围智能体发送来的信息，选择合适的动作。模型如下所示：&lt;/p&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/02-Influence/001.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/02-Influence/001.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;h2 id=&#34;实验&#34;&gt;实验&lt;/h2&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/02-Influence/002.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/02-Influence/002.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;本文的实验环境如上图所示，其中分两种角色：影响者（Influencer）和被影响者（Influencee）。在这个环境下，每个智能体仅可观测到周围的状态，如黄色智能体的视野边界是黄色方框，而对方框外的信息一无所知（其实这个图感觉不太好，应该把蓝色方框作为影响者）。当黄色智能体观测到影响者向上移动时，便可以推断出上方可能有食物，这时，影响者的动作便是有意义的，即有社会影响力。最终会产生这么一种情况，影响者仅仅在观测到食物时才会向食物方向运动，在其他时候都会静止不动，从而保证自己做的每个动作都是有影响力的。&lt;/p&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/02-Influence/003.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/02-Influence/003.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;相反，若是影响者在未观测到食物时做随机运动，那么他对周围智能体的影响就会很小，动作的影响力就相应比较低。本文对比了在“动作模型”和“通信模型”下的效果，如下图所示，可见都有相应提升，但“动作模型”的表现更加出色。&lt;/p&gt;
+
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;本文提出了一种社会影响力机制，通过估计自身行为对周围智能体的影响，相应提供内在奖励，诱使社会合作行为的产生。&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>CURL</title>
+      <link>https://yshane-ai.github.io/post/1-curl/</link>
+      <pubDate>Sun, 26 Apr 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/1-curl/</guid>
+      
+        <description>
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/01-CURL/000.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/01-CURL/000.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;分享的第一篇笔记，希望大家多多鼓励。
+这篇文章来源于ICML2020。&lt;/p&gt;
+
+&lt;h2 id=&#34;原文链接&#34;&gt;原文链接：&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://arxiv.org/pdf/2004.04136&#34;&gt;Srinivas, Aravind, Michael Laskin, and Pieter Abbeel. &amp;quot;Curl: Contrastive unsupervised representations for reinforcement learning.&amp;quot; arXiv preprint arXiv:2004.04136 (2020).
+&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;背景&#34;&gt;背景：&lt;/h2&gt;
+
+&lt;p&gt;在强化学习领域，解决复杂输入问题一直是一个挑战，特别是考虑直接输入图像（或视频）。
+现在主流的有两种方法：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;增加对输入的特征提取任务，保证输入信息有效；&lt;/li&gt;
+&lt;li&gt;采用model based的方式，建立世界模型，对未来进行预测。同期的Dreamer就是采用这个模型。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;这篇文章采用了第一种方式，采用对比学习方法来保证提取的特征对是有效的特征。文章最后对比了Dreamer，效果不错。&lt;/p&gt;
+
+&lt;h2 id=&#34;过程&#34;&gt;过程：&lt;/h2&gt;
+
+&lt;h3 id=&#34;1-对比学习&#34;&gt;1. 对比学习&lt;/h3&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/01-CURL/003.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/01-CURL/003.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;对比学习主要的功能是学习一个神经网络，完成有用信息提取，如何界定有用信息呢？这里用到了三个概念：anchor，positive和negative。&lt;/p&gt;
+
+&lt;p&gt;其中anchor表示从原图像中心以一定比例截取的图像，表示为$o_q$，positive表示在原图像中以相同比例在随机位置截取的图像，negative表示在其他图像中以相同大小任意截取的比例，共同表示为$o&lt;em&gt;k$。
+这里训练两个神经网络$q=f&lt;/em&gt;{\theta_q}(o&lt;em&gt;q)$和$k=f&lt;/em&gt;{\theta_k}(o_k)$，输出分别是提取的特征。这时有用信息的判断就可以表示为根据$q$和$k$，是否可以判断他们的输入属于同一张图像。
+这里使用了一种相似度评价函数：&lt;/p&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/01-CURL/005.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/01-CURL/005.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;其中$q$表示anchor的特征，$k_+$表示positive的特征，$k_i$表示negtive的特征，$W$表示参数矩阵。上式可以视为softmax分类器的log损失。&lt;/p&gt;
+
+&lt;h3 id=&#34;2-模型&#34;&gt;2. 模型&lt;/h3&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/01-CURL/002.png&#34; alt=&#34;对比损失&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/01-CURL/002.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;对比损失&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;对于简单的任务，当观测的信息为位置、速度等直接有效信息时，强化学习的过程可以表示为学习一种策略$\pi_\theta(a_t|o_t)$，表示在状态$s_t$下选择动作$a&lt;em&gt;t$的概率。上图中可以表示为最上面的$o$直接输入左下角的RL模块。
+但当$o$采用图像输入时，包含背景等冗余信息，这时就需要一个$q=f&lt;/em&gt;{\theta}(o)$对有用的信息进行提取。但什么算是有用信息呢？显然，与别人最与众不同的信息更加有用，因此这里采用对比学习的方法训练一个神经网络$q=f_{\theta_q}(o_q)$，输出的$q$就是想要的有效信息，然后输送给RL。
+神经网络的训练通过上述对比学习的方式进行。&lt;/p&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/01-CURL/001.png&#34; alt=&#34;模型&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/01-CURL/001.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;模型&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;本文的RL采用SAC模型，&lt;/p&gt;
+
+&lt;h2 id=&#34;实验&#34;&gt;实验：&lt;/h2&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/01-CURL/004.png&#34; alt=&#34;实验&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/01-CURL/004.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;实验&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;文章对比了CURL、State输入的SAC和Pixel输入的SAC，虽然效果有些略差于State输入，但远远好于Pixel的输入效果，可以证明对比学习的确提取到了有用的特征。&lt;/p&gt;
+</description>
+      
+    </item>
+    
   </channel>
 </rss>
