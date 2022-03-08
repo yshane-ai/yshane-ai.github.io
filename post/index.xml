@@ -45,6 +45,15 @@
     </item>
     
     <item>
+      <title>Python的字典dict原理</title>
+      <link>https://yshane-ai.github.io/post/3-pythondict/</link>
+      <pubDate>Wed, 13 Jan 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/3-pythondict/</guid>
+      <description>一. 什么是字典？ 字典是一系列由键（key）和值（value）配对组成的元素的集合。字典是一个可变容器模型，可以存储任意类型对象。字典实现与哈</description>
+    </item>
+    
+    <item>
       <title>Influence</title>
       <link>https://yshane-ai.github.io/post/2-social-influence/</link>
       <pubDate>Tue, 13 Oct 2020 16:01:23 +0800</pubDate>

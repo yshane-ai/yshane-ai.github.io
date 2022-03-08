@@ -777,6 +777,74 @@ Q_{Target}(s_t,a_t)=r_{t+1}+\tau V_\pi (s_{t+1})
     </item>
     
     <item>
+      <title>Python的字典dict原理</title>
+      <link>https://yshane-ai.github.io/post/3-pythondict/</link>
+      <pubDate>Wed, 13 Jan 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/3-pythondict/</guid>
+      
+        <description>&lt;h2 id=&#34;一-什么是字典&#34;&gt;一. 什么是字典？&lt;/h2&gt;
+
+&lt;p&gt;字典是一系列由键（key）和值（value）配对组成的元素的集合。字典是一个可变容器模型，可以存储任意类型对象。字典实现与哈希算法密不可分（不同的Python版本，算法会不同），不了解哈希算法的童鞋可以先去了解相关知识。&lt;/p&gt;
+
+&lt;h2 id=&#34;二-字典是否是有序的&#34;&gt;二. 字典是否是有序的？&lt;/h2&gt;
+
+&lt;p&gt;在Python3.6之前，字典是无序的，但是Python3.7+，字典是有序的。在3.6中，字典有序是一个implementation detail，在3.7才正式成为语言特性，因此3.6中无法确保100%有序。&lt;/p&gt;
+
+&lt;h2 id=&#34;三-字典的查询添加删除的时间复杂度&#34;&gt;三. 字典的查询、添加、删除的时间复杂度？&lt;/h2&gt;
+
+&lt;p&gt;字典的查询、添加、删除的平均时间复杂度都是O(1)（为什么是平均时间复杂度，文章后面会讲解到），相比列表与元祖，性能更优。&lt;/p&gt;
+
+&lt;h2 id=&#34;四-字典的实现原理&#34;&gt;四. 字典的实现原理？&lt;/h2&gt;
+
+&lt;h3 id=&#34;1-首先说说python36之前的无序字典&#34;&gt;1. 首先说说Python3.6之前的无序字典&lt;/h3&gt;
+
+&lt;p&gt;字典底层是维护一张哈希表（见下图），我们可以把哈希表看成一个列表，哈希表中的每一个元素又存储了哈希值（hash）、键（key）、值（value）3个元素。（Python3.6之前）&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;enteies &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
+    [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--&amp;#39;&lt;/span&gt;],
+    [hash, key, value],
+    [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--&amp;#39;&lt;/span&gt;],
+    [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--&amp;#39;&lt;/span&gt;],
+    [hash, key, value],
+]&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;由上可以见哈希表的存储结构，我们也可以看出，元素之间有一些空元素，我们通过增加一个元素来讲解具体实现。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;计算key的hash值【hash(key)】，再和mask做与操作【mask=字典最小长度（DictMinSize） - 1】，运算后会得到一个数字【index】，这个index就是要插入的enteies哈希表中的下标位置&lt;/li&gt;
+&lt;li&gt;若index下标位置已经被占用，则会判断enteies的key是否与要插入的key是否相等&lt;/li&gt;
+&lt;li&gt;如果key相等就表示key已存在，则更新value值&lt;/li&gt;
+&lt;li&gt;如果key不相等，就表示hash冲突，则会继续向下寻找空位置，一直到找到剩余空位为止。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;2-python37后的新的实现方式&#34;&gt;2. Python3.7+后的新的实现方式&lt;/h3&gt;
+
+&lt;p&gt;老字典使用一张hash，而新字典还使用了一张Indices表来辅助。下来列出新的结构：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;indices &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [None, None, index, None, index, None, index]
+enteies &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
+    [hash0, key0, value0],
+    [hash1, key1, value1],
+    [hash2, key2, value2]
+]&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;下面为具体的实现过程：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;计算key的hash值【hash(key)】，再和mask做与操作【mask=字典最小长度（IndicesDictMinSize） - 1】，运算后会得到一个数字【index】，这个index就是要插入的indices的下标位置（注：具体算法与Python版本相关，并不一定一样）&lt;/li&gt;
+&lt;li&gt;得到index后，会找到indices的位置，但是此位置不是存的hash值，而是存的len(enteies)，表示该值在enteies中的位置&lt;/li&gt;
+&lt;li&gt;如果出现hash冲突，则处理方式与老字典处理方式类似&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;五-时间复杂度说明&#34;&gt;五. 时间复杂度说明&lt;/h2&gt;
+
+&lt;p&gt;我们在上面提到了，字典的平均时间复杂度是O(1)，因为字典是通过哈希算法来实现的，哈希算法不可避免的问题就是hash冲突，Python字典发生哈希冲突时，会向下寻找空余位置，直到找到位置。如果在计算key的hash值时，如果一直找不到空余位置，则字典的时间复杂度就变成了O(n)了，所以Python的哈希算法就显得非常重要了。Python字典的哈希算法，会尽量保证哈希值计算出的index是平均分布且每一个值之间有剩余位置。&lt;/p&gt;
+
+&lt;h2 id=&#34;六-字典的key能使用什么值&#34;&gt;六. 字典的key能使用什么值？&lt;/h2&gt;
+
+&lt;p&gt;Python字典的key可以使用字符串（str），整型（int），元祖（tuple）等。我们已经知道，字典是通过哈希算法来计算key的值，所以key必须为可哈希的，list不能作为字典的key，因为list是可变的及不可哈希的对象，所以不能作为字典的key。&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
       <title>Influence</title>
       <link>https://yshane-ai.github.io/post/2-social-influence/</link>
       <pubDate>Tue, 13 Oct 2020 16:01:23 +0800</pubDate>
