@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Incentive Mechanism · Yang Xinxin&#39;s Blog</title>
+  <title>IMPALA - Yang Xinxin&#39;s Blog</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="Yang Xinxin&#39;s Blog." />
+  <meta name="description" content="原文链接 Espeholt, Lasse, et al. &amp;ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&amp;rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、" />
+
   <meta name="keywords" content="RL, ML, " />
 
 
@@ -34,8 +35,8 @@
 <meta name="generator" content="Hugo 0.93.2" />
 
 
-<link rel="canonical" href="https://yshane-ai.github.io/tags/incentive-mechanism/" />
-<link href="/tags/incentive-mechanism/index.xml" rel="alternate" type="application/rss+xml" title="Yang Xinxin&#39;s Blog" />
+<link rel="canonical" href="https://yshane-ai.github.io/post/4-imapla/" />
+
 
 
 
@@ -58,15 +59,20 @@
 
 
 
-<meta property="og:title" content="Incentive Mechanism" />
-<meta property="og:description" content="Yang Xinxin&#39;s Blog." />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://yshane-ai.github.io/tags/incentive-mechanism/" />
+<meta property="og:title" content="IMPALA" />
+<meta property="og:description" content="原文链接 Espeholt, Lasse, et al. &ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/4-imapla/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-03-13T16:01:23+08:00" />
+<meta property="article:modified_time" content="2021-03-13T16:01:23+08:00" />
 
-<meta itemprop="name" content="Incentive Mechanism">
-<meta itemprop="description" content="Yang Xinxin&#39;s Blog."><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Incentive Mechanism"/>
-<meta name="twitter:description" content="Yang Xinxin&#39;s Blog."/>
+<meta itemprop="name" content="IMPALA">
+<meta itemprop="description" content="原文链接 Espeholt, Lasse, et al. &ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、"><meta itemprop="datePublished" content="2021-03-13T16:01:23+08:00" />
+<meta itemprop="dateModified" content="2021-03-13T16:01:23+08:00" />
+<meta itemprop="wordCount" content="1994">
+<meta itemprop="keywords" content="RL,Framework," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="IMPALA"/>
+<meta name="twitter:description" content="原文链接 Espeholt, Lasse, et al. &ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -314,7 +320,7 @@
 
       </li>
     
-        <li class="menu-item">
+        <li class="menu-item active">
         
           
           <a class="menu-item-link menu-parent" href="https://yshane-ai.github.io/">docs</a>
@@ -372,55 +378,256 @@
     <main id="main" class="main bg-llight">
       <div class="content-wrapper">
         <div id="content" class="content container">
-          
-
-<section id="archive" class="archive">
-  
+          <article class="post bg-white">
     
-      <div class="archive-title tag">
-        <h2 class="archive-name">Tag: Incentive Mechanism</h2>
+    <header class="post-header">
+      <h1 class="post-title">IMPALA</h1>
+      
+      <div class="post-meta">
+        <time datetime="2021-03-13" class="post-time">
+          2021-03-13
+        </time>
+        <div class="post-category">
+            <a href="https://yshane-ai.github.io/categories/python/"> Python </a>
+            <a href="https://yshane-ai.github.io/categories/framework/"> Framework </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
       </div>
+    </header>
+
     
-  
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Table of Contents</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#原文链接">原文链接</a></li>
+    <li><a href="#背景">背景</a></li>
+    <li><a href="#过程">过程</a>
+      <ul>
+        <li><a href="#1-impala">1. IMPALA</a></li>
+        <li><a href="#2-v-trace">2. V-trace</a></li>
+        <li><a href="#3-actor-critic">3. Actor-critic</a></li>
+      </ul>
+    </li>
+    <li><a href="#实验结果">实验结果</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
 
-  
-    <div class="archive-post">
-      <time datetime="2021-02-02" class="archive-post-time">
-        2021-02-02
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/incentive-mechanism-in-mobile-crowdsensing/" class="archive-post-link">
-          Incentive Mechanism in Mobile Crowdsensing
-        </a>
-      </span>
+    
+    <div class="post-content">
+      <h2 id="原文链接">原文链接</h2>
+<p><a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/1802.01561">Espeholt, Lasse, et al. &ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&rdquo; arXiv preprint arXiv:1802.01561 (2018).</a></p>
+<h2 id="背景">背景</h2>
+<p>IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、较好的扩展性（scalability）和较高的效率（data-efficiency）。在大规模计算的框架下，采样和策略更新会有一些错位（不再是完全的on-policy），在这种情况下，文章通过V-trace技术来完成地使用off-policy样本进行训练。</p>
+<h2 id="过程">过程</h2>
+<h3 id="1-impala">1. IMPALA</h3>
+
+<link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/04-IMPALA/001.png" />
     </div>
+    <a href="/image/04-IMPALA/001.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>首先，我们来看一个single learner的模式。learner的主要作用是通过获取actor得到的轨迹来做SGD来更新各个神经网络的参数，神经网络训练本身可并行的特性，learner使用的是一块GPU。actor定期从learner获取最新的神经网络参数，并且每个actor起一个模拟环境，来使用自己能获得的最新策略去采样，并且把获取到的${x_t, a_t, r_t, \mu(a_t|x_t)}$传回供learner去更新各个神经网络参数。由于模拟环境的运行通常不方便做并行，actor一般使用CPU。由于actor上的策略$\mu$可能不是learner中最新的策略$\pi$，因此这里使用了不同的符号来表示。</p>
+<p>下一步，当训练规模扩大的时候，可以考虑使用多个learner（多块GPU）并且每块GPU配套多个actor（CPU）。每个learner只从自己的actor们中获取样本进行更新，learner之间定期交换gradient并且更新网络参数，actor也定期从任意learner上获取并更新神经网络参数。</p>
+<p>IMPALA中actor和learner相互异步工作，极大提高了时间利用率。文章还与与batched A2C做了对比，如下图所示。a图中，正向传播和反向传播都想凑一批来做（可能是给到GPU来算），因此每一步都需要同步，而模拟环境各步所需时间方差很大，这样浪费了大量的等待时间；b图中，只把耗时较长的反向传播凑一批来做，正向传播就给各个actor自己做；而c图中的IMPALA则完全把actor和learner分开异步进行，这样actor不用去等待别的actor，可以尽可能多的做采样，相应地，所作出的牺牲就是每次更新得到的样本变为了off-policy样本。接下来本文提出了V-trace对于off-policy样本做修正。</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/04-IMPALA/002.png" />
+    </div>
+    <a href="/image/04-IMPALA/002.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<h3 id="2-v-trace">2. V-trace</h3>
+<p>算法中需要根据采样到的样本来维护一个状态价值函数$V_theta(x)$。V-trace的目的是根据采样到的${x_t, a_t, r_t, \mu(a_t|x_t)}$和当前状态价值函数网络来给出当前状态价值函数的一个更好的估计$v_s$（$s$下标表示它是其中的一个样本），这样价值神经网络就可以把它作为一个更新的目标来更新权重。</p>
+<p>我们直接写出$v_s$的表达形式。</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/04-IMPALA/003.png" />
+    </div>
+    <a href="/image/04-IMPALA/003.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>非常复杂，看不懂，有没有？看看里面一些变量的定义是什么：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/04-IMPALA/006.png" />
+    </div>
+    <a href="/image/04-IMPALA/006.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>括号里的表达式是Temporal Difference，然而外面的$\rho_t$是什么含义了？</p>
+<p>$$
+\rho_t = \min(\overline\rho, \frac{\pi(a_t|x_t)}{\mu(a_t|x_t)})
+$$</p>
+<p>还有其他变量的定义：</p>
+<p>$$
+c_i = \min(\overline c, \frac{\pi(a_i|x_i)}{\mu(a_i|x_i)})
+$$</p>
+<p>$$
+\overline\rho \geq \overline c
+$$</p>
+<p>看到$\rho_t$和$c_i$的表达式，是不是联想起什么了？这就是Importance Sampling。从策略$mu$中采样，更新当前的策略$\pi$。只不过加上了最大值的限制，不能超过$\overline\rho$和$\overline c$，也就是说进行了截断处理，一般情况下这两个值可以设置成1啦。</p>
+<h3 id="3-actor-critic">3. Actor-critic</h3>
+<p>IMPALA中需要维护两个神经网络，一个是策略神经网络（用作actor），一个是状态价值函数网络（用作critic）。前面提到，V-trace技术就是根据采样到的${x_t, a_t, r_t, \mu(a_t|x_t)}$和当前状态价值函数网络来给出当前状态价值函数的一个更好的估计$v_s$。</p>
+<h4 id="31-critic的更新">3.1 Critic的更新</h4>
+<p>Critic的更新方式为最小化拟合的价值函数 [公式] 相对于目标价值函数 [公式] 的均方误差，即朝如下方向更新</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/04-IMPALA/004.png" />
+    </div>
+    <a href="/image/04-IMPALA/004.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<h4 id="32-actor的更新">3.2 Actor的更新</h4>
+<p>Actor朝着off-policy policy gradient给出的梯度方向更新。</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/04-IMPALA/005.png" />
+    </div>
+    <a href="/image/04-IMPALA/005.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<h4 id="33-熵">3.3 熵</h4>
+<p>前两项再加上对于熵的激励，就可以得到最后的算法更新公式。</p>
+<h2 id="实验结果">实验结果</h2>
+<p>实验主要说明了以下几点：</p>
+<ul>
+<li>相比于A3C和batched A2C，具有更好的高性能计算性能；</li>
+<li>单任务训练上相比于分布式A3C、单机A3C和batched A2C有更好的性能，并且对于超参数更稳定；</li>
+<li>本文中使用的V-trace相比于no correction、 [公式] -correction、1-step importance sampling都有更好的效果（ablation study）。其中no correction指的是认为样本都是on-policy样本； [公式] -correction指的是仅仅在计算 [公式] 的时候加上一个很小的数值防止不稳定（不太懂）；1-step importance sampling，V-trace其实是做了多步，这里只做一步。</li>
+<li>训练单一智能体去完成多个任务。</li>
+</ul>
+
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">Author</span>
+    <span class="item-content">Xinxin Yang</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">LastMod</span>
+    <span class="item-content">
+      2021-03-13
+      
+    </span>
+  </p>
   
-</section>
+  <p class="copyright-item">
+    <span class="item-title">License</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
 
 
+    
+    
 
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://yshane-ai.github.io/tags/rl/">RL</a>
+          <a href="https://yshane-ai.github.io/tags/framework/">Framework</a>
+          
+        </div>
 
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/alpha-go/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
 
+            </i>
+            <span class="prev-text nav-default">Alpha Go</span>
+            <span class="prev-text nav-mobile">Prev</span>
+          </a>
+        
+          <a class="next" href="/post/incentive-mechanism-in-mobile-crowdsensing/">
+            <span class="next-text nav-default">Incentive Mechanism in Mobile Crowdsensing</span>
+            <span class="prev-text nav-mobile">Next</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
 
   
   
+
+  
+  
+
   
 
   
   
 
   
-  
 
   
-  
 
   
+
+    
+
   
-
-
-
-
 
         </div>
       </div>
@@ -541,6 +748,30 @@
 
 
 
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/katex.min.css"
+    integrity="sha384-BdGj8xC2eZkQaxoQ8nSLefg4AV4/AwB3Fj+8SUSo7pnKP6Eoy18liIKTPn9oBYNG"
+    crossorigin="anonymous">
+
+  
+  <script defer
+    src="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/katex.min.js"
+    integrity="sha384-JiKN5O8x9Hhs/UE5cT5AAJqieYlOZbGT3CHws/y97o3ty4R7/O5poG9F3JoiOYw1"
+    crossorigin="anonymous"></script>
+
+  
+  <script defer
+    src="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/contrib/auto-render.min.js"
+    integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI"
+    crossorigin="anonymous" onload="renderMathInElement(document.body);">
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        
+      });
+    });
+  </script>
 
 
 

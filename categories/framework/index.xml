@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Framework on Yang Xinxin&#39;s Blog</title>
+    <link>https://yshane-ai.github.io/categories/framework/</link>
+    <description>Recent content in Framework on Yang Xinxin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>Xinxin Yang</copyright>
+    <lastBuildDate>Sat, 13 Mar 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/framework/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>IMPALA</title>
+      <link>https://yshane-ai.github.io/post/4-imapla/</link>
+      <pubDate>Sat, 13 Mar 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/4-imapla/</guid>
+      <description>原文链接 Espeholt, Lasse, et al. &amp;ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&amp;rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、</description>
+    </item>
+    
+  </channel>
+</rss>
