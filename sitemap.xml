@@ -9,28 +9,56 @@
   </url>
   
   <url>
-    <loc>https://yshane-ai.github.io/post/7-alpha-go/</loc>
-    <lastmod>2021-12-26T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
     <loc>https://yshane-ai.github.io/categories/</loc>
-    <lastmod>2021-12-26T16:01:23+08:00</lastmod>
+    <lastmod>2022-01-13T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://yshane-ai.github.io/tags/dnn/</loc>
-    <lastmod>2021-12-26T16:01:23+08:00</lastmod>
+    <loc>https://yshane-ai.github.io/tags/ml/</loc>
+    <lastmod>2022-01-13T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://yshane-ai.github.io/categories/dnn/</loc>
+    <loc>https://yshane-ai.github.io/categories/ml/</loc>
+    <lastmod>2022-01-13T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/</loc>
+    <lastmod>2022-01-13T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/tags/</loc>
+    <lastmod>2022-01-13T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/</loc>
+    <lastmod>2022-01-13T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/</loc>
+    <lastmod>2022-01-13T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/7-alpha-go/</loc>
     <lastmod>2021-12-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
@@ -51,27 +79,6 @@
   </url>
   
   <url>
-    <loc>https://yshane-ai.github.io/tags/ml/</loc>
-    <lastmod>2021-12-26T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/categories/ml/</loc>
-    <lastmod>2021-12-26T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/post/</loc>
-    <lastmod>2021-12-26T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
     <loc>https://yshane-ai.github.io/tags/rl/</loc>
     <lastmod>2021-12-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
@@ -80,27 +87,6 @@
   
   <url>
     <loc>https://yshane-ai.github.io/categories/rl/</loc>
-    <lastmod>2021-12-26T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/tags/</loc>
-    <lastmod>2021-12-26T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/</loc>
-    <lastmod>2021-12-26T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/</loc>
     <lastmod>2021-12-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
@@ -157,13 +143,6 @@
   
   <url>
     <loc>https://yshane-ai.github.io/categories/mcs/</loc>
-    <lastmod>2021-02-02T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/categories/work/</loc>
     <lastmod>2021-02-02T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>

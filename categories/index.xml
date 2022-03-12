@@ -7,13 +7,13 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Sun, 26 Dec 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 13 Jan 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>DNN</title>
-      <link>https://yshane-ai.github.io/categories/dnn/</link>
-      <pubDate>Sun, 26 Dec 2021 16:01:23 +0800</pubDate>
+      <title>ML</title>
+      <link>https://yshane-ai.github.io/categories/ml/</link>
+      <pubDate>Thu, 13 Jan 2022 16:01:23 +0800</pubDate>
       
-      <guid>https://yshane-ai.github.io/categories/dnn/</guid>
+      <guid>https://yshane-ai.github.io/categories/ml/</guid>
       <description></description>
     </item>
     
@@ -23,15 +23,6 @@
       <pubDate>Sun, 26 Dec 2021 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/categories/mcts/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>ML</title>
-      <link>https://yshane-ai.github.io/categories/ml/</link>
-      <pubDate>Sun, 26 Dec 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/categories/ml/</guid>
       <description></description>
     </item>
     
@@ -59,15 +50,6 @@
       <pubDate>Tue, 02 Feb 2021 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/categories/mcs/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Work</title>
-      <link>https://yshane-ai.github.io/categories/work/</link>
-      <pubDate>Tue, 02 Feb 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/categories/work/</guid>
       <description></description>
     </item>
     
