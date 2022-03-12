@@ -10,11 +10,29 @@
     <lastBuildDate>Sun, 26 Dec 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/rl/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Alpha Go</title>
-      <link>https://yshane-ai.github.io/post/alpha-go/</link>
+      <link>https://yshane-ai.github.io/post/7-alpha-go/</link>
       <pubDate>Sun, 26 Dec 2021 16:01:23 +0800</pubDate>
       
-      <guid>https://yshane-ai.github.io/post/alpha-go/</guid>
+      <guid>https://yshane-ai.github.io/post/7-alpha-go/</guid>
       <description>Alpha Go 最近又回顾了一下之前经典的AlphaGo，有一种温故知新的感觉，在这里再记录下最新的想法。 原文传送门 Silver et al_2016_Mastering the game of Go with deep neural networks and tree search_Nature 背景 在A</description>
+    </item>
+    
+    <item>
+      <title>DRL总结：DQN，RainBow，DDPG，PPO和A3C等</title>
+      <link>https://yshane-ai.github.io/post/5-rl%E6%80%BB%E7%BB%93/</link>
+      <pubDate>Fri, 10 Sep 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/5-rl%E6%80%BB%E7%BB%93/</guid>
+      <description>下面我会按照这种格式去介绍算法： 这里会写上深度强化学习的子领域 XXX——算法的全称或别称顾名思义地解释此算法，并补充其他特点，帮助使用者判断</description>
+    </item>
+    
+    <item>
+      <title>IMPALA</title>
+      <link>https://yshane-ai.github.io/post/4-imapla/</link>
+      <pubDate>Sat, 13 Mar 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/4-imapla/</guid>
+      <description>原文链接 Espeholt, Lasse, et al. &amp;ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&amp;rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、</description>
     </item>
     
     <item>
