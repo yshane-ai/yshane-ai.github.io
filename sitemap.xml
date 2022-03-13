@@ -10,7 +10,63 @@
   
   <url>
     <loc>https://yshane-ai.github.io/categories/</loc>
-    <lastmod>2022-01-13T16:01:23+08:00</lastmod>
+    <lastmod>2022-03-04T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/tags/game-ai/</loc>
+    <lastmod>2022-03-04T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/categories/game-ai/</loc>
+    <lastmod>2022-03-04T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/</loc>
+    <lastmod>2022-03-04T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/tags/rl/</loc>
+    <lastmod>2022-03-04T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/categories/rl/</loc>
+    <lastmod>2022-03-04T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/tags/</loc>
+    <lastmod>2022-03-04T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/</loc>
+    <lastmod>2022-03-04T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/</loc>
+    <lastmod>2022-03-04T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -30,57 +86,8 @@
   </url>
   
   <url>
-    <loc>https://yshane-ai.github.io/post/</loc>
-    <lastmod>2022-01-13T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/tags/</loc>
-    <lastmod>2022-01-13T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/</loc>
-    <lastmod>2022-01-13T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
     <loc>https://yshane-ai.github.io/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/</loc>
     <lastmod>2022-01-13T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/tags/game-ai/</loc>
-    <lastmod>2022-01-04T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/categories/game-ai/</loc>
-    <lastmod>2022-01-04T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/tags/rl/</loc>
-    <lastmod>2022-01-04T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/categories/rl/</loc>
-    <lastmod>2022-01-04T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -102,20 +109,6 @@
   <url>
     <loc>https://yshane-ai.github.io/post/5-rl%E6%80%BB%E7%BB%93/</loc>
     <lastmod>2021-09-10T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/tags/framework/</loc>
-    <lastmod>2021-03-13T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/categories/framework/</loc>
-    <lastmod>2021-03-13T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>

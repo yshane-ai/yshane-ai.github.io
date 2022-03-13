@@ -69,7 +69,7 @@
 <meta itemprop="description" content="下面我会按照这种格式去介绍算法： 这里会写上深度强化学习的子领域 XXX——算法的全称或别称顾名思义地解释此算法，并补充其他特点，帮助使用者判断">
 <meta itemprop="datePublished" content="2021-09-10T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-09-10T16:01:23+08:00" />
-<meta itemprop="wordCount" content="7106">
+<meta itemprop="wordCount" content="7108">
 
 
 
@@ -184,6 +184,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/3-pythondict/">Python的字典dict原理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
               <li>
@@ -376,6 +380,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/3-pythondict/">Python的字典dict原理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
               <li>
@@ -578,7 +586,7 @@
 
 <ul>
 <li>SPG: <span  class="math">\(J(\theta) = E[R(\tau)]\)</span>，策略梯度可以表示为<span  class="math">\(\nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau) = \int \nabla_\theta \rho_\tau R(\tau) = \int \rho_\tau \nabla_\theta \log\rho_\tau R(\tau)\)</span> <span  class="math">\(= E[\nabla_\theta \log\rho_\tau R(\tau)] = E[\sum_t\nabla_\theta \log[\pi_\theta(a_t| s_t)] A(s_t, a_t)]\)</span></li>
-<li>PPO: <span  class="math">\(L(\theta) = E[\min(\frac{\pi_\theta(a_t| s_t)}{\pi_{\theta\^\prime}(a_t| s_t)} A(s_t, a_t), clip(\frac{\pi_\theta(a_t| s_t)}{\pi_{\theta\^\prime}(a_t| s_t)}, 1-\epsilon, 1 + \epsilon)A(s_t, a_t))]\)</span></li>
+<li>PPO: <span  class="math">\(L(\theta) = E[\min(\frac{\pi_\theta (a_t| s_t)}{\pi_{\theta} (a_t | s_t)} A(s_t, a_t), clip (\frac{\pi_\theta(a_t| s_t)}{\pi_{\theta} (a_t|s_t)}, 1-\epsilon, 1+\epsilon)A(s_t, a_t))]\)</span></li>
 </ul>
 
 <h2 id="混合的动作空间-hybrid-action-space">混合的动作空间 hybrid action space</h2>

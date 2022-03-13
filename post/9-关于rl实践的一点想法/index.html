@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Python · Yang Xinxin&#39;s Blog</title>
+  <title>关于RL实战的一点想法 - Yang Xinxin&#39;s Blog</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="Yang Xinxin&#39;s Blog." />
+  <meta name="description" content="相比于监督学习，例如CV中的分类检测任务，NLP中的翻译任务等，强化学习的优势在于不依赖人类的标签而可以自动捕捉“观测-&amp;gt;动作”的隐含" />
+
   <meta name="keywords" content="RL, ML, " />
 
 
@@ -34,8 +35,8 @@
 <meta name="generator" content="Hugo 0.80.0" />
 
 
-<link rel="canonical" href="https://yshane-ai.github.io/tags/python/" />
-<link href="/tags/python/index.xml" rel="alternate" type="application/rss+xml" title="Yang Xinxin&#39;s Blog" />
+<link rel="canonical" href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/" />
+
 
 
 
@@ -58,16 +59,24 @@
 
 
 
-<meta property="og:title" content="Python" />
-<meta property="og:description" content="Yang Xinxin&#39;s Blog." />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://yshane-ai.github.io/tags/python/" />
-<meta property="og:updated_time" content="2021-01-13T16:01:23+08:00" />
-<meta itemprop="name" content="Python">
-<meta itemprop="description" content="Yang Xinxin&#39;s Blog.">
+<meta property="og:title" content="关于RL实战的一点想法" />
+<meta property="og:description" content="相比于监督学习，例如CV中的分类检测任务，NLP中的翻译任务等，强化学习的优势在于不依赖人类的标签而可以自动捕捉“观测-&gt;动作”的隐含" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/" />
+<meta property="article:published_time" content="2022-03-04T16:01:23+08:00" />
+<meta property="article:modified_time" content="2022-03-04T16:01:23+08:00" />
+<meta itemprop="name" content="关于RL实战的一点想法">
+<meta itemprop="description" content="相比于监督学习，例如CV中的分类检测任务，NLP中的翻译任务等，强化学习的优势在于不依赖人类的标签而可以自动捕捉“观测-&gt;动作”的隐含">
+<meta itemprop="datePublished" content="2022-03-04T16:01:23+08:00" />
+<meta itemprop="dateModified" content="2022-03-04T16:01:23+08:00" />
+<meta itemprop="wordCount" content="1162">
+
+
+
+<meta itemprop="keywords" content="RL,Game AI," />
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Python"/>
-<meta name="twitter:description" content="Yang Xinxin&#39;s Blog."/>
+<meta name="twitter:title" content="关于RL实战的一点想法"/>
+<meta name="twitter:description" content="相比于监督学习，例如CV中的分类检测任务，NLP中的翻译任务等，强化学习的优势在于不依赖人类的标签而可以自动捕捉“观测-&gt;动作”的隐含"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -331,7 +340,7 @@
 
       </li>
     
-        <li class="menu-item">
+        <li class="menu-item active">
         
           
           <a class="menu-item-link menu-parent" href="https://yshane-ai.github.io/">docs</a>
@@ -405,55 +414,175 @@
     <main id="main" class="main bg-llight">
       <div class="content-wrapper">
         <div id="content" class="content container">
-          
-
-<section id="archive" class="archive">
-  
+          <article class="post bg-white">
     
-      <div class="archive-title tag">
-        <h2 class="archive-name">Tag: Python</h2>
+    <header class="post-header">
+      <h1 class="post-title">关于RL实战的一点想法</h1>
+      
+      <div class="post-meta">
+        <time datetime="2022-03-04" class="post-time">
+          2022-03-04
+        </time>
+        <div class="post-category">
+            <a href="https://yshane-ai.github.io/categories/rl/"> RL </a>
+            <a href="https://yshane-ai.github.io/categories/game-ai/"> Game AI </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
       </div>
+    </header>
+
     
-  
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Table of Contents</h2>
+  <div class="post-toc-content">
+    
+  </div>
+</div>
 
-  
-    <div class="archive-post">
-      <time datetime="2021-01-13" class="archive-post-time">
-        2021-01-13
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/3-pythondict/" class="archive-post-link">
-          Python的字典dict原理
-        </a>
-      </span>
+    
+    <div class="post-content">
+      <p>相比于监督学习，例如CV中的分类检测任务，NLP中的翻译任务等，强化学习的优势在于不依赖人类的标签而可以自动捕捉“观测-&gt;动作”的隐含关系。计算机通过和虚拟环境的直接交互，“跃过”人类的指导和示范，他们有机会比人类做得做的更好。</p>
+
+<p>但是目前交互的环境通常都是以人类为中心进行设计，比如视觉的传感，</p>
+
+<h2 id="关于游戏ai">关于游戏AI</h2>
+
+<h3 id="观测处理">观测处理</h3>
+
+<p>通常大型游戏的输入都是十分巨大的，很难从中提取出有用的信息或者说特征，例如图像输入。可以考虑两种方法：</p>
+
+<ul>
+<li>增加对输入的特征提取任务，保证信息的有效，例如利用无监督学习方法，训练特征提取网络，详见<a href="https://zhuanlan.zhihu.com/p/143874163">杨欣欣：CURL</a></li>
+<li>采用model-based的方式，建立世界模型，对未来进行预测，详见<a href="https://zhuanlan.zhihu.com/p/137261461">张楚珩：Dreamer</a></li>
+</ul>
+
+<h3 id="动作处理">动作处理</h3>
+
+<p>大型游戏的动作空间也是非常大，通常需要对一些无法执行的动作进行裁剪，一般使用如下方式：</p>
+
+<ul>
+<li>Action mask：直接将神经网络输出的值改为负无穷再做softmax或将softmax之后的概率值改为0，以这个分布来采样（Q-learning一般可以直接这样</li>
+</ul>
+
+<h3 id="奖励处理">奖励处理</h3>
+
+<p>游戏中的奖励设置也十分复杂，特别是相对于观测和动作的处理，更有点case by case的意思，即对每个游戏都要非常认真的设置和考虑奖励设计，否则容易学习得一塌糊涂。下面是一些常见的注意点：</p>
+
+<ul>
+<li><strong>团队/个人奖励</strong>：借鉴OpenAI Five，可以针对分别设置team和solo奖励，其中team奖励与团体胜负、推塔、击杀远古生物等相关，solo奖励和自身的状态有关，例如掉血，击杀英雄等，</li>
+<li><strong>零和奖励</strong>：对于一个对战游戏来说，对一方有利必然对对方有害，通过对每个英雄的reward减去敌方平均reward的方式来实现零和。</li>
+<li><strong>时间权重</strong>：对于前期需要发育的游戏来说，后期的伤害要比前期高很多，因此学习过程中会导致忽视前期而只注意后期。这时考虑加入时间因子，保证前期后期的reward都有相同的尺度。</li>
+<li><strong>团队激励奖励</strong>：由于在多智能体对战的游戏中需要平衡自身和团队的奖励，有时自身需要必要的牺牲来换取团队更大的奖励，因此可以考虑，每个智能体的最终reward设置为自身和其他智能体reward的加权和。</li>
+</ul>
+
+<h3 id="网络结构">网络结构</h3>
+
+<ul>
+<li><strong>分层架构</strong>：对于长时间序列、多场景的的复杂游戏任务，通常可以考虑采用分层架构，即上层模型是一个调度网络，底层模型是多个执行网络，上层模型根据观测选择相应的底层网络执行，而底层网络则根据，例如在最新的MineCraft游戏中，华为</li>
+<li><strong>多头值网络</strong>。因为任务回报可能由各种类型的奖励构成，用一个值网络也许得到的方差就很大。多头值估计能把回报分成更加细致的多个部分，每个部分的目标更平稳，容易用神经网络去拟合。</li>
+</ul>
+
+<h3 id="训练处理">训练处理</h3>
+
+<ul>
+<li><strong>Self-play或者league-based training</strong>：</li>
+</ul>
+
+<h3 id="算法选择">算法选择</h3>
+
+<p>借鉴如今前沿的工作，例如绝悟，通常无脑推荐PPO算法。</p>
+
+<h2 id="关于自动驾驶">关于自动驾驶</h2>
+
+<h3 id="离线数据的使用">离线数据的使用</h3>
+
+<h2 id="关于推荐系统">关于推荐系统</h2>
+
+<h3 id="高维动作空间">高维动作空间</h3>
+
     </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">Author</span>
+    <span class="item-content">Xinxin Yang</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">LastMod</span>
+    <span class="item-content">
+      2022-03-04
+      
+    </span>
+  </p>
   
-</section>
+  <p class="copyright-item">
+    <span class="item-title">License</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
 
 
+    
+    
 
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://yshane-ai.github.io/tags/rl/">RL</a>
+          <a href="https://yshane-ai.github.io/tags/game-ai/">Game AI</a>
+          
+        </div>
 
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/">
+            <span class="next-text nav-default">神经网络的初始化和优化</span>
+            <span class="prev-text nav-mobile">Next</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
 
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
 
   
   
+
+  
+  
+
   
 
   
   
 
   
-  
 
   
-  
 
   
+
+    
+
   
-
-
-
-
 
         </div>
       </div>
@@ -574,6 +703,30 @@
 
 
 
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/katex.min.css"
+    integrity="sha384-BdGj8xC2eZkQaxoQ8nSLefg4AV4/AwB3Fj+8SUSo7pnKP6Eoy18liIKTPn9oBYNG"
+    crossorigin="anonymous">
+
+  
+  <script defer
+    src="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/katex.min.js"
+    integrity="sha384-JiKN5O8x9Hhs/UE5cT5AAJqieYlOZbGT3CHws/y97o3ty4R7/O5poG9F3JoiOYw1"
+    crossorigin="anonymous"></script>
+
+  
+  <script defer
+    src="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/contrib/auto-render.min.js"
+    integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI"
+    crossorigin="anonymous" onload="renderMathInElement(document.body);">
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        
+      });
+    });
+  </script>
 
 
 

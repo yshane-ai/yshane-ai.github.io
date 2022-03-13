@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Thu, 13 Jan 2022 16:01:23 +0800</lastBuildDate>
+    <lastBuildDate>Fri, 04 Mar 2022 16:01:23 +0800</lastBuildDate>
     
         <atom:link href="https://yshane-ai.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -42,9 +42,79 @@ IEEE Transactions on Industrial Informatics &lt;a href=&#34;https://ieeexplore.i
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;Towards Incentive-Compatible Vehicular Crowdsensing: An Edge-Assisted Hierarchical Framework&lt;/strong&gt;&lt;br&gt;
 &lt;strong&gt;Xinxin Yang&lt;/strong&gt;, Bo Gu, Bingkun Zheng, Beichen Ding, Yu Han, Keping Yu&lt;br&gt;
-IEEE Network Magazine &lt;a href=&#34;&#34;&gt;[pdf]&lt;/a&gt; &lt;a href=&#34;&#34;&gt;[code]&lt;/a&gt;&lt;/p&gt;
+IEEE Network&lt;/p&gt;
+&lt;!-- raw HTML omitted --&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>关于RL实战的一点想法</title>
+      <link>https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/</link>
+      <pubDate>Fri, 04 Mar 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/</guid>
+      
+        <description>&lt;p&gt;相比于监督学习，例如CV中的分类检测任务，NLP中的翻译任务等，强化学习的优势在于不依赖人类的标签而可以自动捕捉“观测-&amp;gt;动作”的隐含关系。计算机通过和虚拟环境的直接交互，“跃过”人类的指导和示范，他们有机会比人类做得做的更好。&lt;/p&gt;
+
+&lt;p&gt;但是目前交互的环境通常都是以人类为中心进行设计，比如视觉的传感，&lt;/p&gt;
+
+&lt;h2 id=&#34;关于游戏ai&#34;&gt;关于游戏AI&lt;/h2&gt;
+
+&lt;h3 id=&#34;观测处理&#34;&gt;观测处理&lt;/h3&gt;
+
+&lt;p&gt;通常大型游戏的输入都是十分巨大的，很难从中提取出有用的信息或者说特征，例如图像输入。可以考虑两种方法：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;增加对输入的特征提取任务，保证信息的有效，例如利用无监督学习方法，训练特征提取网络，详见&lt;a href=&#34;https://zhuanlan.zhihu.com/p/143874163&#34;&gt;杨欣欣：CURL&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;采用model-based的方式，建立世界模型，对未来进行预测，详见&lt;a href=&#34;https://zhuanlan.zhihu.com/p/137261461&#34;&gt;张楚珩：Dreamer&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;动作处理&#34;&gt;动作处理&lt;/h3&gt;
+
+&lt;p&gt;大型游戏的动作空间也是非常大，通常需要对一些无法执行的动作进行裁剪，一般使用如下方式：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Action mask：直接将神经网络输出的值改为负无穷再做softmax或将softmax之后的概率值改为0，以这个分布来采样（Q-learning一般可以直接这样&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;奖励处理&#34;&gt;奖励处理&lt;/h3&gt;
+
+&lt;p&gt;游戏中的奖励设置也十分复杂，特别是相对于观测和动作的处理，更有点case by case的意思，即对每个游戏都要非常认真的设置和考虑奖励设计，否则容易学习得一塌糊涂。下面是一些常见的注意点：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;团队/个人奖励&lt;/strong&gt;：借鉴OpenAI Five，可以针对分别设置team和solo奖励，其中team奖励与团体胜负、推塔、击杀远古生物等相关，solo奖励和自身的状态有关，例如掉血，击杀英雄等，&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;零和奖励&lt;/strong&gt;：对于一个对战游戏来说，对一方有利必然对对方有害，通过对每个英雄的reward减去敌方平均reward的方式来实现零和。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;时间权重&lt;/strong&gt;：对于前期需要发育的游戏来说，后期的伤害要比前期高很多，因此学习过程中会导致忽视前期而只注意后期。这时考虑加入时间因子，保证前期后期的reward都有相同的尺度。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;团队激励奖励&lt;/strong&gt;：由于在多智能体对战的游戏中需要平衡自身和团队的奖励，有时自身需要必要的牺牲来换取团队更大的奖励，因此可以考虑，每个智能体的最终reward设置为自身和其他智能体reward的加权和。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;网络结构&#34;&gt;网络结构&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;分层架构&lt;/strong&gt;：对于长时间序列、多场景的的复杂游戏任务，通常可以考虑采用分层架构，即上层模型是一个调度网络，底层模型是多个执行网络，上层模型根据观测选择相应的底层网络执行，而底层网络则根据，例如在最新的MineCraft游戏中，华为&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;多头值网络&lt;/strong&gt;。因为任务回报可能由各种类型的奖励构成，用一个值网络也许得到的方差就很大。多头值估计能把回报分成更加细致的多个部分，每个部分的目标更平稳，容易用神经网络去拟合。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;训练处理&#34;&gt;训练处理&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Self-play或者league-based training&lt;/strong&gt;：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;算法选择&#34;&gt;算法选择&lt;/h3&gt;
+
+&lt;p&gt;借鉴如今前沿的工作，例如绝悟，通常无脑推荐PPO算法。&lt;/p&gt;
+
+&lt;h2 id=&#34;关于自动驾驶&#34;&gt;关于自动驾驶&lt;/h2&gt;
+
+&lt;h3 id=&#34;离线数据的使用&#34;&gt;离线数据的使用&lt;/h3&gt;
+
+&lt;h2 id=&#34;关于推荐系统&#34;&gt;关于推荐系统&lt;/h2&gt;
+
+&lt;h3 id=&#34;高维动作空间&#34;&gt;高维动作空间&lt;/h3&gt;
 </description>
       
     </item>
@@ -287,9 +357,11 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output&lt;/p&gt;
 
 &lt;p&gt;绝悟在5v5训练中提出了一种基于课程学习的Self-play，即CSPL(Curriculum Self-Play Learning)。CSPL分为三个阶段：&lt;/p&gt;
 
-&lt;p&gt;将英雄分组，训练固定阵容vs固定阵容的模型
-模型蒸馏：将第一阶段学习的多个模型蒸馏到一个模型中
-随机挑选阵容训练&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;将英雄分组，训练固定阵容vs固定阵容的模型&lt;/li&gt;
+&lt;li&gt;模型蒸馏：将第一阶段学习的多个模型蒸馏到一个模型中&lt;/li&gt;
+&lt;li&gt;随机挑选阵容训练&lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;h2 id=&#34;强化学习算法&#34;&gt;强化学习算法&lt;/h2&gt;
 
@@ -621,7 +693,7 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;SPG: &lt;span  class=&#34;math&#34;&gt;\(J(\theta) = E[R(\tau)]\)&lt;/span&gt;，策略梯度可以表示为&lt;span  class=&#34;math&#34;&gt;\(\nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau) = \int \nabla_\theta \rho_\tau R(\tau) = \int \rho_\tau \nabla_\theta \log\rho_\tau R(\tau)\)&lt;/span&gt; &lt;span  class=&#34;math&#34;&gt;\(= E[\nabla_\theta \log\rho_\tau R(\tau)] = E[\sum_t\nabla_\theta \log[\pi_\theta(a_t| s_t)] A(s_t, a_t)]\)&lt;/span&gt;&lt;/li&gt;
-&lt;li&gt;PPO: &lt;span  class=&#34;math&#34;&gt;\(L(\theta) = E[\min(\frac{\pi_\theta(a_t| s_t)}{\pi_{\theta\^\prime}(a_t| s_t)} A(s_t, a_t), clip(\frac{\pi_\theta(a_t| s_t)}{\pi_{\theta\^\prime}(a_t| s_t)}, 1-\epsilon, 1 + \epsilon)A(s_t, a_t))]\)&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;PPO: &lt;span  class=&#34;math&#34;&gt;\(L(\theta) = E[\min(\frac{\pi_\theta (a_t| s_t)}{\pi_{\theta} (a_t | s_t)} A(s_t, a_t), clip (\frac{\pi_\theta(a_t| s_t)}{\pi_{\theta} (a_t|s_t)}, 1-\epsilon, 1+\epsilon)A(s_t, a_t))]\)&lt;/span&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h2 id=&#34;混合的动作空间-hybrid-action-space&#34;&gt;混合的动作空间 hybrid action space&lt;/h2&gt;
