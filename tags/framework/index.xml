@@ -14,7 +14,7 @@
       <pubDate>Sat, 13 Mar 2021 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/post/4-imapla/</guid>
-      <description>原文链接 Espeholt, Lasse, et al. &amp;ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&amp;rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、</description>
+      <description>原文链接 Espeholt, Lasse, et al. &amp;quot;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&amp;quot; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、</description>
     </item>
     
   </channel>

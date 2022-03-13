@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Game AI on Yang Xinxin&#39;s Blog</title>
+    <link>https://yshane-ai.github.io/categories/game-ai/</link>
+    <description>Recent content in Game AI on Yang Xinxin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>Xinxin Yang</copyright>
+    <lastBuildDate>Tue, 04 Jan 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/game-ai/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟</title>
+      <link>https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/</link>
+      <pubDate>Tue, 04 Jan 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/</guid>
+      <description>发展 首先简要介绍下游戏AI虐人的时间线。 作为流行多年的主流游戏，MOBA类（Dota2，王者荣耀）和RTS游戏（Starcraft2）由于其</description>
+    </item>
+    
+    <item>
+      <title>Alpha Go</title>
+      <link>https://yshane-ai.github.io/post/7-alpha-go/</link>
+      <pubDate>Sun, 26 Dec 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/7-alpha-go/</guid>
+      <description>Alpha Go 最近又回顾了一下之前经典的AlphaGo，有一种温故知新的感觉，在这里再记录下最新的想法。 原文传送门 Silver et al_2016_Mastering the game of Go with deep neural networks and tree search_Nature 背景 在A</description>
+    </item>
+    
+  </channel>
+</rss>

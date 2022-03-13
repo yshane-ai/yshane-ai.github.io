@@ -18,6 +18,15 @@
     </item>
     
     <item>
+      <title>游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟</title>
+      <link>https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/</link>
+      <pubDate>Tue, 04 Jan 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/</guid>
+      <description>发展 首先简要介绍下游戏AI虐人的时间线。 作为流行多年的主流游戏，MOBA类（Dota2，王者荣耀）和RTS游戏（Starcraft2）由于其</description>
+    </item>
+    
+    <item>
       <title>Alpha Go</title>
       <link>https://yshane-ai.github.io/post/7-alpha-go/</link>
       <pubDate>Sun, 26 Dec 2021 16:01:23 +0800</pubDate>
@@ -41,7 +50,7 @@
       <pubDate>Sat, 13 Mar 2021 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/post/4-imapla/</guid>
-      <description>原文链接 Espeholt, Lasse, et al. &amp;ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&amp;rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、</description>
+      <description>原文链接 Espeholt, Lasse, et al. &amp;quot;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&amp;quot; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、</description>
     </item>
     
     <item>
@@ -68,7 +77,7 @@
       <pubDate>Tue, 26 Jan 2021 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/post/maddpg-based-mcs/</guid>
-      <description>今天分享自己的一片工作，也算是终于出版了！ 原文链接 Gu et al_2020. &amp;ldquo;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&amp;rdquo; IEEE Transactions on Industrial Informatics(2020) 背景 移动群感知是近些年发展比较热门的一个领域，主要是</description>
+      <description>今天分享自己的一片工作，也算是终于出版了！ 原文链接 Gu et al_2020. &amp;quot;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&amp;quot; IEEE Transactions on Industrial Informatics(2020) 背景 移动群感知是近些年发展比较热门的一个领域，主要是</description>
     </item>
     
     <item>
@@ -95,7 +104,7 @@
       <pubDate>Sun, 26 Apr 2020 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/post/1-curl/</guid>
-      <description>分享的第一篇笔记，希望大家多多鼓励。 这篇文章来源于ICML2020。 原文链接： Srinivas, Aravind, Michael Laskin, and Pieter Abbeel. &amp;ldquo;Curl: Contrastive unsupervised representations for reinforcement learning.&amp;rdquo; arXiv preprint arXiv:2004.04136 (2020). 背景： 在强化学习领域，解决</description>
+      <description>分享的第一篇笔记，希望大家多多鼓励。 这篇文章来源于ICML2020。 原文链接： Srinivas, Aravind, Michael Laskin, and Pieter Abbeel. &amp;quot;Curl: Contrastive unsupervised representations for reinforcement learning.&amp;quot; arXiv preprint arXiv:2004.04136 (2020). 背景： 在强化学习领域，解决</description>
     </item>
     
   </channel>

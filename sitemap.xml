@@ -58,35 +58,42 @@
   </url>
   
   <url>
-    <loc>https://yshane-ai.github.io/post/7-alpha-go/</loc>
-    <lastmod>2021-12-26T16:01:23+08:00</lastmod>
+    <loc>https://yshane-ai.github.io/tags/game-ai/</loc>
+    <lastmod>2022-01-04T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://yshane-ai.github.io/tags/mcts/</loc>
-    <lastmod>2021-12-26T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/categories/mcts/</loc>
-    <lastmod>2021-12-26T16:01:23+08:00</lastmod>
+    <loc>https://yshane-ai.github.io/categories/game-ai/</loc>
+    <lastmod>2022-01-04T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://yshane-ai.github.io/tags/rl/</loc>
-    <lastmod>2021-12-26T16:01:23+08:00</lastmod>
+    <lastmod>2022-01-04T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://yshane-ai.github.io/categories/rl/</loc>
+    <lastmod>2022-01-04T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/</loc>
+    <lastmod>2022-01-04T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/7-alpha-go/</loc>
     <lastmod>2021-12-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
