@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/" />
@@ -62,19 +62,15 @@
 <meta property="og:title" content="游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟" />
 <meta property="og:description" content="发展 首先简要介绍下游戏AI虐人的时间线。 作为流行多年的主流游戏，MOBA类（Dota2，王者荣耀）和RTS游戏（Starcraft2）由于其" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2022-01-04T16:01:23+08:00" />
 <meta property="article:modified_time" content="2022-01-04T16:01:23+08:00" />
+
 <meta itemprop="name" content="游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟">
-<meta itemprop="description" content="发展 首先简要介绍下游戏AI虐人的时间线。 作为流行多年的主流游戏，MOBA类（Dota2，王者荣耀）和RTS游戏（Starcraft2）由于其">
-<meta itemprop="datePublished" content="2022-01-04T16:01:23+08:00" />
+<meta itemprop="description" content="发展 首先简要介绍下游戏AI虐人的时间线。 作为流行多年的主流游戏，MOBA类（Dota2，王者荣耀）和RTS游戏（Starcraft2）由于其"><meta itemprop="datePublished" content="2022-01-04T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2022-01-04T16:01:23+08:00" />
-<meta itemprop="wordCount" content="4178">
-
-
-
-<meta itemprop="keywords" content="RL,Game AI," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="4184">
+<meta itemprop="keywords" content="RL,Game AI," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟"/>
 <meta name="twitter:description" content="发展 首先简要介绍下游戏AI虐人的时间线。 作为流行多年的主流游戏，MOBA类（Dota2，王者荣耀）和RTS游戏（Starcraft2）由于其"/>
 
@@ -443,16 +439,35 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#发展">发展</a></li>
+    <li><a href="#技术细节">技术细节</a>
+      <ul>
+        <li><a href="#网络结构">网络结构</a></li>
+        <li><a href="#状态输入">状态输入</a></li>
+        <li><a href="#动作输出">动作输出</a></li>
+        <li><a href="#奖励设计">奖励设计</a></li>
+      </ul>
+    </li>
+    <li><a href="#对手池">对手池</a>
+      <ul>
+        <li><a href="#alphastar">AlphaStar</a></li>
+        <li><a href="#openai-five">OpenAI Five</a></li>
+        <li><a href="#绝悟">绝悟</a></li>
+      </ul>
+    </li>
+    <li><a href="#强化学习算法">强化学习算法</a></li>
+    <li><a href="#模仿学习">模仿学习</a></li>
+  </ul>
+</nav>
   </div>
 </div>
 
     
     <div class="post-content">
       <h2 id="发展">发展</h2>
-
 <p>首先简要介绍下游戏AI虐人的时间线。</p>
-
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -465,9 +480,7 @@
   </figure>
 </div>
 
-
 <p>作为流行多年的主流游戏，MOBA类（Dota2，王者荣耀）和RTS游戏（Starcraft2）由于其技术上的挑战性和广大的玩家群体成为了AI领域广受欢迎的testbed。玩家多意味着海量数据，这使得模仿学习和监督学习预训练方案成为可能。</p>
-
 
 
 <div class="box">
@@ -480,28 +493,17 @@
   </figure>
 </div>
 
-
 <p>Dota2，星际2和王者荣耀AI的挑战性在于其超长的决策步数、非完全信息和巨大的状态/动作空间。</p>
-
 <p>以Dota2为例，游戏每局有45分钟，每秒30帧。OpenAI Five每4帧做一次决策，所以每个episode大约有20,000个step。作为对比, 国际象棋通常只有80个step, 围棋每局150步左右。</p>
-
 <p>游戏中每个队伍只能看到他们单位和建筑的附近，剩下的地图是隐藏的，这被称为战争迷雾(Fog or war)。较强的人类玩家需要根据不完全的数据做出推断，并对对手行为进行预测。</p>
-
 <p>Dota2每局游戏在一个大地图上包括了10名英雄、数十个建筑物、数十个非玩家单位和地形特征。 OpenAI Five在每个step 总共关注了16, 000个观测值，平均每4帧决策一次，动作空间在8, 000到80, 000之间。作为对比国际象棋每个step大概只需1, 000维左右的观测值，每次大约25个合法动作；围棋观测值在6, 000左右，动作空间在250左右。</p>
-
 <h2 id="技术细节">技术细节</h2>
-
 <p>这几个AI在网络结构、算法选择和模型表示上有着相当程度的一致性。这些一致性也可以被认为是解决复杂游戏挑战性的一个标准答案，例如使用LSTM结构、多头输入/输出来应对游戏复杂的时序依赖和动作设计，使用动作掩膜(action mask)来缩小动作空间，状态表示也大同小异。</p>
-
 <p>下面具体来看看它们的技术实现细节。</p>
-
 <h3 id="网络结构">网络结构</h3>
-
 <p>AlphaStar和TStarBot-X：CNN，ResNet，自回归网络，LSTM，Transformer，Pointer Network，MultiInput-Output
 OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output</p>
-
 <p>下图是OpenAI Five网络结构的简化版和绝悟的网络结构，图像输入和向量输入分别送入卷积神经网络和全连接层中处理后拼接到一起，接入LSTM，然后经过动作掩膜，输出最终动作。</p>
-
 
 
 <div class="box">
@@ -514,9 +516,7 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output</p>
   </figure>
 </div>
 
-
 <p>AlphaStar和TStarBot-X的网络结构则要更复杂一些，除了标配LSTM之外，还引入了Transformer和自回归网络、ResNet、Pointer Network等结构。论文中做了大量的消融实验整明每一个网络结构对AI最终的表现都有正向提高作用：Pointer Network的引入将vs内置AI的胜率从7%提升到了36%，Transformer进一步提升到71%。</p>
-
 
 
 <div class="box">
@@ -529,17 +529,11 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output</p>
   </figure>
 </div>
 
-
 <p>总的来说，它们都使用了LSTM来记忆历史信息，以解决部分可观的问题；使用图像输入+CNN的方式来引入空间位置信息；多头输出和动作mask来减少无效动作的探索。</p>
-
 <p>对比一下它们的总参数量：TStarBot-X作为AlphaStar的复现，通过减小模型规模，特别是值网络的输入规模来减少模型参数，以及用LSTM代替Transformer等方法，使参数量减少了五倍（AlphaStar的值网络参数有84 million，TStarBot-X通过去掉对手输入信息将其减小到了2.5 million）。这么做依然有效的原因可能是AlphaStar训练了4张地图和全种族，而TStarBot-X只在1张地图上训练虫族。</p>
-
 <h3 id="状态输入">状态输入</h3>
-
 <p>对于游戏AI而言，状态的建模相当于人类玩家的“眼睛”，关注的内容大多比较相似，主要包括敌我双方信息和一些全局信息。</p>
-
 <p>具体的状态主要有：</p>
-
 <ol>
 <li>全局信息：时间和camera（当前视野在全局中的位置）</li>
 <li>last action：上一次执行的动作</li>
@@ -548,31 +542,20 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output</p>
 <li>具体单位/英雄信息：主要关注血量，buff，类别，顺序，位置，装备，技能cd等等</li>
 <li>图像</li>
 </ol>
-
 <h3 id="动作输出">动作输出</h3>
-
 <p>MOBA类和RTS类游戏的可选动作有所区别，但实际上人类玩家在操作的时候也基本上包含了选择动作类型和动作目标两种，针对这两种游戏的AI在动作输出上仍然有相当的一致性，例如都是有no-op（什么也不做）、选择动作类型、选择释放目标和位置这些动作。</p>
-
 <p>下图是AlphaStar的动作输出设计。包括no-op，动作类型，执行单位，目标单位和位置，特别地还有一个布尔值代表“是否立即执行”，这一动作的引入使得对战内置AI的胜率提升了7%。</p>
-
 <p>OpenAI Five的动作输出包括no-op，动作类型（29种。移动，攻击，买装备，回城，等等）和动作delay、单位选择、位置偏移。下图解释了动作delay、单位选择、位置偏移这三种动作的含义：</p>
-
 <ul>
 <li>动作delay：4维，决定4帧中哪一帧执行该动作</li>
 <li>单位选择：选择状态输入中关注的189个单位中的一个</li>
-<li>偏置x,y：根据动作类型和选择的单位，决定最终释放的位置。偏置从构成一个9x的方格，即81个位置</li>
+<li>偏置x,y：根据动作类型和选择的单位，决定最终释放的位置。偏置从[-4,4]构成一个9x的方格，即81个位置</li>
 </ul>
-
 <p>因此总的动作空间为30 × 4 × 189 × 81 = 1, 837, 080 。其实实际上的动作空间并没有这么大，因为很多动作类型和动作组合实际上是不可用或者无效的，这些不可用动作执行的时候都会变成no-op。根据人类数据统计得到的实际动作空间其实在8000到80000之间（不同英雄差别比较大）。</p>
-
 <p>除此外OpenAI Five还使用了一些规则动作，例如技能升级顺序，装备购买顺序，信使的控制等。</p>
-
 <h3 id="奖励设计">奖励设计</h3>
-
 <p>看到这里可能会认为这些AI的状态、动作都大同小异，到了reward设计就大不相同了，比较case by case。最具有启发性的是OpenAI Five的设计，提出了团队/个人reward的区别，使用team spirit来调整智能体的表现。</p>
-
 <p>具体实现为将每个英雄的reward分为team和solo两种，如字面意思，分别代表了团队和个人的奖励。只有胜负以及和整体利益挂钩的，例如推塔、击杀远古生物等等属于team reward，其他例如获得金币，英雄死亡、掉血、击杀敌方英雄等都只与自身相关，均为solo reward。</p>
-
 
 
 <div class="box">
@@ -585,51 +568,34 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output</p>
   </figure>
 </div>
 
-
-<p>比较特别的是血量的reward表示为<span  class="math">\((x + 1 - (1 - x)^4)/2\)</span>，x是[0,1]之间的归一化当前血量。</p>
-
+<p>比较特别的是血量的reward表示为$$(x + 1 - (1 - x)^4)/2$$，x是[0,1]之间的归一化当前血量。</p>
 <p>除此之外还包括三个部分：</p>
-
 <ol>
 <li>零和奖励系统（zero-sum reward)：由于游戏本身就是一个零和系统，即只有一个队伍获胜，对一方有利的必然对另一方有害。通过给每个英雄的reward减去敌方平均reward的方式来实现零和</li>
-<li>时间权重：对于Dota2而言，英雄到后期的伤害会比游戏前期高很多，意味着游戏后期总的reward会更高（正向和负向的都是），因此学习过程中会导致忽视前期而只注意后期。为了解决这一问题，除了胜负外的所有reward都会乘以一个时间因子：<span  class="math">\(\rho_i \leftarrow \rho_i \times 0.6^(T/10mins)\)</span>，使得后期的reward和前期有类似的尺度</li>
-<li>team spirit：由于这个游戏是个团队合作游戏，可能某个智能体在采取坏的动作的同时也受益于其队友的好的行为，用team spirit来衡量单个英雄受团队reward影响的程度。假设每个英雄独立的reward是<span  class="math">\(\rho_i\)</span>，那么该英雄最终的reward为<span  class="math">\(r_i = (1-\tau)\rho_i + \tau \overline\rho\)</span>，<span  class="math">\(\overline\rho\)</span>是该队伍所有英雄的reward均值，<span  class="math">\(\tau\)</span>是team spirit，如果<span  class="math">\(\tau = 0\)</span>，那么每个英雄只会对自己的动作计算奖励；如果<span  class="math">\(\tau = 1\)</span>，那么五个英雄得到的奖励都完全相同，都等于队伍的奖励均值。实验说明前期使用小的team spirit有利于英雄学习独立战斗和微操，后期使用更大的team spirit则能进一步提高团战表现</li>
+<li>时间权重：对于Dota2而言，英雄到后期的伤害会比游戏前期高很多，意味着游戏后期总的reward会更高（正向和负向的都是），因此学习过程中会导致忽视前期而只注意后期。为了解决这一问题，除了胜负外的所有reward都会乘以一个时间因子：$$\rho_i \leftarrow \rho_i \times 0.6^(T/10mins)$$，使得后期的reward和前期有类似的尺度</li>
+<li>team spirit：由于这个游戏是个团队合作游戏，可能某个智能体在采取坏的动作的同时也受益于其队友的好的行为，用team spirit来衡量单个英雄受团队reward影响的程度。假设每个英雄独立的reward是$$\rho_i$$，那么该英雄最终的reward为$$r_i = (1-\tau)\rho_i + \tau \overline\rho$$，$$\overline\rho$$是该队伍所有英雄的reward均值，$$\tau$$是team spirit，如果$$\tau = 0$$，那么每个英雄只会对自己的动作计算奖励；如果$$\tau = 1$$，那么五个英雄得到的奖励都完全相同，都等于队伍的奖励均值。实验说明前期使用小的team spirit有利于英雄学习独立战斗和微操，后期使用更大的team spirit则能进一步提高团战表现</li>
 </ol>
-
 <p>绝悟1v1和5v5的reward设计如下图：于OpenAI Five类似也用了零和奖励，通过减去敌方平均reward的方式实现。</p>
-
 <h2 id="对手池">对手池</h2>
-
 <p>深度强化学习在对抗性游戏中往往使用self-play的方式进行智能体的训练，如果self-play的对象一直固定为当前最强的模型或者最近的模型，常常会陷入局部最优中，无法获得更好的表现。因此AlphaStar提出了联盟训练的方式，TStarBot-X在此基础上利用预训练模型进行了改进，OpenAI Five采取了一个动态选择对手的方案。</p>
-
 <h3 id="alphastar">AlphaStar</h3>
-
 <p>提出了Prioritised Fictitious Self-Play，不再等概率地选择所有历史模型 ，通过联盟训练产生了大概900个不同的players。将所有模型分为3组：Main Agents(MA)、League Exploiters(LE)、Main Exploiters(ME)。</p>
-
 <ul>
 <li>Main Agents：训练组，其余2组为陪练</li>
 <li>League Exploiters：寻找多风格的套路</li>
 <li>Main Exploiters：寻找针对Main Agents的套路</li>
 </ul>
-
 <h3 id="openai-five">OpenAI Five</h3>
-
 <p>OpenAI Five不使用专家数据和玩家对战数据，从零开始进行Self-play。在训练中，80%的数据来源于和最新的模型对战，20%的数据源于和历史模型对战。和历史模型对战是为了让策略更具鲁棒性和泛化性。</p>
-
-<p>对手的选择采用一个动态采样系统，每个历史模型都有一个分数<span  class="math">\(q_i, i = 1, \ldots, N\)</span>，根据softmax分布来进行采样。</p>
-
+<p>对手的选择采用一个动态采样系统，每个历史模型都有一个分数$$q_i, i = 1, \ldots, N$$，根据softmax分布来进行采样。</p>
 <h3 id="绝悟">绝悟</h3>
-
 <p>绝悟在5v5训练中提出了一种基于课程学习的Self-play，即CSPL(Curriculum Self-Play Learning)。CSPL分为三个阶段：</p>
-
 <ul>
 <li>将英雄分组，训练固定阵容vs固定阵容的模型</li>
 <li>模型蒸馏：将第一阶段学习的多个模型蒸馏到一个模型中</li>
 <li>随机挑选阵容训练</li>
 </ul>
-
 <h2 id="强化学习算法">强化学习算法</h2>
-
 
 
 <div class="box">
@@ -642,9 +608,7 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output</p>
   </figure>
 </div>
 
-
 <h2 id="模仿学习">模仿学习</h2>
-
 
 
 <div class="box">
@@ -657,11 +621,8 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output</p>
   </figure>
 </div>
 
-
 <p>上文讲到越流行的游戏玩家数据越多，这些玩家数据对AI的训练有什么帮助呢？在训练中使用专家数据的目的是帮助智能体探索，保证策略多样性。</p>
-
 <p>在这几个AI中只有星际2的两个AI使用了人类数据用于智能体的训练，绝悟5v5使用了玩家数据来进行英雄匹配和胜率预测。那么如何使用专家数据进行训练呢？</p>
-
 <ul>
 <li>作为预训练网络：使用玩家数据训练监督学习模型，然后将强化学习的策略网络初始化为监督学习模型参数。TStarBot-X还在此基础上调优出了六种不同风格的模型用于Specific Exploiters对手池</li>
 <li>加入state中：使用人类数据特征作为输入的一部分</li>

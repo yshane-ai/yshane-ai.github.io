@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/hrlhindsight/" />
@@ -62,19 +62,15 @@
 <meta property="og:title" content="HRL&amp;Hindsight" />
 <meta property="og:description" content="今天记录一篇利用hindsight方法加速分层强化学习的文章，发表于ICLR2019。 原文链接 Levy et al_2019_LEARNING MULTI-LEVEL HIERARCHIES WITH HINDSIGHT 背景 通常直接学习一个复杂任务是很" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/hrlhindsight/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/hrlhindsight/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-01-26T16:01:25+08:00" />
 <meta property="article:modified_time" content="2021-01-26T16:01:25+08:00" />
+
 <meta itemprop="name" content="HRL&amp;Hindsight">
-<meta itemprop="description" content="今天记录一篇利用hindsight方法加速分层强化学习的文章，发表于ICLR2019。 原文链接 Levy et al_2019_LEARNING MULTI-LEVEL HIERARCHIES WITH HINDSIGHT 背景 通常直接学习一个复杂任务是很">
-<meta itemprop="datePublished" content="2021-01-26T16:01:25+08:00" />
+<meta itemprop="description" content="今天记录一篇利用hindsight方法加速分层强化学习的文章，发表于ICLR2019。 原文链接 Levy et al_2019_LEARNING MULTI-LEVEL HIERARCHIES WITH HINDSIGHT 背景 通常直接学习一个复杂任务是很"><meta itemprop="datePublished" content="2021-01-26T16:01:25+08:00" />
 <meta itemprop="dateModified" content="2021-01-26T16:01:25+08:00" />
 <meta itemprop="wordCount" content="1461">
-
-
-
-<meta itemprop="keywords" content="RL,Hierarchical RL," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="RL,Hierarchical RL," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="HRL&amp;Hindsight"/>
 <meta name="twitter:description" content="今天记录一篇利用hindsight方法加速分层强化学习的文章，发表于ICLR2019。 原文链接 Levy et al_2019_LEARNING MULTI-LEVEL HIERARCHIES WITH HINDSIGHT 背景 通常直接学习一个复杂任务是很"/>
 
@@ -442,22 +438,40 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#原文链接">原文链接</a></li>
+    <li><a href="#背景">背景</a>
+      <ul>
+        <li><a href="#转换函数">转换函数</a></li>
+        <li><a href="#奖励函数">奖励函数</a></li>
+      </ul>
+    </li>
+    <li><a href="#过程">过程</a>
+      <ul>
+        <li><a href="#结构">结构</a></li>
+        <li><a href="#模块">模块</a></li>
+      </ul>
+    </li>
+    <li><a href="#实验">实验</a>
+      <ul>
+        <li><a href="#对比">对比</a></li>
+        <li><a href="#演示">演示</a></li>
+      </ul>
+    </li>
+    <li><a href="#结论">结论</a></li>
+  </ul>
+</nav>
   </div>
 </div>
 
     
     <div class="post-content">
       <p>今天记录一篇利用hindsight方法加速分层强化学习的文章，发表于ICLR2019。</p>
-
 <h2 id="原文链接">原文链接</h2>
-
 <p><a href="https://openreview.net/forum?id=ryzECoAcY7">Levy et al_2019_LEARNING MULTI-LEVEL HIERARCHIES WITH HINDSIGHT</a></p>
-
 <h2 id="背景">背景</h2>
-
 <p>通常直接学习一个复杂任务是很困难的事，如下左图中，摇摆很难通过摸索到达黄色方块处。假如可以对操作对象加以正确引导，将一个长远目标分成几个小目标分阶段完成，那么整个任务处理起来就变得简单，如下右图中紫色方块作为阶段性目标，不断指引摇摆到达黄色方块处。</p>
-
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -473,13 +487,9 @@
   </figure>
 </div>
 
-
 <p>分层强化学习就是利用这种思想，分别训练两个网络，上层网络用于生成阶段性目标，下层网络在给定目标的条件下直接与环境进行交互。然而直接使用分层方式进行训练会造成学习的不稳定，主要是因为不断变化的转换函数和奖励函数造成。</p>
-
 <h3 id="转换函数">转换函数</h3>
-
 <p>由于下层网络也在不断学习，在给定目标B的情况下，下层策略可能最终会到达C、D、E等位置，而随着学习的不断进行，状态转换函数也一直在变化，进而对上层网络的学习造成阻碍。如下图所示：</p>
-
 
 
 <div class="box">
@@ -495,11 +505,8 @@
   </figure>
 </div>
 
-
 <h3 id="奖励函数">奖励函数</h3>
-
 <p>由于分层后，不同目标和动作导致的行进轨迹不同，进而得到的奖励不同，对模型整体的学习造成阻碍，如下图所示;</p>
-
 
 
 <div class="box">
@@ -515,25 +522,18 @@
   </figure>
 </div>
 
-
 <p>总的来说，以上两个困难会导致</p>
-
-<p><span  class="math">\[
+<p>$$
 Q_{Target}(s_t,a_t)=r_{t+1}+\tau V_\pi (s_{t+1})
-\]</span></p>
-
-<p>中的<span  class="math">\(r_{t+1}\)</span>和<span  class="math">\(s_{t+1}\)</span>对于相同的状态-动作却没有相同的输出，进而阻碍网络的稳定训练。</p>
-
+$$</p>
+<p>中的$$r_{t+1}$$和$$s_{t+1}$$对于相同的状态-动作却没有相同的输出，进而阻碍网络的稳定训练。</p>
 <h2 id="过程">过程</h2>
-
 <h3 id="结构">结构</h3>
-
 <ul>
-<li>确定性的、基于目标的策略网络：对于第<span  class="math">\(i,0\leq i\leq k\)</span>层策略，根据状态和目标生成动作，<span  class="math">\(\pi_i: s_i,g_i\to a_i\)</span>，其中<span  class="math">\(g_i\)</span>可以是一个或一组状态，是上层策略的输出；</li>
+<li>确定性的、基于目标的策略网络：对于第$$i,0\leq i\leq k$$层策略，根据状态和目标生成动作，$$\pi_i: s_i,g_i\to a_i$$，其中$$g_i$$可以是一个或一组状态，是上层策略的输出；</li>
 <li>动作空间：对于底层策略，其动作空间为设定的与环境交互的一系列动作，而非底层策略的动作空间则等于状态空间，即将选择某个状态或某组状态作为下一层的阶段目标；</li>
 <li>嵌套策略：文章采用了嵌套（nested）结构，如下图所示：</li>
 </ul>
-
 
 
 <div class="box">
@@ -549,11 +549,8 @@ Q_{Target}(s_t,a_t)=r_{t+1}+\tau V_\pi (s_{t+1})
   </figure>
 </div>
 
-
 <h3 id="模块">模块</h3>
-
 <p>接下来将结合一组具体的轨迹对Hindsight用法进行介绍，在下图中，红色圈代表每个阶段的goal，白色圈代表真实到达的状态，黄色代表目标终点。</p>
-
 
 
 <div class="box">
@@ -569,12 +566,10 @@ Q_{Target}(s_t,a_t)=r_{t+1}+\tau V_\pi (s_{t+1})
   </figure>
 </div>
 
-
 <ul>
 <li>动作hindsight：高层网络的动作即为下层网络的目标，但高层策略给定目标后下层网络往往不能真正完成这些目标，因此通过hindsight方法将经验中的下层目标，即高层动作替换为真实到达的状态，充分利用这些经验达到学习的目的；该方法解决了前面提到的转换函数不稳定的挑战。</li>
 <li>目标hindsight：当最终目标很难到达时，大部分经验的奖励都是负的，没有学习价值。通过将最终目标替换为真实到达的状态，可以有效增加可学习的样本，有效解决稀疏奖励的问题。</li>
 </ul>
-
 
 
 <div class="box">
@@ -592,7 +587,6 @@ Q_{Target}(s_t,a_t)=r_{t+1}+\tau V_\pi (s_{t+1})
 
 
 
-
 <div class="box">
 <figure  itemprop="associatedMedia"
   itemscope itemtype="http://schema.org/ImageObject" >
@@ -606,11 +600,9 @@ Q_{Target}(s_t,a_t)=r_{t+1}+\tau V_\pi (s_{t+1})
   </figure>
 </div>
 
-
 <ul>
-<li>目标检验：有时一些上层的目标下层根本无法达到，我们称这种目标为不好的目标，为了减少这类目标，本文采用了目标检验机制对这类目标进行惩罚。如在上图中agent位于<span  class="math">\(s_2\)</span>时当前策略无法到达<span  class="math">\(g_2\)</span>，则<span  class="math">\(g_2\)</span>就是一个不好的目标，通过增加对不好目标的惩罚样本，可以有效解决Q值过高估计的问题。</li>
+<li>目标检验：有时一些上层的目标下层根本无法达到，我们称这种目标为不好的目标，为了减少这类目标，本文采用了目标检验机制对这类目标进行惩罚。如在上图中agent位于$$s_2$$时当前策略无法到达$$g_2$$，则$$g_2$$就是一个不好的目标，通过增加对不好目标的惩罚样本，可以有效解决Q值过高估计的问题。</li>
 </ul>
-
 
 
 <div class="box">
@@ -626,13 +618,9 @@ Q_{Target}(s_t,a_t)=r_{t+1}+\tau V_\pi (s_{t+1})
   </figure>
 </div>
 
-
 <h2 id="实验">实验</h2>
-
 <h3 id="对比">对比</h3>
-
 <p>文章首先在6种不同的环境下对比了分别采用1，2，3层策略的效果，结果显示，随着层数增加，agent的表现也越来越好：</p>
-
 
 
 <div class="box">
@@ -648,11 +636,8 @@ Q_{Target}(s_t,a_t)=r_{t+1}+\tau V_\pi (s_{t+1})
   </figure>
 </div>
 
-
 <h3 id="演示">演示</h3>
-
 <p>两层策略：</p>
-
 
 
 <div class="box">
@@ -668,9 +653,7 @@ Q_{Target}(s_t,a_t)=r_{t+1}+\tau V_\pi (s_{t+1})
   </figure>
 </div>
 
-
 <p>三层策略：</p>
-
 
 
 <div class="box">
@@ -686,9 +669,7 @@ Q_{Target}(s_t,a_t)=r_{t+1}+\tau V_\pi (s_{t+1})
   </figure>
 </div>
 
-
 <h2 id="结论">结论</h2>
-
 <p>文章提出一种使用hindsight方法解决分层强化学习训练中不稳定问题的方法，通过对历史样本的改造，增加样本的学习价值，可以有效加速模型的训练。</p>
 
     </div>

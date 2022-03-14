@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="今天分享自己的一片工作，也算是终于出版了！ 原文链接 Gu et al_2020. &amp;quot;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&amp;quot; IEEE Transactions on Industrial Informatics(2020) 背景 移动群感知是近些年发展比较热门的一个领域，主要是" />
+  <meta name="description" content="今天分享自己的一片工作，也算是终于出版了！ 原文链接 Gu et al_2020. &amp;ldquo;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&amp;rdquo; IEEE Transactions on Industrial Informatics(2020) 背景 移动群感知是近些年发展比较热门的一个领域，主要是" />
 
   <meta name="keywords" content="RL, ML, " />
 
@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/maddpg-based-mcs/" />
@@ -60,23 +60,19 @@
 
 
 <meta property="og:title" content="MADDPG-Based-MCS" />
-<meta property="og:description" content="今天分享自己的一片工作，也算是终于出版了！ 原文链接 Gu et al_2020. &quot;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&quot; IEEE Transactions on Industrial Informatics(2020) 背景 移动群感知是近些年发展比较热门的一个领域，主要是" />
+<meta property="og:description" content="今天分享自己的一片工作，也算是终于出版了！ 原文链接 Gu et al_2020. &ldquo;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&rdquo; IEEE Transactions on Industrial Informatics(2020) 背景 移动群感知是近些年发展比较热门的一个领域，主要是" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/maddpg-based-mcs/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/maddpg-based-mcs/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-01-26T16:01:23+08:00" />
 <meta property="article:modified_time" content="2021-01-26T16:01:23+08:00" />
+
 <meta itemprop="name" content="MADDPG-Based-MCS">
-<meta itemprop="description" content="今天分享自己的一片工作，也算是终于出版了！ 原文链接 Gu et al_2020. &quot;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&quot; IEEE Transactions on Industrial Informatics(2020) 背景 移动群感知是近些年发展比较热门的一个领域，主要是">
-<meta itemprop="datePublished" content="2021-01-26T16:01:23+08:00" />
+<meta itemprop="description" content="今天分享自己的一片工作，也算是终于出版了！ 原文链接 Gu et al_2020. &ldquo;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&rdquo; IEEE Transactions on Industrial Informatics(2020) 背景 移动群感知是近些年发展比较热门的一个领域，主要是"><meta itemprop="datePublished" content="2021-01-26T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-01-26T16:01:23+08:00" />
-<meta itemprop="wordCount" content="1485">
-
-
-
-<meta itemprop="keywords" content="RL,MARL,MCS," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="1479">
+<meta itemprop="keywords" content="RL,MARL,MCS," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="MADDPG-Based-MCS"/>
-<meta name="twitter:description" content="今天分享自己的一片工作，也算是终于出版了！ 原文链接 Gu et al_2020. &quot;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&quot; IEEE Transactions on Industrial Informatics(2020) 背景 移动群感知是近些年发展比较热门的一个领域，主要是"/>
+<meta name="twitter:description" content="今天分享自己的一片工作，也算是终于出版了！ 原文链接 Gu et al_2020. &ldquo;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&rdquo; IEEE Transactions on Industrial Informatics(2020) 背景 移动群感知是近些年发展比较热门的一个领域，主要是"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -443,36 +439,38 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#原文链接">原文链接</a></li>
+    <li><a href="#背景">背景</a></li>
+    <li><a href="#过程">过程</a>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+    <li><a href="#实验">实验</a></li>
+    <li><a href="#总结">总结</a></li>
+  </ul>
+</nav>
   </div>
 </div>
 
     
     <div class="post-content">
       <p>今天分享自己的一片工作，也算是终于出版了！</p>
-
 <h2 id="原文链接">原文链接</h2>
-
-<p><a href="https://ieeexplore.ieee.org/document/9201550">Gu et al_2020. &quot;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&quot; IEEE Transactions on Industrial Informatics(2020)</a></p>
-
+<p><a href="https://ieeexplore.ieee.org/document/9201550">Gu et al_2020. &ldquo;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&rdquo; IEEE Transactions on Industrial Informatics(2020)</a></p>
 <h2 id="背景">背景</h2>
-
 <p>移动群感知是近些年发展比较热门的一个领域，主要是通过利用移动用户来感知周围环境，这样做有以下三点优势：</p>
-
 <ul>
 <li>能够充分利用移动用户的感知资源，降低了不必要的开销；</li>
 <li>由于用户的可移动性，可以保证感知数据的样本丰富度；</li>
 <li>通过一种奖励机制，可以在有限的预算内获取尽可能多的感知资源；</li>
 </ul>
-
 <p>本文就是通过强化学习来学习这么一种奖励机制，让每个用户在观测信息不完全的状态下能够制定出一个比较好的价格策略。</p>
-
 <h2 id="过程">过程</h2>
-
 <h4 id="模型">模型</h4>
-
 <p>整个场景可以描述为一个买卖双方博弈的模型：移动用户作为卖家，为自身的单位感知时间制定价格；任务发起者作为买家，在给定的预算内去购买移动用户的时间，收集感知数据。</p>
-
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -488,33 +486,25 @@
   </figure>
 </div>
 
-
 <p>这里构建一个第三方平台，作为买家的代理，在卖家给出价格后，将整个社会的资源利用最大化作为优化目标（也称作Social Welfare），求解一种最优的购买方案。</p>
-
 <ul>
-<li>每个用户的报价<span  class="math">\(p_i\)</span>是对执行感知任务每单位时间的预期回报，与任务种类无关；</li>
-<li>每个用户对于不同的感知任务有不同的贡献价值，可表示为权重<span  class="math">\(w_{ij}\)</span>；</li>
-<li>每个用户在每个时间段只具备有限的感知时间，表示为<span  class="math">\(t_i\)</span>，并且每个时间步只能执行一种感知任务，但这一段时间内可以轮流执行多种感知任务；</li>
-<li>每个感知任务都只有有限的预算支付给移动用户，表示为<span  class="math">\(b_j\)</span>；</li>
+<li>每个用户的报价$$p_i$$是对执行感知任务每单位时间的预期回报，与任务种类无关；</li>
+<li>每个用户对于不同的感知任务有不同的贡献价值，可表示为权重$$w_{ij}$$；</li>
+<li>每个用户在每个时间段只具备有限的感知时间，表示为$$t_i$$，并且每个时间步只能执行一种感知任务，但这一段时间内可以轮流执行多种感知任务；</li>
+<li>每个感知任务都只有有限的预算支付给移动用户，表示为$$b_j$$；</li>
 </ul>
-
 <h4 id="移动用户">移动用户</h4>
-
 <p>由于移动用户的自私属性，每个用户只想尽可能最大化自己的收益，可以表示为：
-<span  class="math">\(
-\psi_i\left(p_i, \bm{x}_i\right) = p_i \sum_{j\in \mathcal{V}} x_{ij}, \ \forall i\in \mathcal{U}
-\)</span>
-其中<span  class="math">\(x_{ij}\)</span>表示任务<span  class="math">\(j\)</span>从用户<span  class="math">\(i\)</span>处购买的时间，<span  class="math">\(p_i\)</span>表示用户<span  class="math">\(i\)</span>的报价；</p>
-
+$$
+\psi_i\left(p_i, \bm{x}<em>i\right) = p_i \sum</em>{j\in \mathcal{V}} x_{ij}, \ \forall i\in \mathcal{U}
+$$
+其中$$x_{ij}$$表示任务$$j$$从用户$$i$$处购买的时间，$$p_i$$表示用户$$i$$的报价；</p>
 <p>这里将每个用户都作为一个智能体，从而构建一个多智能体竞争的场景。同时，每个用户的观测信息只有自己与平台的交易记录，而无法观测到其他用户的行为与动作。基于MADDPG，我们为每个用户都构建了一套网络用于训练，网络的输入输出可以表示为：</p>
-
 <ul>
-<li>输入: 前<span  class="math">\(L\)</span>时间刻的交易信息，包括自己的报价<span  class="math">\(\{p_i^{t-k}\}_{k\in(1,L)}\)</span>和平台购买的时间<span  class="math">\(\{\bm{x}_i^{t-k}\}_{k\in(1,L)}\)</span>;</li>
-<li>输出：当前的报价<span  class="math">\(p_i^t\)</span>；</li>
+<li>输入: 前$$L$$时间刻的交易信息，包括自己的报价$${p_i^{t-k}}_{k\in(1,L)}$$和平台购买的时间$${\bm{x}<em>i^{t-k}}</em>{k\in(1,L)}$$;</li>
+<li>输出：当前的报价$$p_i^t$$；</li>
 </ul>
-
 <p>这里给出整体的训练模型，如下图所示：</p>
-
 
 
 <div class="box">
@@ -530,26 +520,20 @@
   </figure>
 </div>
 
-
 <h4 id="感知平台">感知平台</h4>
-
 <p>平台的优化目标可以表示为从移动用户处收集的数据价值，考虑到任务的资金预算和用户的时间，以上问题可以规划为一个限制条件下的凸优化问题：
-<span  class="math">\(
+$$
 \max \phi\left(\bm{x}, \bm{p}\right) = \sum_{j\in \mathcal{V}} \log\left(\sum_{i\in \mathcal{U}} \omega_{ij} x_{ij}\right)
-\)</span>
+$$
 其中满足以下限制条件：
-<span  class="math">\(
-\sum_{j \in \mathcal{V}} x_{ij} \leq t_i, \ \forall i \in \mathcal{U} \\
+$$
+\sum_{j \in \mathcal{V}} x_{ij} \leq t_i, \ \forall i \in \mathcal{U} \
 \sum_{i \in \mathcal{U}} p_i x_{ij} \leq b_j, \ \forall j\in \mathcal{V}
-\)</span>
-通过拉格朗日法可以求解得最优购买策略<span  class="math">\(\bm{x}^*\)</span>。</p>
-
+$$
+通过拉格朗日法可以求解得最优购买策略$$\bm{x}^*$$。</p>
 <h2 id="实验">实验</h2>
-
 <p>本文的场景为一个多智能体的竞争场景，每个用户制定的价格即不能太高，以至于平台不会购买他的时间；也不能过低，以至于获得的回报甚至无法弥补执行任务的成本。在这个动态的环境里，每个用户都需要跟其他的用户进行交互，最终达到一种理想的“按劳分配”的价格策略。</p>
-
 <p>文章最终实验的结果也比较符合预期，在初期每个用户报价都比较低的时候，任务的预算还有剩余，提升报价可以提高自己的回报，因此每个用户都竞相提高报价。但在后期过高的报价导致平台不再从他这里购买时间，报价逐渐降低并趋于稳定。</p>
-
 
 
 <div class="box">
@@ -565,13 +549,9 @@
   </figure>
 </div>
 
-
 <p>由于用户之间的竞争关系，每个用户的价格也都相对合理，从而平台可以在有限的预算内，整体感知资源的利用接近于达到最大值。</p>
-
 <h2 id="总结">总结</h2>
-
 <p>其实MADDPG在是实际应用中会受限于训练与执行场景不同的短板，包括本文也是，训练时利用到的信息是全局的，但是非全局信息有可能导致不会收敛。</p>
-
 <p>接下来还有很多工作要做，一起加油！！</p>
 
     </div>
