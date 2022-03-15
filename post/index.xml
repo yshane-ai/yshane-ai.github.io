@@ -116,5 +116,14 @@
       <description>分享的第一篇笔记，希望大家多多鼓励。 这篇文章来源于ICML2020。 原文链接： Srinivas, Aravind, Michael Laskin, and Pieter Abbeel. &amp;ldquo;Curl: Contrastive unsupervised representations for reinforcement learning.&amp;rdquo; arXiv preprint arXiv:2004.04136 (2020). 背景： 在强化学习领域，解决</description>
     </item>
     
+    <item>
+      <title>Pytorch根据概率生成action</title>
+      <link>https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/</link>
+      <pubDate>Sat, 04 Apr 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/</guid>
+      <description>在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据</description>
+    </item>
+    
   </channel>
 </rss>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>神经网络的初始化和优化 - Yang Xinxin&#39;s Blog</title>
+  <title>Pytorch根据概率生成action - Yang Xinxin&#39;s Blog</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="神经网络初始化 在设计神经网络时，参数不能全部初始化为0或者其他任意相同的常量，因为这样每个结点的贡献相同，不能让不同神经原学到不同的东西。 X" />
+  <meta name="description" content="在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据" />
 
   <meta name="keywords" content="RL, ML, " />
 
@@ -35,7 +35,7 @@
 <meta name="generator" content="Hugo 0.93.2" />
 
 
-<link rel="canonical" href="https://yshane-ai.github.io/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/" />
+<link rel="canonical" href="https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/" />
 
 
 
@@ -59,20 +59,20 @@
 
 
 
-<meta property="og:title" content="神经网络的初始化和优化" />
-<meta property="og:description" content="神经网络初始化 在设计神经网络时，参数不能全部初始化为0或者其他任意相同的常量，因为这样每个结点的贡献相同，不能让不同神经原学到不同的东西。 X" />
+<meta property="og:title" content="Pytorch根据概率生成action" />
+<meta property="og:description" content="在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/" /><meta property="article:section" content="post" />
-<meta property="article:published_time" content="2022-01-13T16:01:23+08:00" />
-<meta property="article:modified_time" content="2022-01-13T16:01:23+08:00" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2020-04-04T16:01:23+08:00" />
+<meta property="article:modified_time" content="2020-04-04T16:01:23+08:00" />
 
-<meta itemprop="name" content="神经网络的初始化和优化">
-<meta itemprop="description" content="神经网络初始化 在设计神经网络时，参数不能全部初始化为0或者其他任意相同的常量，因为这样每个结点的贡献相同，不能让不同神经原学到不同的东西。 X"><meta itemprop="datePublished" content="2022-01-13T16:01:23+08:00" />
-<meta itemprop="dateModified" content="2022-01-13T16:01:23+08:00" />
-<meta itemprop="wordCount" content="1367">
-<meta itemprop="keywords" content="ML," /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="神经网络的初始化和优化"/>
-<meta name="twitter:description" content="神经网络初始化 在设计神经网络时，参数不能全部初始化为0或者其他任意相同的常量，因为这样每个结点的贡献相同，不能让不同神经原学到不同的东西。 X"/>
+<meta itemprop="name" content="Pytorch根据概率生成action">
+<meta itemprop="description" content="在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据"><meta itemprop="datePublished" content="2020-04-04T16:01:23+08:00" />
+<meta itemprop="dateModified" content="2020-04-04T16:01:23+08:00" />
+<meta itemprop="wordCount" content="1108">
+<meta itemprop="keywords" content="RL,Pytorch," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Pytorch根据概率生成action"/>
+<meta name="twitter:description" content="在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -421,14 +421,15 @@
           <article class="post bg-white">
     
     <header class="post-header">
-      <h1 class="post-title">神经网络的初始化和优化</h1>
+      <h1 class="post-title">Pytorch根据概率生成action</h1>
       
       <div class="post-meta">
-        <time datetime="2022-01-13" class="post-time">
-          2022-01-13
+        <time datetime="2020-04-04" class="post-time">
+          2020-04-04
         </time>
         <div class="post-category">
-            <a href="https://yshane-ai.github.io/categories/ml/"> ML </a>
+            <a href="https://yshane-ai.github.io/categories/rl/"> RL </a>
+            <a href="https://yshane-ai.github.io/categories/pytorch/"> Pytorch </a>
             
           </div>
         
@@ -448,10 +449,10 @@
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#神经网络初始化">神经网络初始化</a></li>
-    <li><a href="#梯度下降法">梯度下降法</a></li>
-    <li><a href="#损失函数的选择">损失函数的选择</a></li>
-    <li><a href="#bn和ln">BN和LN</a></li>
+    <li><a href="#随机numpy方法-nprandomchoice不推荐">随机numpy方法-np.random.choice（不推荐）</a></li>
+    <li><a href="#随机torch方法-torchmultinomial">随机torch方法-torch.multinomial</a></li>
+    <li><a href="#贪心方法---torchmax--torchtopk">贪心方法 - torch.max() / torch.topk()</a></li>
+    <li><a href="#总结">总结</a></li>
   </ul>
 </nav>
   </div>
@@ -459,38 +460,47 @@
 
     
     <div class="post-content">
-      <h2 id="神经网络初始化">神经网络初始化</h2>
-<p>在设计神经网络时，参数不能全部初始化为0或者其他任意相同的常量，因为这样每个结点的贡献相同，不能让不同神经原学到不同的东西。</p>
-<ul>
-<li>Xavier初始化方法：均值为0，方差为上一层神经原个数的倒数；</li>
-<li>Kaiming初始化考虑到ReLU激活函数，所以在Xavier基础上乘以2；假如采用均匀分布，则区间为[-r, r]，其中r为$$\sqrt\frac{6}{n^{[l-1]}}$$</li>
-</ul>
-<h2 id="梯度下降法">梯度下降法</h2>
-<ul>
-<li><strong>随机梯度下降法</strong>，就是用来解决数据集太大，每一次计算梯度都需要对所有数据进行一次采样的问题，提出了采用mini-batch的方式进行计算。该方法的缺点是下降速度慢，并且容易来回震荡，收敛在局部最优点。</li>
-<li><strong>牛顿法</strong>，就是将原本的梯度的一阶导换成了二阶导，更好的贴近最快下降的方向。同时利用二阶导（利用海瑟矩阵）可以求出下一次的步长（二阶导等于0）进行优化，无需学习率，较随机梯度下降更贴近于最优路径。缺点是计算量太大。</li>
-<li><strong>SGD和Momentum</strong>都是对梯度的0次方修正，<strong>Adagrad</strong>考虑了其的一次方修正，即学习率的自适应调整，通俗来讲，Adagrad法就是利用历史数据对当前学习率做一个修正，方式是当前学习率除以历史梯度数据的平方再开方，本质是历史数据震荡越大，则学习率越小。</li>
-<li><strong>RMSProp</strong>法是在Adagrad基础上利用了指数加权平均法，替代考虑所有历史数据的方法，只考虑最近一段时间的梯度来更新学习率，这样在学习率骤减后还可以迅速回升。</li>
-<li><strong>Adam</strong>结合了Adagrad（或者说RMSProp）和动量法，利用了历史动量和自适应学习率（震荡越大，学习率越小）两个参数来更新权重：$$V_{(t)} = \beta_1\cdot V_{(t-1)} + (1-\beta)g_t$$$$ S_{(t)} = \beta_2\cdot S_{(t-1)} + (1-\beta_2)g_t^2,$$$$ w_t = w_{t-1} - \frac{\eta}{\sqrt{S_{(t)}} + \epsilon}\cdot V_{(t)}$$</li>
-<li><strong>Nadam</strong>将Adam和Nesterov结合起来，公式如下：$$g_t = \nabla f(w_t - \alpha m_{t-1}/\sqrt{V_t})$$</li>
-<li><strong>AdamW</strong>则是考虑带L2正则化的loss，将$\lambda\cdot w$添加在最后更新参数时，而非更新梯度时。这样做的理由是，大的权重有较大的梯度，但adam会修正这些梯度变得较小，因此为了保持大参数的更新较大，将L2损失的梯度直接加在了更新参数一步。</li>
-</ul>
-<h2 id="损失函数的选择">损失函数的选择</h2>
-<p>损失函数大致分为回归损失和分类损失。</p>
-<p>回归损失有：</p>
-<ul>
-<li><strong>均方差损失</strong>：二次损失；</li>
-<li><strong>平均绝对误差损失</strong>：一次损失；</li>
-</ul>
-<p>使用平方误差更容易求解，但使用绝对误差对离群点更加鲁棒。如果离群点是会影响业务、而且是应该被检测到的异常值，那么我们应该使用MSE。另一方面，如果我们认为离群点仅仅代表数据损坏，那么我们应该选择MAE作为损失。</p>
-<ul>
-<li><strong>Huber Loss</strong>：平滑的平均绝对误差；</li>
-</ul>
-<p>Huber Loss对数据离群点的敏感度低于平方误差损失。它在0处也可导。基本上它是绝对误差，当误差很小时，误差是二次形式的。</p>
-<h2 id="bn和ln">BN和LN</h2>
-<p>对于BN有两种说法，一种是BN可以解决深度学习中的输入漂移问题，另一种说法是可以解决梯度弥散问题，通过将输出进行适当的缩放，可以缓解梯度弥散的状况。</p>
-<p>BN和LN的区别在于normalization的方向不同，假设10行3列的数据，每一行数据对应3个特征，分别是身高，体重，年龄，那么BN就是对每一列的数据进行缩放，而LN则是对于每一条数据进行缩放，LN对所有特征进行缩放显得很没道理，但是适用于NLP领域。</p>
-<p>假如使用BN对文本序列进行处理，对每句话第一个词进行操作，不符合NLP的规律。而LN则会对每个句子进行缩放，</p>
+      <p>在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据这个概率来选择我们的action。</p>
+<pre tabindex="0"><code>probs = Actor(state,action) # probs.shape = (action_size)
+</code></pre><h2 id="随机numpy方法-nprandomchoice不推荐">随机numpy方法-np.random.choice（不推荐）</h2>
+<p>当<code>probs</code>只是一维向量的时候，我们可以用numpy 的 np.random.choice()函数来获得我们的随机action <code>a</code>, replace指定能否对同一个action <code>a</code> 重复抽样。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
+</span></span><span style="display:flex;"><span>action_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>a <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>choice(actions, action_size, p<span style="color:#f92672">=</span>probs, replace<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>logp <span style="color:#f92672">=</span> p[a]<span style="color:#f92672">.</span>log()
+</span></span></code></pre></div><p>但是如果我们用cuda训练的话，还需要在numpy array和torch tensor 之间的转换。此外如果是batch训练时候，<code>probs</code>从一维变成二维tensor。这时候就没法使用np.random.choice了，因为它的input 必须是1-D array。</p>
+<pre tabindex="0"><code># probs.shape = (batch_size, action_size)
+</code></pre><h2 id="随机torch方法-torchmultinomial">随机torch方法-torch.multinomial</h2>
+<p>更加通用的做法是torch自身的torch.multinomial函数。</p>
+<pre tabindex="0"><code>torch.multinomial(input, num_samples,replacement=False, out=None) → LongTensor
+</code></pre><blockquote>
+<p>返回一个张量，每行包含从input相应行中定义的多项分布中抽取的num_samples个样本。
+[注意]:输入input每行的值不需要总和为1 (这里我们用来做权重)，但是必须非负且总和不能为0。
+当抽取样本时，依次从左到右排列(第一个样本对应第一列)。
+如果输入input是一个向量，输出out也是一个相同长度num_samples的向量。如果输入input是有 mm行的矩阵，输出out是形如m×nm×n的矩阵。
+如果参数replacement 为 True, 则样本抽取可以重复。否则，一个样本在每行不能被重复抽取。
+参数num_samples必须小于input长度(即，input的列数，如果是input是一个矩阵)。</p>
+</blockquote>
+<p>所以代码修改如下, 由于高维没法直接切片（slice）， 用torch.gather()函数取对应action的概率：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span>num_a <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>a <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>multinomial(probs, num_a, replacement<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>logp <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>gather(probs, index <span style="color:#f92672">=</span> a, dim <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>logp <span style="color:#f92672">=</span> logp<span style="color:#f92672">.</span>log()
+</span></span></code></pre></div><p>可以看到两种方法都支持取多个action，也就是我们可以很方便的运用beam search。</p>
+<pre tabindex="0"><code>num_a = beam_search_size # number of the action we choose
+</code></pre><h2 id="贪心方法---torchmax--torchtopk">贪心方法 - torch.max() / torch.topk()</h2>
+<p>以上是随机的方法，对于确定性（Deterministic）或者说 greedy method 取值就更简单了, PyTorch 的最大值函数都自带了输出index。</p>
+<p>只取一个最大值的时候：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>prob, a <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>max(probs, dim <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>logp <span style="color:#f92672">=</span> prob<span style="color:#f92672">.</span>log()
+</span></span></code></pre></div><p>beam search取多个最大值时用torch.topk():</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#75715e"># torch.topk(input, k, dim=None, largest=True, sorted=True, out=None) -&gt; (Tensor, LongTensor)</span>
+</span></span><span style="display:flex;"><span>prob, a <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>topk(probs, num_a, dim<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>logp <span style="color:#f92672">=</span> prob<span style="color:#f92672">.</span>log()
+</span></span></code></pre></div><h2 id="总结">总结</h2>
+<p>在RL中根据概率<code>probs</code> 选择行动 action <code>a</code>的时候，一般有随机stochastic和贪心greedy两种方法。</p>
+<p>在随机中推荐使用 torch.multinomial()，贪心方法推荐使用 torch.topk() 。二者都可向下兼容只取一个action。</p>
 
     </div>
 
@@ -504,7 +514,7 @@
   <p class="copyright-item">
     <span class="item-title">LastMod</span>
     <span class="item-content">
-      2022-01-13
+      2020-04-04
       
     </span>
   </p>
@@ -521,14 +531,15 @@
 
     <footer class="post-footer">
       <div class="post-tags">
-          <a href="https://yshane-ai.github.io/tags/ml/">ML</a>
+          <a href="https://yshane-ai.github.io/tags/rl/">RL</a>
+          <a href="https://yshane-ai.github.io/tags/pytorch/">Pytorch</a>
           
         </div>
 
       
       <nav class="post-nav">
         
-          <a class="prev" href="/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">
+          <a class="prev" href="/post/1-curl/">
             
             <i class="iconfont">
               <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
@@ -538,23 +549,10 @@
 </svg>
 
             </i>
-            <span class="prev-text nav-default">关于RL实战的一点想法</span>
+            <span class="prev-text nav-default">CURL</span>
             <span class="prev-text nav-mobile">Prev</span>
           </a>
         
-          <a class="next" href="/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/">
-            <span class="next-text nav-default">游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟</span>
-            <span class="prev-text nav-mobile">Next</span>
-            
-            <i class="iconfont">
-              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="18" height="18">
-  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
-</svg>
-
-            </i>
-          </a>
       </nav>
     </footer>
   </article>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Pytorch on Yang Xinxin&#39;s Blog</title>
+    <link>https://yshane-ai.github.io/tags/pytorch/</link>
+    <description>Recent content in Pytorch on Yang Xinxin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>Xinxin Yang</copyright>
+    <lastBuildDate>Sat, 04 Apr 2020 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/tags/pytorch/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Pytorch根据概率生成action</title>
+      <link>https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/</link>
+      <pubDate>Sat, 04 Apr 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/</guid>
+      <description>在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据</description>
+    </item>
+    
+  </channel>
+</rss>

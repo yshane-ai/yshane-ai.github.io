@@ -1533,5 +1533,57 @@ $$
       
     </item>
     
+    <item>
+      <title>Pytorch根据概率生成action</title>
+      <link>https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/</link>
+      <pubDate>Sat, 04 Apr 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/</guid>
+      
+        <description>&lt;p&gt;在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据这个概率来选择我们的action。&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;probs = Actor(state,action) # probs.shape = (action_size)
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;随机numpy方法-nprandomchoice不推荐&#34;&gt;随机numpy方法-np.random.choice（不推荐）&lt;/h2&gt;
+&lt;p&gt;当&lt;code&gt;probs&lt;/code&gt;只是一维向量的时候，我们可以用numpy 的 np.random.choice()函数来获得我们的随机action &lt;code&gt;a&lt;/code&gt;, replace指定能否对同一个action &lt;code&gt;a&lt;/code&gt; 重复抽样。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; numpy &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; np
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;action_size &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;a &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;random&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;choice(actions, action_size, p&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;probs, replace&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;False&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;logp &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; p[a]&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;log()
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但是如果我们用cuda训练的话，还需要在numpy array和torch tensor 之间的转换。此外如果是batch训练时候，&lt;code&gt;probs&lt;/code&gt;从一维变成二维tensor。这时候就没法使用np.random.choice了，因为它的input 必须是1-D array。&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;# probs.shape = (batch_size, action_size)
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;随机torch方法-torchmultinomial&#34;&gt;随机torch方法-torch.multinomial&lt;/h2&gt;
+&lt;p&gt;更加通用的做法是torch自身的torch.multinomial函数。&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;torch.multinomial(input, num_samples,replacement=False, out=None) → LongTensor
+&lt;/code&gt;&lt;/pre&gt;&lt;blockquote&gt;
+&lt;p&gt;返回一个张量，每行包含从input相应行中定义的多项分布中抽取的num_samples个样本。
+[注意]:输入input每行的值不需要总和为1 (这里我们用来做权重)，但是必须非负且总和不能为0。
+当抽取样本时，依次从左到右排列(第一个样本对应第一列)。
+如果输入input是一个向量，输出out也是一个相同长度num_samples的向量。如果输入input是有 mm行的矩阵，输出out是形如m×nm×n的矩阵。
+如果参数replacement 为 True, 则样本抽取可以重复。否则，一个样本在每行不能被重复抽取。
+参数num_samples必须小于input长度(即，input的列数，如果是input是一个矩阵)。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;所以代码修改如下, 由于高维没法直接切片（slice）， 用torch.gather()函数取对应action的概率：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; torch
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;num_a &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;a &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;multinomial(probs, num_a, replacement&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;False&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;logp &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;gather(probs, index &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; a, dim &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;logp &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; logp&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;log()
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以看到两种方法都支持取多个action，也就是我们可以很方便的运用beam search。&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;num_a = beam_search_size # number of the action we choose
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;贪心方法---torchmax--torchtopk&#34;&gt;贪心方法 - torch.max() / torch.topk()&lt;/h2&gt;
+&lt;p&gt;以上是随机的方法，对于确定性（Deterministic）或者说 greedy method 取值就更简单了, PyTorch 的最大值函数都自带了输出index。&lt;/p&gt;
+&lt;p&gt;只取一个最大值的时候：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;prob, a &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;max(probs, dim &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;logp &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; prob&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;log()
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;beam search取多个最大值时用torch.topk():&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# torch.topk(input, k, dim=None, largest=True, sorted=True, out=None) -&amp;gt; (Tensor, LongTensor)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;prob, a &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;topk(probs, num_a, dim&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;logp &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; prob&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;log()
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+&lt;p&gt;在RL中根据概率&lt;code&gt;probs&lt;/code&gt; 选择行动 action &lt;code&gt;a&lt;/code&gt;的时候，一般有随机stochastic和贪心greedy两种方法。&lt;/p&gt;
+&lt;p&gt;在随机中推荐使用 torch.multinomial()，贪心方法推荐使用 torch.topk() 。二者都可向下兼容只取一个action。&lt;/p&gt;
+</description>
+      
+    </item>
+    
   </channel>
 </rss>
