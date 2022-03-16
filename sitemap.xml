@@ -205,22 +205,36 @@
   </url>
   
   <url>
-    <loc>https://yshane-ai.github.io/post/1-curl/</loc>
-    <lastmod>2020-04-26T16:01:23+08:00</lastmod>
+    <loc>https://yshane-ai.github.io/post/12-ppo/</loc>
+    <lastmod>2020-05-14T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://yshane-ai.github.io/tags/pytorch/</loc>
-    <lastmod>2020-04-04T16:01:23+08:00</lastmod>
+    <lastmod>2020-05-14T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://yshane-ai.github.io/categories/pytorch/</loc>
-    <lastmod>2020-04-04T16:01:23+08:00</lastmod>
+    <lastmod>2020-05-14T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/11-dqn/</loc>
+    <lastmod>2020-05-04T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/1-curl/</loc>
+    <lastmod>2020-04-26T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
