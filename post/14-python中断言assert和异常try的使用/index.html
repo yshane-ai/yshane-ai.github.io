@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>IMPALA - Yang Xinxin&#39;s Blog</title>
+  <title>Python中的断言assert和异常exception处理 - Yang Xinxin&#39;s Blog</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="原文链接 Espeholt, Lasse, et al. &amp;ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&amp;rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、" />
+  <meta name="description" content="断言 断言，可以理解为判断是否断开的预言。 assert 表达式 , 描述 表达式为我们的预期结果，当表达式的结果为False时，抛出 AssertionError 异常，如无异常捕获程序遇到" />
 
   <meta name="keywords" content="RL, ML, " />
 
@@ -35,7 +35,7 @@
 <meta name="generator" content="Hugo 0.93.2" />
 
 
-<link rel="canonical" href="https://yshane-ai.github.io/post/4-imapla/" />
+<link rel="canonical" href="https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/" />
 
 
 
@@ -59,20 +59,20 @@
 
 
 
-<meta property="og:title" content="IMPALA" />
-<meta property="og:description" content="原文链接 Espeholt, Lasse, et al. &ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、" />
+<meta property="og:title" content="Python中的断言assert和异常exception处理" />
+<meta property="og:description" content="断言 断言，可以理解为判断是否断开的预言。 assert 表达式 , 描述 表达式为我们的预期结果，当表达式的结果为False时，抛出 AssertionError 异常，如无异常捕获程序遇到" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/4-imapla/" /><meta property="article:section" content="post" />
-<meta property="article:published_time" content="2021-03-13T16:01:23+08:00" />
-<meta property="article:modified_time" content="2021-03-13T16:01:23+08:00" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2020-08-14T16:01:23+08:00" />
+<meta property="article:modified_time" content="2020-08-14T16:01:23+08:00" />
 
-<meta itemprop="name" content="IMPALA">
-<meta itemprop="description" content="原文链接 Espeholt, Lasse, et al. &ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、"><meta itemprop="datePublished" content="2021-03-13T16:01:23+08:00" />
-<meta itemprop="dateModified" content="2021-03-13T16:01:23+08:00" />
-<meta itemprop="wordCount" content="1994">
-<meta itemprop="keywords" content="RL," /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="IMPALA"/>
-<meta name="twitter:description" content="原文链接 Espeholt, Lasse, et al. &ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、"/>
+<meta itemprop="name" content="Python中的断言assert和异常exception处理">
+<meta itemprop="description" content="断言 断言，可以理解为判断是否断开的预言。 assert 表达式 , 描述 表达式为我们的预期结果，当表达式的结果为False时，抛出 AssertionError 异常，如无异常捕获程序遇到"><meta itemprop="datePublished" content="2020-08-14T16:01:23+08:00" />
+<meta itemprop="dateModified" content="2020-08-14T16:01:23+08:00" />
+<meta itemprop="wordCount" content="1596">
+<meta itemprop="keywords" content="RL,Pytorch," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Python中的断言assert和异常exception处理"/>
+<meta name="twitter:description" content="断言 断言，可以理解为判断是否断开的预言。 assert 表达式 , 描述 表达式为我们的预期结果，当表达式的结果为False时，抛出 AssertionError 异常，如无异常捕获程序遇到"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -453,14 +453,15 @@
           <article class="post bg-white">
     
     <header class="post-header">
-      <h1 class="post-title">IMPALA</h1>
+      <h1 class="post-title">Python中的断言assert和异常exception处理</h1>
       
       <div class="post-meta">
-        <time datetime="2021-03-13" class="post-time">
-          2021-03-13
+        <time datetime="2020-08-14" class="post-time">
+          2020-08-14
         </time>
         <div class="post-category">
             <a href="https://yshane-ai.github.io/categories/rl/"> RL </a>
+            <a href="https://yshane-ai.github.io/categories/pytorch/"> Pytorch </a>
             
           </div>
         
@@ -480,16 +481,16 @@
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#原文链接">原文链接</a></li>
-    <li><a href="#背景">背景</a></li>
-    <li><a href="#过程">过程</a>
+    <li><a href="#断言">断言</a></li>
+    <li><a href="#异常">异常</a>
       <ul>
-        <li><a href="#1-impala">1. IMPALA</a></li>
-        <li><a href="#2-v-trace">2. V-trace</a></li>
-        <li><a href="#3-actor-critic">3. Actor-critic</a></li>
+        <li><a href="#怎么捕获异常并处理">怎么捕获异常，并处理？</a></li>
+        <li><a href="#怎么捕获特定的异常">怎么捕获特定的异常？</a></li>
+        <li><a href="#try--except--else--finally--的使用顺序">try &hellip; except &hellip; else &hellip; finally &hellip; 的使用顺序</a></li>
+        <li><a href="#try--except--finally--使用场景">try &hellip; except &hellip; finally &hellip; 使用场景</a></li>
       </ul>
     </li>
-    <li><a href="#实验结果">实验结果</a></li>
+    <li><a href="#抛出异常-raise">抛出异常 raise</a></li>
   </ul>
 </nav>
   </div>
@@ -497,120 +498,114 @@
 
     
     <div class="post-content">
-      <h2 id="原文链接">原文链接</h2>
-<p><a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/1802.01561">Espeholt, Lasse, et al. &ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&rdquo; arXiv preprint arXiv:1802.01561 (2018).</a></p>
-<h2 id="背景">背景</h2>
-<p>IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、较好的扩展性（scalability）和较高的效率（data-efficiency）。在大规模计算的框架下，采样和策略更新会有一些错位（不再是完全的on-policy），在这种情况下，文章通过V-trace技术来完成地使用off-policy样本进行训练。</p>
-<h2 id="过程">过程</h2>
-<h3 id="1-impala">1. IMPALA</h3>
-
-<link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
-<div class="box">
-<figure  itemprop="associatedMedia"
-  itemscope itemtype="http://schema.org/ImageObject" >
-    <div class="img">
-      <img itemprop="thumbnail" src="/image/04-IMPALA/001.png" />
-    </div>
-    <a href="/image/04-IMPALA/001.png" itemprop="contentUrl"></a>
-  </figure>
-</div>
-
-<p>首先，我们来看一个single learner的模式。learner的主要作用是通过获取actor得到的轨迹来做SGD来更新各个神经网络的参数，神经网络训练本身可并行的特性，learner使用的是一块GPU。actor定期从learner获取最新的神经网络参数，并且每个actor起一个模拟环境，来使用自己能获得的最新策略去采样，并且把获取到的${x_t, a_t, r_t, \mu(a_t|x_t)}$传回供learner去更新各个神经网络参数。由于模拟环境的运行通常不方便做并行，actor一般使用CPU。由于actor上的策略$\mu$可能不是learner中最新的策略$\pi$，因此这里使用了不同的符号来表示。</p>
-<p>下一步，当训练规模扩大的时候，可以考虑使用多个learner（多块GPU）并且每块GPU配套多个actor（CPU）。每个learner只从自己的actor们中获取样本进行更新，learner之间定期交换gradient并且更新网络参数，actor也定期从任意learner上获取并更新神经网络参数。</p>
-<p>IMPALA中actor和learner相互异步工作，极大提高了时间利用率。文章还与与batched A2C做了对比，如下图所示。a图中，正向传播和反向传播都想凑一批来做（可能是给到GPU来算），因此每一步都需要同步，而模拟环境各步所需时间方差很大，这样浪费了大量的等待时间；b图中，只把耗时较长的反向传播凑一批来做，正向传播就给各个actor自己做；而c图中的IMPALA则完全把actor和learner分开异步进行，这样actor不用去等待别的actor，可以尽可能多的做采样，相应地，所作出的牺牲就是每次更新得到的样本变为了off-policy样本。接下来本文提出了V-trace对于off-policy样本做修正。</p>
-
-
-<div class="box">
-<figure  itemprop="associatedMedia"
-  itemscope itemtype="http://schema.org/ImageObject" >
-    <div class="img">
-      <img itemprop="thumbnail" src="/image/04-IMPALA/002.png" />
-    </div>
-    <a href="/image/04-IMPALA/002.png" itemprop="contentUrl"></a>
-  </figure>
-</div>
-
-<h3 id="2-v-trace">2. V-trace</h3>
-<p>算法中需要根据采样到的样本来维护一个状态价值函数$V_theta(x)$。V-trace的目的是根据采样到的${x_t, a_t, r_t, \mu(a_t|x_t)}$和当前状态价值函数网络来给出当前状态价值函数的一个更好的估计$v_s$（$s$下标表示它是其中的一个样本），这样价值神经网络就可以把它作为一个更新的目标来更新权重。</p>
-<p>我们直接写出$v_s$的表达形式。</p>
-
-
-<div class="box">
-<figure  itemprop="associatedMedia"
-  itemscope itemtype="http://schema.org/ImageObject" >
-    <div class="img">
-      <img itemprop="thumbnail" src="/image/04-IMPALA/003.png" />
-    </div>
-    <a href="/image/04-IMPALA/003.png" itemprop="contentUrl"></a>
-  </figure>
-</div>
-
-<p>非常复杂，看不懂，有没有？看看里面一些变量的定义是什么：</p>
-
-
-<div class="box">
-<figure  itemprop="associatedMedia"
-  itemscope itemtype="http://schema.org/ImageObject" >
-    <div class="img">
-      <img itemprop="thumbnail" src="/image/04-IMPALA/006.png" />
-    </div>
-    <a href="/image/04-IMPALA/006.png" itemprop="contentUrl"></a>
-  </figure>
-</div>
-
-<p>括号里的表达式是Temporal Difference，然而外面的$\rho_t$是什么含义了？</p>
-<p>$$
-\rho_t = \min(\overline\rho, \frac{\pi(a_t|x_t)}{\mu(a_t|x_t)})
-$$</p>
-<p>还有其他变量的定义：</p>
-<p>$$
-c_i = \min(\overline c, \frac{\pi(a_i|x_i)}{\mu(a_i|x_i)})
-$$</p>
-<p>$$
-\overline\rho \geq \overline c
-$$</p>
-<p>看到$\rho_t$和$c_i$的表达式，是不是联想起什么了？这就是Importance Sampling。从策略$mu$中采样，更新当前的策略$\pi$。只不过加上了最大值的限制，不能超过$\overline\rho$和$\overline c$，也就是说进行了截断处理，一般情况下这两个值可以设置成1啦。</p>
-<h3 id="3-actor-critic">3. Actor-critic</h3>
-<p>IMPALA中需要维护两个神经网络，一个是策略神经网络（用作actor），一个是状态价值函数网络（用作critic）。前面提到，V-trace技术就是根据采样到的${x_t, a_t, r_t, \mu(a_t|x_t)}$和当前状态价值函数网络来给出当前状态价值函数的一个更好的估计$v_s$。</p>
-<h4 id="31-critic的更新">3.1 Critic的更新</h4>
-<p>Critic的更新方式为最小化拟合的价值函数 [公式] 相对于目标价值函数 [公式] 的均方误差，即朝如下方向更新</p>
-
-
-<div class="box">
-<figure  itemprop="associatedMedia"
-  itemscope itemtype="http://schema.org/ImageObject" >
-    <div class="img">
-      <img itemprop="thumbnail" src="/image/04-IMPALA/004.png" />
-    </div>
-    <a href="/image/04-IMPALA/004.png" itemprop="contentUrl"></a>
-  </figure>
-</div>
-
-<h4 id="32-actor的更新">3.2 Actor的更新</h4>
-<p>Actor朝着off-policy policy gradient给出的梯度方向更新。</p>
-
-
-<div class="box">
-<figure  itemprop="associatedMedia"
-  itemscope itemtype="http://schema.org/ImageObject" >
-    <div class="img">
-      <img itemprop="thumbnail" src="/image/04-IMPALA/005.png" />
-    </div>
-    <a href="/image/04-IMPALA/005.png" itemprop="contentUrl"></a>
-  </figure>
-</div>
-
-<h4 id="33-熵">3.3 熵</h4>
-<p>前两项再加上对于熵的激励，就可以得到最后的算法更新公式。</p>
-<h2 id="实验结果">实验结果</h2>
-<p>实验主要说明了以下几点：</p>
-<ul>
-<li>相比于A3C和batched A2C，具有更好的高性能计算性能；</li>
-<li>单任务训练上相比于分布式A3C、单机A3C和batched A2C有更好的性能，并且对于超参数更稳定；</li>
-<li>本文中使用的V-trace相比于no correction、 [公式] -correction、1-step importance sampling都有更好的效果（ablation study）。其中no correction指的是认为样本都是on-policy样本； [公式] -correction指的是仅仅在计算 [公式] 的时候加上一个很小的数值防止不稳定（不太懂）；1-step importance sampling，V-trace其实是做了多步，这里只做一步。</li>
-<li>训练单一智能体去完成多个任务。</li>
-</ul>
-
+      <h2 id="断言">断言</h2>
+<p>断言，可以理解为判断是否断开的预言。</p>
+<pre tabindex="0"><code>assert  表达式 , 描述
+</code></pre><p>表达式为我们的预期结果，当表达式的结果为False时，抛出 AssertionError 异常，如无异常捕获程序遇到异常时直接结束运行。反之，表达式结果为True 程序继续向下运行。</p>
+<p>我们何时使用断言？</p>
+<p>断言需要慎用，尤其是写测试用例或者程序时，因为我们运行程序时，如果断言失败，无异常捕获程序则会结束运行，导致后面的代码无法执行。</p>
+<p>断言一般用在防御型的编程、运行时检查程序逻辑、检查约定、程序常量、检查文档时，在从来不会运行失败的代码不必要加上断言。</p>
+<p>示例1.1：当pi值对修改抛出异常</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Circle</span>(object):
+</span></span><span style="display:flex;"><span>   pi <span style="color:#f92672">=</span> <span style="color:#ae81ff">3.14</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">def</span> __init__(self, r):
+</span></span><span style="display:flex;"><span>       self<span style="color:#f92672">.</span>r <span style="color:#f92672">=</span> r
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">area</span>(self):
+</span></span><span style="display:flex;"><span>       <span style="color:#66d9ef">assert</span> self<span style="color:#f92672">.</span>pi <span style="color:#f92672">==</span> Circle<span style="color:#f92672">.</span>pi, <span style="color:#e6db74">&#39;pi 值被修改&#39;</span>
+</span></span><span style="display:flex;"><span>       <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>pi <span style="color:#f92672">*</span> self<span style="color:#f92672">.</span>r <span style="color:#f92672">**</span> <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>circle1 <span style="color:#f92672">=</span> Circle(<span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>circle1<span style="color:#f92672">.</span>pi <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>
+</span></span><span style="display:flex;"><span>print(circle1<span style="color:#f92672">.</span>area())
+</span></span></code></pre></div><p>输出结果：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>Traceback (most recent call last):
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">assert</span> self<span style="color:#f92672">.</span>pi <span style="color:#f92672">==</span> Circle<span style="color:#f92672">.</span>pi, <span style="color:#e6db74">&#39;pi 值被修改&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">AssertionError</span>: pi 值被修改
+</span></span></code></pre></div><h2 id="异常">异常</h2>
+<p>运行期间检测到的错误被称为异常，大多数的异常都不会被程序处理，都以错误信息的形式展现。</p>
+<p>如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span><span style="color:#ae81ff">1</span><span style="color:#f92672">/</span><span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>Traceback (most recent call last):
+</span></span><span style="display:flex;"><span> File <span style="color:#e6db74">&#34;&lt;input&gt;&#34;</span>, line <span style="color:#ae81ff">1</span>, <span style="color:#f92672">in</span> <span style="color:#f92672">&lt;</span>module<span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ZeroDivisionError</span>: division by zero
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span>a<span style="color:#f92672">*</span><span style="color:#ae81ff">5</span>
+</span></span><span style="display:flex;"><span>Traceback (most recent call last):
+</span></span><span style="display:flex;"><span> File <span style="color:#e6db74">&#34;&lt;input&gt;&#34;</span>, line <span style="color:#ae81ff">1</span>, <span style="color:#f92672">in</span> <span style="color:#f92672">&lt;</span>module<span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">NameError</span>: name <span style="color:#e6db74">&#39;a&#39;</span> <span style="color:#f92672">is</span> <span style="color:#f92672">not</span> defined
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span><span style="color:#e6db74">&#39;2&#39;</span><span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>Traceback (most recent call last):
+</span></span><span style="display:flex;"><span> File <span style="color:#e6db74">&#34;&lt;input&gt;&#34;</span>, line <span style="color:#ae81ff">1</span>, <span style="color:#f92672">in</span> <span style="color:#f92672">&lt;</span>module<span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">TypeError</span>: Can<span style="color:#e6db74">&#39;t convert &#39;</span>int<span style="color:#e6db74">&#39; object to str implicitly</span>
+</span></span></code></pre></div><p>异常以不同的类型出现，这些类型都作为信息的一部分打印出来。如上面例子中的类型有ZeroDivisionError，NameError 和 TypeError异常。</p>
+<p>错误信息的前面部分显示了异常发生的上下文，并以调用栈的形式显示具体信息。</p>
+<h3 id="怎么捕获异常并处理">怎么捕获异常，并处理？</h3>
+<p>我们捕获异常使用 try &hellip; except &hellip;，try 与 except 之间是可能会发生异常的语句块，而 except 下的语句块是当异常发生后我们进行处理的语句块。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">while</span> <span style="color:#66d9ef">True</span>:
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>       i <span style="color:#f92672">=</span> int(input(<span style="color:#e6db74">&#39;接收一个除数：&#39;</span>))
+</span></span><span style="display:flex;"><span>       print(<span style="color:#ae81ff">2</span> <span style="color:#f92672">/</span> i)
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">except</span>:
+</span></span><span style="display:flex;"><span>       print(<span style="color:#e6db74">&#39;发生了异常&#39;</span>)
+</span></span></code></pre></div><p>运行程序</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>接收一个除数<span style="color:#960050;background-color:#1e0010">：</span><span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">2.0</span>
+</span></span><span style="display:flex;"><span>接收一个除数<span style="color:#960050;background-color:#1e0010">：</span><span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>发生了异常
+</span></span><span style="display:flex;"><span>接收一个除数<span style="color:#960050;background-color:#1e0010">：</span><span style="color:#ae81ff">2</span>a
+</span></span><span style="display:flex;"><span>发生了异常
+</span></span></code></pre></div><h3 id="怎么捕获特定的异常">怎么捕获特定的异常？</h3>
+<p>在 except 后加入异常类型，就可以捕获特定的异常，也可以一次性捕获多个异常，如下示例</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">while</span> <span style="color:#66d9ef">True</span>:
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>       i <span style="color:#f92672">=</span> int(input(<span style="color:#e6db74">&#39;接收一个除数：&#39;</span>))
+</span></span><span style="display:flex;"><span>       print(<span style="color:#ae81ff">2</span> <span style="color:#f92672">/</span> i)
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">ZeroDivisionError</span>:  <span style="color:#75715e"># 只捕获ZeroDivisionError异常</span>
+</span></span><span style="display:flex;"><span>       print(<span style="color:#e6db74">&#39;发生了ZeroDivisionError异常&#39;</span>)
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">except</span> (<span style="color:#a6e22e">ValueError</span>, <span style="color:#a6e22e">KeyboardInterrupt</span>, <span style="color:#a6e22e">TypeError</span>):  <span style="color:#75715e"># 捕获元组中的异常</span>
+</span></span><span style="display:flex;"><span>       print(<span style="color:#e6db74">&#39;发生了ValueError或KeyboardInterrupt或TypeError异常&#39;</span>)
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">except</span>:  <span style="color:#75715e"># 可以捕获所有异常</span>
+</span></span><span style="display:flex;"><span>       print(<span style="color:#e6db74">&#39;发生了未知异常&#39;</span>)
+</span></span></code></pre></div><p>运行程序</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>接收一个除数<span style="color:#960050;background-color:#1e0010">：</span><span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>发生了ZeroDivisionError异常
+</span></span><span style="display:flex;"><span>接收一个除数<span style="color:#960050;background-color:#1e0010">：</span>a
+</span></span><span style="display:flex;"><span>发生了ValueError或KeyboardInterrupt或TypeError异常
+</span></span></code></pre></div><h3 id="try--except--else--finally--的使用顺序">try &hellip; except &hellip; else &hellip; finally &hellip; 的使用顺序</h3>
+<p>try &hellip; except &hellip; else &hellip; finally&hellip;使用顺序，else 必须在 except 后 finally 前，finally 只能在最后；else 与 finally 可有可无。</p>
+<p>语法上 except 也可以缺少，不过少了except就不能捕获异常，没人会这样写代码。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>   <span style="color:#e6db74">&#39;&lt;发生异常语句块&gt;&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">except</span> <span style="color:#e6db74">&#39;&lt;异常类型&gt;&#39;</span>:
+</span></span><span style="display:flex;"><span>   <span style="color:#e6db74">&#39;发生了ZeroDivisionError异常&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>   <span style="color:#e6db74">&#39;没有发生异常才会执行else语句块&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">finally</span>:
+</span></span><span style="display:flex;"><span>   <span style="color:#e6db74">&#39;不管有没有发生异常都执行finally语句块&#39;</span>
+</span></span></code></pre></div><h3 id="try--except--finally--使用场景">try &hellip; except &hellip; finally &hellip; 使用场景</h3>
+<p>try &hellip; except &hellip; finally &hellip; 是非常常用，主要用于如关闭数据库连接，文件关闭，释放线程锁等。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>fo <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>    fo <span style="color:#f92672">=</span> open(<span style="color:#e6db74">&#34;test.txt&#34;</span>, <span style="color:#e6db74">&#34;r&#34;</span>, encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;utf-8&#39;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> fo:
+</span></span><span style="display:flex;"><span>        print(i)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;捕捉到异常：&#34;</span>, e)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">finally</span>:  <span style="color:#75715e"># 不管是否异常都会执行</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> fo <span style="color:#f92672">is</span> <span style="color:#f92672">not</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        fo<span style="color:#f92672">.</span>close()
+</span></span></code></pre></div><h2 id="抛出异常-raise">抛出异常 raise</h2>
+<p>Python 可以使用 raise 语句抛出一个指定的异常</p>
+<pre tabindex="0"><code>raise 异常类型(‘异常描述’)
+</code></pre><p>raise 唯一的一个参数是指定要被抛出的异常。它必须是一个异常的实例或者是异常的类（也就是 Exception 的子类）。</p>
+<p>示例：</p>
+<pre tabindex="0"><code>raise NameError(&#39;使用一个还未赋值对象的变量&#39;)
+</code></pre><p>输出结果：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>Traceback (most recent call last):
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">raise</span> <span style="color:#a6e22e">NameError</span>(<span style="color:#e6db74">&#39;使用一个还未赋值对象的变量&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">NameError</span>: 使用一个还未赋值对象的变量
+</span></span></code></pre></div>
     </div>
 
     
@@ -623,7 +618,7 @@ $$</p>
   <p class="copyright-item">
     <span class="item-title">LastMod</span>
     <span class="item-content">
-      2021-03-13
+      2020-08-14
       
     </span>
   </p>
@@ -641,13 +636,14 @@ $$</p>
     <footer class="post-footer">
       <div class="post-tags">
           <a href="https://yshane-ai.github.io/tags/rl/">RL</a>
+          <a href="https://yshane-ai.github.io/tags/pytorch/">Pytorch</a>
           
         </div>
 
       
       <nav class="post-nav">
         
-          <a class="prev" href="/post/5-rl%E6%80%BB%E7%BB%93/">
+          <a class="prev" href="/post/2-social-influence/">
             
             <i class="iconfont">
               <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
@@ -657,12 +653,12 @@ $$</p>
 </svg>
 
             </i>
-            <span class="prev-text nav-default">DRL总结：DQN，RainBow，DDPG，PPO和A3C等</span>
+            <span class="prev-text nav-default">Influence</span>
             <span class="prev-text nav-mobile">Prev</span>
           </a>
         
-          <a class="next" href="/post/incentive-mechanism-in-mobile-crowdsensing/">
-            <span class="next-text nav-default">Incentive Mechanism in Mobile Crowdsensing</span>
+          <a class="next" href="/post/13-ddpg/">
+            <span class="next-text nav-default">DDPG的Pytorch实现</span>
             <span class="prev-text nav-mobile">Next</span>
             
             <i class="iconfont">
