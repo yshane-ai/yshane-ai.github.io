@@ -17,5 +17,23 @@
       <description>一. 什么是字典？ 字典是一系列由键（key）和值（value）配对组成的元素的集合。字典是一个可变容器模型，可以存储任意类型对象。字典实现与哈</description>
     </item>
     
+    <item>
+      <title>Python调试器pdb的使用</title>
+      <link>https://yshane-ai.github.io/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/</link>
+      <pubDate>Wed, 14 Oct 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/</guid>
+      <description>如果你还主要靠print来调试代码，那值得花10分钟试试pdb这个Python自带的Debug工具。 pdb有2种用法： 非侵入式方法（不用额外</description>
+    </item>
+    
+    <item>
+      <title>Python中的断言assert和异常exception处理</title>
+      <link>https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/</link>
+      <pubDate>Fri, 14 Aug 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/</guid>
+      <description>断言 断言，可以理解为判断是否断开的预言。 assert 表达式 , 描述 表达式为我们的预期结果，当表达式的结果为False时，抛出 AssertionError 异常，如无异常捕获程序遇到</description>
+    </item>
+    
   </channel>
 </rss>

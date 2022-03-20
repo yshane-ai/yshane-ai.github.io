@@ -1327,6 +1327,129 @@ $$
     </item>
     
     <item>
+      <title>Python调试器pdb的使用</title>
+      <link>https://yshane-ai.github.io/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/</link>
+      <pubDate>Wed, 14 Oct 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/</guid>
+      
+        <description>&lt;p&gt;如果你还主要靠print来调试代码，那值得花10分钟试试pdb这个Python自带的Debug工具。&lt;/p&gt;
+&lt;p&gt;pdb有2种用法：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;非侵入式方法（不用额外修改源代码，在命令行下直接运行就能调试）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;python3 -m pdb filename.py
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;侵入式方法（需要在被调试的代码中添加一行代码然后再正常运行代码）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;import pdb;pdb.set_trace()
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;当你在命令行看到下面这个提示符时，说明已经正确打开了pdb&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;(Pdb) 
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;然后就可以开始输入pdb命令了，下面是pdb的常用命令&lt;/p&gt;
+&lt;h2 id=&#34;1-查看源码&#34;&gt;1 查看源码&lt;/h2&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;l
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;说明：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;查看当前位置前后11行源代码（多次会翻页）
+当前位置在代码中会用&amp;ndash;&amp;gt;这个符号标出来&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;# 查看当前函数或框架的所有源代码
+ll
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;说明：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;执行下一行（能够进入函数体）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;2-添加断点&#34;&gt;2 添加断点&lt;/h2&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;b
+b lineno
+b filename:lineno 
+b functionname
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;说明：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;filename文件名，断点添加到哪个文件，如test.py
+lineno断点添加到哪一行
+function：函数名，在该函数执行的第一行设置断点&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;3-添加临时断点&#34;&gt;3 添加临时断点&lt;/h2&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;tbreak
+tbreak lineno
+tbreak filename:lineno
+tbreak functionname
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;说明：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;同b
+执行一次后时自动删除（这就是它被称为临时断点的原因）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;5-打印变量值&#34;&gt;5 打印变量值&lt;/h2&gt;
+&lt;p&gt;命令：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;p expression
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;参数：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;expression Python表达式&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;6-逐行调试命令&#34;&gt;6 逐行调试命令&lt;/h2&gt;
+&lt;p&gt;包括 s，n，r 这3个相似的命令，区别在如何对待函数上&lt;/p&gt;
+&lt;p&gt;命令1：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;s
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;说明：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;执行下一行（能够进入函数体）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;命令2：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;n
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;说明：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;执行下一行（不会进入函数体）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;命令3：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;r
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;说明：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;执行下一行（在函数中时会直接执行到函数返回处）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;7-非逐行调试命令&#34;&gt;7 非逐行调试命令&lt;/h2&gt;
+&lt;p&gt;命令：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;c 
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;说明：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;持续执行下去，直到遇到一个断点&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;8-查看函数参数&#34;&gt;8 查看函数参数&lt;/h2&gt;
+&lt;p&gt;命令：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;a
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;说明：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在函数中时打印函数的参数和参数的值&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;9-打印变量类型&#34;&gt;9 打印变量类型&lt;/h2&gt;
+&lt;p&gt;命令：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;whatis expression
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;说明：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;打印表达式的类型，常用来打印变量值&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;10-启动交互式解释器&#34;&gt;10 启动交互式解释器&lt;/h2&gt;
+&lt;p&gt;命令：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;interact
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;说明：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;启动一个python的交互式解释器，使用当前代码的全局命名空间（使用ctrl+d返回pdb）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;11-打印堆栈信息&#34;&gt;11 打印堆栈信息&lt;/h2&gt;
+&lt;p&gt;命令：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;w
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;说明：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;打印堆栈信息，最新的帧在最底部。箭头表示当前帧。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;12-退出pdb&#34;&gt;12 退出pdb&lt;/h2&gt;
+&lt;p&gt;命令：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;q
+&lt;/code&gt;&lt;/pre&gt;</description>
+      
+    </item>
+    
+    <item>
       <title>Influence</title>
       <link>https://yshane-ai.github.io/post/2-social-influence/</link>
       <pubDate>Tue, 13 Oct 2020 16:01:23 +0800</pubDate>

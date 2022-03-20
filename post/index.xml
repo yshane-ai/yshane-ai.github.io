@@ -99,6 +99,15 @@
     </item>
     
     <item>
+      <title>Python调试器pdb的使用</title>
+      <link>https://yshane-ai.github.io/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/</link>
+      <pubDate>Wed, 14 Oct 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/</guid>
+      <description>如果你还主要靠print来调试代码，那值得花10分钟试试pdb这个Python自带的Debug工具。 pdb有2种用法： 非侵入式方法（不用额外</description>
+    </item>
+    
+    <item>
       <title>Influence</title>
       <link>https://yshane-ai.github.io/post/2-social-influence/</link>
       <pubDate>Tue, 13 Oct 2020 16:01:23 +0800</pubDate>
