@@ -115,14 +115,21 @@
   
   <url>
     <loc>https://yshane-ai.github.io/tags/python/</loc>
-    <lastmod>2021-07-14T16:01:23+08:00</lastmod>
+    <lastmod>2021-08-01T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://yshane-ai.github.io/categories/python/</loc>
-    <lastmod>2021-07-14T16:01:23+08:00</lastmod>
+    <lastmod>2021-08-01T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/17-python%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/</loc>
+    <lastmod>2021-08-01T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -143,28 +150,28 @@
   
   <url>
     <loc>https://yshane-ai.github.io/tags/incentive-mechanism/</loc>
-    <lastmod>2021-02-02T16:01:23+08:00</lastmod>
+    <lastmod>2021-03-02T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://yshane-ai.github.io/post/incentive-mechanism-in-mobile-crowdsensing/</loc>
-    <lastmod>2021-02-02T16:01:23+08:00</lastmod>
+    <lastmod>2021-03-02T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://yshane-ai.github.io/tags/mcs/</loc>
-    <lastmod>2021-02-02T16:01:23+08:00</lastmod>
+    <lastmod>2021-03-02T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://yshane-ai.github.io/categories/mcs/</loc>
-    <lastmod>2021-02-02T16:01:23+08:00</lastmod>
+    <lastmod>2021-03-02T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>

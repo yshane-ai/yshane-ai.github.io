@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Python的字典dict原理 - Yang Xinxin&#39;s Blog</title>
+  <title>Python高阶函数、装饰器和匿名函数总结 - Yang Xinxin&#39;s Blog</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="一. 什么是字典？ 字典是一系列由键（key）和值（value）配对组成的元素的集合。字典是一个可变容器模型，可以存储任意类型对象。字典实现与哈" />
+  <meta name="description" content="高阶函数 filter Python内建的filter()函数用于过滤序列。 和map()类似，filter()也接收一个函数和一个序列。和map()不同的" />
 
   <meta name="keywords" content="RL, ML, " />
 
@@ -35,7 +35,7 @@
 <meta name="generator" content="Hugo 0.93.2" />
 
 
-<link rel="canonical" href="https://yshane-ai.github.io/post/3-pythondict/" />
+<link rel="canonical" href="https://yshane-ai.github.io/post/17-python%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/" />
 
 
 
@@ -59,20 +59,20 @@
 
 
 
-<meta property="og:title" content="Python的字典dict原理" />
-<meta property="og:description" content="一. 什么是字典？ 字典是一系列由键（key）和值（value）配对组成的元素的集合。字典是一个可变容器模型，可以存储任意类型对象。字典实现与哈" />
+<meta property="og:title" content="Python高阶函数、装饰器和匿名函数总结" />
+<meta property="og:description" content="高阶函数 filter Python内建的filter()函数用于过滤序列。 和map()类似，filter()也接收一个函数和一个序列。和map()不同的" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/3-pythondict/" /><meta property="article:section" content="post" />
-<meta property="article:published_time" content="2021-01-13T16:01:23+08:00" />
-<meta property="article:modified_time" content="2021-01-13T16:01:23+08:00" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/17-python%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-08-01T16:01:23+08:00" />
+<meta property="article:modified_time" content="2021-08-01T16:01:23+08:00" />
 
-<meta itemprop="name" content="Python的字典dict原理">
-<meta itemprop="description" content="一. 什么是字典？ 字典是一系列由键（key）和值（value）配对组成的元素的集合。字典是一个可变容器模型，可以存储任意类型对象。字典实现与哈"><meta itemprop="datePublished" content="2021-01-13T16:01:23+08:00" />
-<meta itemprop="dateModified" content="2021-01-13T16:01:23+08:00" />
-<meta itemprop="wordCount" content="1424">
+<meta itemprop="name" content="Python高阶函数、装饰器和匿名函数总结">
+<meta itemprop="description" content="高阶函数 filter Python内建的filter()函数用于过滤序列。 和map()类似，filter()也接收一个函数和一个序列。和map()不同的"><meta itemprop="datePublished" content="2021-08-01T16:01:23+08:00" />
+<meta itemprop="dateModified" content="2021-08-01T16:01:23+08:00" />
+<meta itemprop="wordCount" content="1586">
 <meta itemprop="keywords" content="Python," /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Python的字典dict原理"/>
-<meta name="twitter:description" content="一. 什么是字典？ 字典是一系列由键（key）和值（value）配对组成的元素的集合。字典是一个可变容器模型，可以存储任意类型对象。字典实现与哈"/>
+<meta name="twitter:title" content="Python高阶函数、装饰器和匿名函数总结"/>
+<meta name="twitter:description" content="高阶函数 filter Python内建的filter()函数用于过滤序列。 和map()类似，filter()也接收一个函数和一个序列。和map()不同的"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -477,11 +477,11 @@
           <article class="post bg-white">
     
     <header class="post-header">
-      <h1 class="post-title">Python的字典dict原理</h1>
+      <h1 class="post-title">Python高阶函数、装饰器和匿名函数总结</h1>
       
       <div class="post-meta">
-        <time datetime="2021-01-13" class="post-time">
-          2021-01-13
+        <time datetime="2021-08-01" class="post-time">
+          2021-08-01
         </time>
         <div class="post-category">
             <a href="https://yshane-ai.github.io/categories/python/"> Python </a>
@@ -504,17 +504,21 @@
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#一-什么是字典">一. 什么是字典？</a></li>
-    <li><a href="#二-字典是否是有序的">二. 字典是否是有序的？</a></li>
-    <li><a href="#三-字典的查询添加删除的时间复杂度">三. 字典的查询、添加、删除的时间复杂度？</a></li>
-    <li><a href="#四-字典的实现原理">四. 字典的实现原理？</a>
+    <li><a href="#高阶函数">高阶函数</a>
       <ul>
-        <li><a href="#1-首先说说python36之前的无序字典">1. 首先说说Python3.6之前的无序字典</a></li>
-        <li><a href="#2-python37后的新的实现方式">2. Python3.7+后的新的实现方式</a></li>
+        <li><a href="#filter">filter</a></li>
+        <li><a href="#sorted">sorted</a></li>
       </ul>
     </li>
-    <li><a href="#五-时间复杂度说明">五. 时间复杂度说明</a></li>
-    <li><a href="#六-字典的key能使用什么值">六. 字典的key能使用什么值？</a></li>
+    <li><a href="#生成器">生成器</a>
+      <ul>
+        <li><a href="#方式"><code>()</code>方式</a></li>
+        <li><a href="#yeild关键字"><code>yeild</code>关键字</a></li>
+      </ul>
+    </li>
+    <li><a href="#迭代器">迭代器</a></li>
+    <li><a href="#装饰器">装饰器</a></li>
+    <li><a href="#匿名函数">匿名函数</a></li>
   </ul>
 </nav>
   </div>
@@ -522,48 +526,93 @@
 
     
     <div class="post-content">
-      <h2 id="一-什么是字典">一. 什么是字典？</h2>
-<p>字典是一系列由键（key）和值（value）配对组成的元素的集合。字典是一个可变容器模型，可以存储任意类型对象。字典实现与哈希算法密不可分（不同的Python版本，算法会不同），不了解哈希算法的童鞋可以先去了解相关知识。</p>
-<h2 id="二-字典是否是有序的">二. 字典是否是有序的？</h2>
-<p>在Python3.6之前，字典是无序的，但是Python3.7+，字典是有序的。在3.6中，字典有序是一个implementation detail，在3.7才正式成为语言特性，因此3.6中无法确保100%有序。</p>
-<h2 id="三-字典的查询添加删除的时间复杂度">三. 字典的查询、添加、删除的时间复杂度？</h2>
-<p>字典的查询、添加、删除的平均时间复杂度都是O(1)（为什么是平均时间复杂度，文章后面会讲解到），相比列表与元祖，性能更优。</p>
-<h2 id="四-字典的实现原理">四. 字典的实现原理？</h2>
-<h3 id="1-首先说说python36之前的无序字典">1. 首先说说Python3.6之前的无序字典</h3>
-<p>字典底层是维护一张哈希表（见下图），我们可以把哈希表看成一个列表，哈希表中的每一个元素又存储了哈希值（hash）、键（key）、值（value）3个元素。（Python3.6之前）</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>enteies <span style="color:#f92672">=</span> [
-</span></span><span style="display:flex;"><span>    [<span style="color:#e6db74">&#39;--&#39;</span>, <span style="color:#e6db74">&#39;--&#39;</span>, <span style="color:#e6db74">&#39;--&#39;</span>],
-</span></span><span style="display:flex;"><span>    [hash, key, value],
-</span></span><span style="display:flex;"><span>    [<span style="color:#e6db74">&#39;--&#39;</span>, <span style="color:#e6db74">&#39;--&#39;</span>, <span style="color:#e6db74">&#39;--&#39;</span>],
-</span></span><span style="display:flex;"><span>    [<span style="color:#e6db74">&#39;--&#39;</span>, <span style="color:#e6db74">&#39;--&#39;</span>, <span style="color:#e6db74">&#39;--&#39;</span>],
-</span></span><span style="display:flex;"><span>    [hash, key, value],
-</span></span><span style="display:flex;"><span>]
-</span></span></code></pre></div><p>由上可以见哈希表的存储结构，我们也可以看出，元素之间有一些空元素，我们通过增加一个元素来讲解具体实现。</p>
-<ul>
-<li>计算key的hash值【hash(key)】，再和mask做与操作【mask=字典最小长度（DictMinSize） - 1】，运算后会得到一个数字【index】，这个index就是要插入的enteies哈希表中的下标位置</li>
-<li>若index下标位置已经被占用，则会判断enteies的key是否与要插入的key是否相等</li>
-<li>如果key相等就表示key已存在，则更新value值</li>
-<li>如果key不相等，就表示hash冲突，则会继续向下寻找空位置，一直到找到剩余空位为止。</li>
-</ul>
-<h3 id="2-python37后的新的实现方式">2. Python3.7+后的新的实现方式</h3>
-<p>老字典使用一张hash，而新字典还使用了一张Indices表来辅助。下来列出新的结构：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>indices <span style="color:#f92672">=</span> [<span style="color:#66d9ef">None</span>, <span style="color:#66d9ef">None</span>, index, <span style="color:#66d9ef">None</span>, index, <span style="color:#66d9ef">None</span>, index]
-</span></span><span style="display:flex;"><span>enteies <span style="color:#f92672">=</span> [
-</span></span><span style="display:flex;"><span>    [hash0, key0, value0],
-</span></span><span style="display:flex;"><span>    [hash1, key1, value1],
-</span></span><span style="display:flex;"><span>    [hash2, key2, value2]
-</span></span><span style="display:flex;"><span>]
-</span></span></code></pre></div><p>下面为具体的实现过程：</p>
-<ul>
-<li>计算key的hash值【hash(key)】，再和mask做与操作【mask=字典最小长度（IndicesDictMinSize） - 1】，运算后会得到一个数字【index】，这个index就是要插入的indices的下标位置（注：具体算法与Python版本相关，并不一定一样）</li>
-<li>得到index后，会找到indices的位置，但是此位置不是存的hash值，而是存的len(enteies)，表示该值在enteies中的位置</li>
-<li>如果出现hash冲突，则处理方式与老字典处理方式类似</li>
-</ul>
-<h2 id="五-时间复杂度说明">五. 时间复杂度说明</h2>
-<p>我们在上面提到了，字典的平均时间复杂度是O(1)，因为字典是通过哈希算法来实现的，哈希算法不可避免的问题就是hash冲突，Python字典发生哈希冲突时，会向下寻找空余位置，直到找到位置。如果在计算key的hash值时，如果一直找不到空余位置，则字典的时间复杂度就变成了O(n)了，所以Python的哈希算法就显得非常重要了。Python字典的哈希算法，会尽量保证哈希值计算出的index是平均分布且每一个值之间有剩余位置。</p>
-<h2 id="六-字典的key能使用什么值">六. 字典的key能使用什么值？</h2>
-<p>Python字典的key可以使用字符串（str），整型（int），元祖（tuple）等。我们已经知道，字典是通过哈希算法来计算key的值，所以key必须为可哈希的，list不能作为字典的key，因为list是可变的及不可哈希的对象，所以不能作为字典的key。</p>
-
+      <h2 id="高阶函数">高阶函数</h2>
+<h3 id="filter">filter</h3>
+<p>Python内建的<code>filter()</code>函数用于过滤序列。</p>
+<p>和<code>map()</code>类似，<code>filter()</code>也接收一个函数和一个序列。和<code>map()</code>不同的是，<code>filter()</code>把传入的函数依次作用于每个元素，然后根据返回值是<code>True</code>还是<code>False</code>决定保留还是丢弃该元素。</p>
+<p>例如，在一个list中，删掉偶数，只保留奇数，可以这么写：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">is_odd</span>(n):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> n <span style="color:#f92672">%</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>list(filter(is_odd, [<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">6</span>, <span style="color:#ae81ff">9</span>, <span style="color:#ae81ff">10</span>, <span style="color:#ae81ff">15</span>]))
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 结果：[1, 5, 9, 15]</span>
+</span></span></code></pre></div><h3 id="sorted">sorted</h3>
+<p>Python内置的sorted()函数就可以对list进行排序，它还可以接收一个key函数来实现自定义的排序，例如按绝对值大小排序：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> sorted([<span style="color:#ae81ff">36</span>, <span style="color:#ae81ff">5</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">12</span>, <span style="color:#ae81ff">9</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">21</span>], key<span style="color:#f92672">=</span>abs)
+</span></span><span style="display:flex;"><span>[<span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">9</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">12</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">21</span>, <span style="color:#ae81ff">36</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> sorted([<span style="color:#e6db74">&#39;bob&#39;</span>, <span style="color:#e6db74">&#39;about&#39;</span>, <span style="color:#e6db74">&#39;Zoo&#39;</span>, <span style="color:#e6db74">&#39;Credit&#39;</span>], key<span style="color:#f92672">=</span>str<span style="color:#f92672">.</span>lower, reverse<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>[<span style="color:#e6db74">&#39;Zoo&#39;</span>, <span style="color:#e6db74">&#39;Credit&#39;</span>, <span style="color:#e6db74">&#39;bob&#39;</span>, <span style="color:#e6db74">&#39;about&#39;</span>]
+</span></span></code></pre></div><h2 id="生成器">生成器</h2>
+<p>生成器的两种实现方式：<code>()</code>和<code>yeild</code>关键字。</p>
+<h3 id="方式"><code>()</code>方式</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> L <span style="color:#f92672">=</span> [x <span style="color:#f92672">*</span> x <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">10</span>)]
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> L
+</span></span><span style="display:flex;"><span>[<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">9</span>, <span style="color:#ae81ff">16</span>, <span style="color:#ae81ff">25</span>, <span style="color:#ae81ff">36</span>, <span style="color:#ae81ff">49</span>, <span style="color:#ae81ff">64</span>, <span style="color:#ae81ff">81</span>]
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> g <span style="color:#f92672">=</span> (x <span style="color:#f92672">*</span> x <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">10</span>))
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> g
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;</span>generator object <span style="color:#f92672">&lt;</span>genexpr<span style="color:#f92672">&gt;</span> at <span style="color:#ae81ff">0x1022ef630</span><span style="color:#f92672">&gt;</span>
+</span></span></code></pre></div><h3 id="yeild关键字"><code>yeild</code>关键字</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">fib</span>(max):
+</span></span><span style="display:flex;"><span>    n, a, b <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> n <span style="color:#f92672">&lt;</span> max:
+</span></span><span style="display:flex;"><span>        yeild b
+</span></span><span style="display:flex;"><span>        a, b <span style="color:#f92672">=</span> b, a <span style="color:#f92672">+</span> b
+</span></span><span style="display:flex;"><span>        n <span style="color:#f92672">=</span> n <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#39;done&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> f <span style="color:#f92672">=</span> fib(<span style="color:#ae81ff">6</span>)
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> f
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;</span>generator object fib at <span style="color:#ae81ff">0x104feaaa0</span><span style="color:#f92672">&gt;</span>
+</span></span></code></pre></div><p>这里，最难理解的就是generator函数和普通函数的执行流程不一样。普通函数是顺序执行，遇到<code>return</code>语句或者最后一行函数语句就返回。而变成generator的函数，在每次调用<code>next()</code>的时候执行，遇到<code>yield</code>语句返回，再次执行时从上次返回的<code>yield</code>语句处继续执行。</p>
+<h2 id="迭代器">迭代器</h2>
+<p>凡是可作用于<code>for</code>循环的对象都是<code>Iterable</code>类型；</p>
+<p>凡是可作用于<code>next()</code>函数的对象都是<code>Iterator</code>类型，它们表示一个惰性计算的序列；</p>
+<p>集合数据类型如<code>list</code>、<code>dict</code>、<code>str</code>等是<code>Iterable</code>但不是<code>Iterator</code>，不过可以通过<code>iter()</code>函数获得一个<code>Iterator</code>对象。</p>
+<p>Python的<code>for</code>循环本质上就是通过不断调用<code>next()</code>函数实现的，</p>
+<h2 id="装饰器">装饰器</h2>
+<p>现在，假设我们要增强函数的功能，比如，在函数调用前后自动打印日志，但又不希望修改函数的定义，这种在代码运行期间动态增加功能的方式，称之为“装饰器”（Decorator）。</p>
+<p>本质上，decorator就是一个返回函数的高阶函数。所以，我们要定义一个能打印程序运行时间的decorator，可以定义如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">import</span> time
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">timeit</span>(func):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">wrapper</span>(<span style="color:#f92672">*</span>args, <span style="color:#f92672">**</span>kw):
+</span></span><span style="display:flex;"><span>        t0 <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time()
+</span></span><span style="display:flex;"><span>        result <span style="color:#f92672">=</span> func(<span style="color:#f92672">*</span>args, <span style="color:#f92672">**</span>kw)
+</span></span><span style="display:flex;"><span>        t1<span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time()
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;function </span><span style="color:#e6db74">{</span>str(func)<span style="color:#f92672">.</span>split()[<span style="color:#ae81ff">1</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74"> use time: </span><span style="color:#e6db74">{</span>t1 <span style="color:#f92672">-</span> t0<span style="color:#e6db74">}</span><span style="color:#e6db74">s&#34;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> result
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> wrapper
+</span></span></code></pre></div><p>观察上面的<code>log</code>，因为它是一个decorator，所以接受一个函数作为参数，并返回一个函数。我们要借助Python的@语法，把decorator置于函数的定义处：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#a6e22e">@timeit</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">now</span>():
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#39;2015-3-23&#39;</span>)
+</span></span></code></pre></div><p>把<code>@log</code>放到<code>now()</code>函数的定义处，相当于执行了语句：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>now <span style="color:#f92672">=</span> log(now)
+</span></span></code></pre></div><p>由于<code>log()</code>是一个decorator，返回一个函数，所以，原来的<code>now()</code>函数仍然存在，只是现在同名的<code>now</code>变量指向了新的函数，于是调用<code>now()</code>将执行新函数，即在<code>log()</code>函数中返回的<code>wrapper()</code>函数。</p>
+<p><code>wrapper()</code>函数的参数定义是<code>(*args, **kw)</code>，因此，<code>wrapper()</code>函数可以接受任意参数的调用。在<code>wrapper()</code>函数内，首先打印日志，再紧接着调用原始函数。</p>
+<p>如果decorator本身需要传入参数，那就需要编写一个返回decorator的高阶函数，写出来会更复杂。比如，要自定义log的文本：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">log</span>(text):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">decorator</span>(func):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">wrapper</span>(<span style="color:#f92672">*</span>args, <span style="color:#f92672">**</span>kw):
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">&#39;</span><span style="color:#e6db74">%s</span><span style="color:#e6db74"> </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">():&#39;</span> <span style="color:#f92672">%</span> (text, func<span style="color:#f92672">.</span>__name__))
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> func(<span style="color:#f92672">*</span>args, <span style="color:#f92672">**</span>kw)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> wrapper
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> decorator
+</span></span></code></pre></div><p>这个3层嵌套的decorator用法如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#a6e22e">@log</span>(<span style="color:#e6db74">&#39;execute&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">now</span>():
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#39;2015-3-25&#39;</span>)
+</span></span></code></pre></div><p>和两层嵌套的decorator相比，3层嵌套的效果是这样的：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> now <span style="color:#f92672">=</span> log(<span style="color:#e6db74">&#39;execute&#39;</span>)(now)
+</span></span></code></pre></div><p>我们来剖析上面的语句，首先执行<code>log('execute')</code>，返回的是decorator函数，再调用返回的函数，参数是<code>now</code>函数，返回值最终是<code>wrapper</code>函数。</p>
+<h2 id="匿名函数">匿名函数</h2>
+<p>当我们在传入函数时，有些时候，不需要显式地定义函数，直接传入匿名函数更方便。</p>
+<p>在Python中，对匿名函数提供了有限支持。还是以<code>map()</code>函数为例，计算<code>f(x)=x^2</code>时，除了定义一个<code>f(x)</code>的函数外，还可以直接传入匿名函数：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span>list(map(<span style="color:#66d9ef">lambda</span> x: x <span style="color:#f92672">**</span> <span style="color:#ae81ff">2</span>, [<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">5</span>]))
+</span></span><span style="display:flex;"><span>[<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">9</span>, <span style="color:#ae81ff">16</span>, <span style="color:#ae81ff">25</span>]
+</span></span></code></pre></div><p>通过对比可以看出，匿名函数<code>lambda x: x * x</code>实际上就是：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">f</span>(x):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> x <span style="color:#f92672">*</span> x
+</span></span></code></pre></div>
     </div>
 
     
@@ -576,7 +625,7 @@
   <p class="copyright-item">
     <span class="item-title">LastMod</span>
     <span class="item-content">
-      2021-01-13
+      2021-08-01
       
     </span>
   </p>
@@ -600,7 +649,7 @@
       
       <nav class="post-nav">
         
-          <a class="prev" href="/post/maddpg-based-mcs/">
+          <a class="prev" href="/post/5-rl%E6%80%BB%E7%BB%93/">
             
             <i class="iconfont">
               <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
@@ -610,12 +659,12 @@
 </svg>
 
             </i>
-            <span class="prev-text nav-default">MADDPG-Based-MCS</span>
+            <span class="prev-text nav-default">DRL总结：DQN，RainBow，DDPG，PPO和A3C等</span>
             <span class="prev-text nav-mobile">Prev</span>
           </a>
         
-          <a class="next" href="/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/">
-            <span class="next-text nav-default">Python调试器pdb的使用</span>
+          <a class="next" href="/post/16-python%E4%B8%ADmap%E5%92%8Creduce%E4%BD%BF%E7%94%A8/">
+            <span class="next-text nav-default">Python中map和reduce函数使用</span>
             <span class="prev-text nav-mobile">Next</span>
             
             <i class="iconfont">
