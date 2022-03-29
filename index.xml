@@ -431,6 +431,117 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output&lt;/p&gt;
     </item>
     
     <item>
+      <title>Pytorch加速模型训练</title>
+      <link>https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/</link>
+      <pubDate>Fri, 01 Oct 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/</guid>
+      
+        <description>&lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;PyTorch 是 torch 的 python 版本，它是 Facebook AI 研究组开发并开源的一个深度学习框架，也是目前非常流行的框架，特别是在研究人员中，短短几年已经有追上 Tensorflow 的趋势了。这主要是因为其简单、动态计算图的优点。&lt;/p&gt;
+&lt;p&gt;本文将主要介绍如何采用 cuda 和 pycuda 检查、初始化 GPU 设备，并让你的算法跑得更快。&lt;/p&gt;
+&lt;p&gt;本文目录如下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;如何检查 cuda 是否可用？&lt;/li&gt;
+&lt;li&gt;在 GPU 上存储 Tensors 和运行模型的方法&lt;/li&gt;
+&lt;li&gt;有多个 GPU 的时候，如何选择和使用它们&lt;/li&gt;
+&lt;li&gt;数据并行&lt;/li&gt;
+&lt;li&gt;torch.multiprocessing&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;1-如何检查-cuda-是否可用&#34;&gt;1. 如何检查 cuda 是否可用？&lt;/h2&gt;
+&lt;p&gt;检查 cuda 是否可用的代码非常简单，如下所示：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; torch
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cuda&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;is_available()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# True&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;uda&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;is_available()) &lt;span style=&#34;color:#75715e&#34;&gt;# true 查看GPU是否可用&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cuda&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;device_count()) &lt;span style=&#34;color:#75715e&#34;&gt;# GPU数量， 1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cuda&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;current_device() &lt;span style=&#34;color:#75715e&#34;&gt;# 当前GPU的索引， 0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cuda&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;get_device_name(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;) &lt;span style=&#34;color:#75715e&#34;&gt;# 输出GPU名称&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;2-在-gpu-上存储-tensors-和运行模型的方法&#34;&gt;2. 在 GPU 上存储 Tensors 和运行模型的方法&lt;/h2&gt;
+&lt;p&gt;如果有多块GPU，我们用.cuda(i)来表示第 i 块GPU及相应的显存（i从0开始）且cuda(0)和cuda()等价。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;tensor([&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;])
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cuda(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;device &lt;span style=&#34;color:#75715e&#34;&gt;#通过Tensor的device属性判断该Tensor所在的设备&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;device &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;device(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cuda&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cuda&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;is_available &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;cpu&amp;#39;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;tensor([&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;], device&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;device)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#or &lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# x = torch.tensor([1,2,3]).to(device)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果对在GPU设备上的数据进行计算，那么计算结果也会在该设备上。但是，位于不同设备上的数据是不可以直接进行计算的，这包括在GPU上的数据不可以与在CPU上的数据直接进行计算，在不同的GPU设备上的数据也不可以直接进行计算。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; x&lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(y&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;device) &lt;span style=&#34;color:#75715e&#34;&gt;# cuda:0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;z &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; y &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cpu()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# RuntimeError: Expected object of type torch.cuda.LongTensor but found type torch.LongTensor for argument #3 &amp;#39;other&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我们在使用模型的时候，需要保证模型的输入的Tensor和模型在同一个设备上，否则会报错。与Tensor类似，pytorch模型也可以通过.cuda()转移到设备上，而我们可以通过查看模型参数的device属性查看模型所在的设备。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;module &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;list(module&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;parameters())[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;device &lt;span style=&#34;color:#75715e&#34;&gt;# device(type=&amp;#39;cpu&amp;#39;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;module&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cuda(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;list(module&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;parameters())[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;device  &lt;span style=&#34;color:#75715e&#34;&gt;#device=(type=&amp;#39;cuda&amp;#39;, index=0)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;3-有多个-gpu-的时候如何选择和使用它们&#34;&gt;3. 有多个 GPU 的时候，如何选择和使用它们&lt;/h2&gt;
+&lt;p&gt;PyTorch默认使用从0开始的GPU，如果GPU0正在运行程序，需要指定其他GPU。&lt;/p&gt;
+&lt;p&gt;类似tensorflow指定GPU的方式，使用CUDA_VISIBLE_DEVICES。&lt;/p&gt;
+&lt;p&gt;3.1 直接终端中设定&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;CUDA_VISIBLE_DEVICES&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; python my_script&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;py
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;3.2 直接在代码中设定&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; os
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;os&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;environ[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;CUDA_VISIBLE_DEVICES&amp;#34;&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;2&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;4-数据并行&#34;&gt;4. 数据并行&lt;/h2&gt;
+&lt;p&gt;数据并行的操作要求我们将数据划分成多份，然后发送给多个 GPU 进行并行的计算。&lt;/p&gt;
+&lt;p&gt;PyTorch 中实现数据并行的操作可以通过使用 torch.nn.DataParallel。&lt;/p&gt;
+&lt;p&gt;下面是一个简单的示例。要实现数据并行，第一个方法是采用 nn.parallel 中的几个函数，分别实现的功能如下所示：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;复制(Replicate)：将模型拷贝到多个 GPU 上；
+分发(Scatter)：将输入数据根据其第一个维度(通常就是 batch 大小)划分多份，并传送到多个 GPU 上；&lt;/li&gt;
+&lt;li&gt;收集(Gather)：从多个 GPU 上传送回来的数据，再次连接回一起；&lt;/li&gt;
+&lt;li&gt;并行的应用(parallel_apply)：将第三步得到的分布式的输入数据应用到第一步中拷贝的多个模型上。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;实现代码如下所示：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Replicate module to devices in device_ids&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;replicas &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;parallel&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;replicate(module, device_ids)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Distribute input to devices in device_ids&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;inputs &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;parallel&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;scatter(input, device_ids)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Apply the models to corresponding inputs&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;outputs &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;parallel&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;parallel_apply(replicas, inputs)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Gather result from all devices to output_device&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;result &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;parallel&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;gather(outputs, output_device)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;实际上，还有一个更简单的也是常用的实现方法，如下所示，只需一行代码即可：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;model &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;DataParallel(model, device_ids&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;device_ids)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;result &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; model(input)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;torchmultiprocessing&#34;&gt;torch.multiprocessing&lt;/h2&gt;
+&lt;p&gt;torch.multiprocessing 是对 Python 的 multiprocessing 模块的一个封装，并且百分比兼容原始模块，也就是可以采用原始模块中的如 Queue 、Pipe、Array 等方法。并且为了加快速度，还添加了一个新的方法&amp;ndash;share_memory_()，它允许数据处于一种特殊的状态，可以在不需要拷贝的情况下，任何进程都可以直接使用该数据。&lt;/p&gt;
+&lt;p&gt;通过该方法，可以共享 Tensors 、模型的参数 parameters ，可以在 CPU 或者 GPU 之间共享它们。&lt;/p&gt;
+&lt;p&gt;下面展示一个采用多进程训练模型的例子：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Training a model using multiple processes:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; torch.multiprocessing &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; mp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;train&lt;/span&gt;(model):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; data, labels &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; data_loader:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        optimizer&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;zero_grad()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        loss_fn(model(data), labels)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;backward()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        optimizer&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;step()  &lt;span style=&#34;color:#75715e&#34;&gt;# This will update the shared parameters&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;model &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Sequential(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(n_in, n_h1),
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                      nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;ReLU(),
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                      nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(n_h1, n_out))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;model&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;share_memory() &lt;span style=&#34;color:#75715e&#34;&gt;# Required for &amp;#39;fork&amp;#39; method to work&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;processes &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; []
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;): &lt;span style=&#34;color:#75715e&#34;&gt;# No. of processes&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    p &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; mp&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Process(target&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;train, args&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;(model,))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    p&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;start()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    processes&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;append(p)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; p &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; processes: 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    p&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;join()
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
+      
+    </item>
+    
+    <item>
       <title>DRL总结：DQN，RainBow，DDPG，PPO和A3C等</title>
       <link>https://yshane-ai.github.io/post/5-rl%E6%80%BB%E7%BB%93/</link>
       <pubDate>Fri, 10 Sep 2021 16:01:23 +0800</pubDate>
@@ -2389,125 +2500,6 @@ $$
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#66d9ef&#34;&gt;break&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;close()
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>CURL</title>
-      <link>https://yshane-ai.github.io/post/1-curl/</link>
-      <pubDate>Sun, 26 Apr 2020 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/1-curl/</guid>
-      
-        <description>
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/01-CURL/000.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/01-CURL/000.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;分享的第一篇笔记，希望大家多多鼓励。
-这篇文章来源于ICML2020。&lt;/p&gt;
-&lt;h2 id=&#34;原文链接&#34;&gt;原文链接：&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&#34;https://arxiv.org/pdf/2004.04136&#34;&gt;Srinivas, Aravind, Michael Laskin, and Pieter Abbeel. &amp;ldquo;Curl: Contrastive unsupervised representations for reinforcement learning.&amp;rdquo; arXiv preprint arXiv:2004.04136 (2020).
-&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;背景&#34;&gt;背景：&lt;/h2&gt;
-&lt;p&gt;在强化学习领域，解决复杂输入问题一直是一个挑战，特别是考虑直接输入图像（或视频）。
-现在主流的有两种方法：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;增加对输入的特征提取任务，保证输入信息有效；&lt;/li&gt;
-&lt;li&gt;采用model based的方式，建立世界模型，对未来进行预测。同期的Dreamer就是采用这个模型。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;这篇文章采用了第一种方式，采用对比学习方法来保证提取的特征对是有效的特征。文章最后对比了Dreamer，效果不错。&lt;/p&gt;
-&lt;h2 id=&#34;过程&#34;&gt;过程：&lt;/h2&gt;
-&lt;h3 id=&#34;1-对比学习&#34;&gt;1. 对比学习&lt;/h3&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/01-CURL/003.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/01-CURL/003.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;对比学习主要的功能是学习一个神经网络，完成有用信息提取，如何界定有用信息呢？这里用到了三个概念：anchor，positive和negative。&lt;/p&gt;
-&lt;p&gt;其中anchor表示从原图像中心以一定比例截取的图像，表示为$o_q$，positive表示在原图像中以相同比例在随机位置截取的图像，negative表示在其他图像中以相同大小任意截取的比例，共同表示为$o_k$。
-这里训练两个神经网络$q=f_{\theta_q}(o_q)$和$k=f_{\theta_k}(o_k)$，输出分别是提取的特征。这时有用信息的判断就可以表示为根据$q$和$k$，是否可以判断他们的输入属于同一张图像。
-这里使用了一种相似度评价函数：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/01-CURL/005.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/01-CURL/005.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;其中$q$表示anchor的特征，$k_+$表示positive的特征，$k_i$表示negtive的特征，$W$表示参数矩阵。上式可以视为softmax分类器的log损失。&lt;/p&gt;
-&lt;h3 id=&#34;2-模型&#34;&gt;2. 模型&lt;/h3&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/01-CURL/002.png&#34; alt=&#34;对比损失&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/01-CURL/002.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;对比损失&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;对于简单的任务，当观测的信息为位置、速度等直接有效信息时，强化学习的过程可以表示为学习一种策略$\pi_\theta(a_t|o_t)$，表示在状态$s_t$下选择动作$a_t$的概率。上图中可以表示为最上面的$o$直接输入左下角的RL模块。
-但当$o$采用图像输入时，包含背景等冗余信息，这时就需要一个$q=f_{\theta}(o)$对有用的信息进行提取。但什么算是有用信息呢？显然，与别人最与众不同的信息更加有用，因此这里采用对比学习的方法训练一个神经网络$q=f_{\theta_q}(o_q)$，输出的$q$就是想要的有效信息，然后输送给RL。
-神经网络的训练通过上述对比学习的方式进行。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/01-CURL/001.png&#34; alt=&#34;模型&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/01-CURL/001.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;模型&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;本文的RL采用SAC模型，&lt;/p&gt;
-&lt;h2 id=&#34;实验&#34;&gt;实验：&lt;/h2&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/01-CURL/004.png&#34; alt=&#34;实验&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/01-CURL/004.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;实验&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;文章对比了CURL、State输入的SAC和Pixel输入的SAC，虽然效果有些略差于State输入，但远远好于Pixel的输入效果，可以证明对比学习的确提取到了有用的特征。&lt;/p&gt;
-</description>
       
     </item>
     

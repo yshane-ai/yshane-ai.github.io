@@ -38,9 +38,18 @@
     <item>
       <title>Python</title>
       <link>https://yshane-ai.github.io/categories/python/</link>
-      <pubDate>Sun, 01 Aug 2021 16:01:23 +0800</pubDate>
+      <pubDate>Fri, 01 Oct 2021 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/categories/python/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Pytorch</title>
+      <link>https://yshane-ai.github.io/categories/pytorch/</link>
+      <pubDate>Fri, 01 Oct 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/categories/pytorch/</guid>
       <description></description>
     </item>
     
@@ -50,15 +59,6 @@
       <pubDate>Tue, 02 Mar 2021 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/categories/mcs/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Pytorch</title>
-      <link>https://yshane-ai.github.io/categories/pytorch/</link>
-      <pubDate>Tue, 14 Jul 2020 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/categories/pytorch/</guid>
       <description></description>
     </item>
     

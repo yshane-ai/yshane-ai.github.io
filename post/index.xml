@@ -45,6 +45,15 @@
     </item>
     
     <item>
+      <title>Pytorch加速模型训练</title>
+      <link>https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/</link>
+      <pubDate>Fri, 01 Oct 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/</guid>
+      <description>前言 PyTorch 是 torch 的 python 版本，它是 Facebook AI 研究组开发并开源的一个深度学习框架，也是目前非常流行的框架，特别是在研究人员中，短短几年已经有追上 Tensorflow 的趋势了。这</description>
+    </item>
+    
+    <item>
       <title>DRL总结：DQN，RainBow，DDPG，PPO和A3C等</title>
       <link>https://yshane-ai.github.io/post/5-rl%E6%80%BB%E7%BB%93/</link>
       <pubDate>Fri, 10 Sep 2021 16:01:23 +0800</pubDate>
@@ -177,15 +186,6 @@
       
       <guid>https://yshane-ai.github.io/post/1-curl/</guid>
       <description>分享的第一篇笔记，希望大家多多鼓励。 这篇文章来源于ICML2020。 原文链接： Srinivas, Aravind, Michael Laskin, and Pieter Abbeel. &amp;ldquo;Curl: Contrastive unsupervised representations for reinforcement learning.&amp;rdquo; arXiv preprint arXiv:2004.04136 (2020). 背景： 在强化学习领域，解决</description>
-    </item>
-    
-    <item>
-      <title>Pytorch根据概率生成action</title>
-      <link>https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/</link>
-      <pubDate>Sat, 04 Apr 2020 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/</guid>
-      <description>在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据</description>
     </item>
     
   </channel>

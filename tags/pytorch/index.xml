@@ -7,7 +7,16 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Tue, 14 Jul 2020 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/tags/pytorch/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 01 Oct 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/tags/pytorch/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Pytorch加速模型训练</title>
+      <link>https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/</link>
+      <pubDate>Fri, 01 Oct 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/</guid>
+      <description>前言 PyTorch 是 torch 的 python 版本，它是 Facebook AI 研究组开发并开源的一个深度学习框架，也是目前非常流行的框架，特别是在研究人员中，短短几年已经有追上 Tensorflow 的趋势了。这</description>
+    </item>
+    
     <item>
       <title>DDPG的Pytorch实现</title>
       <link>https://yshane-ai.github.io/post/13-ddpg/</link>
