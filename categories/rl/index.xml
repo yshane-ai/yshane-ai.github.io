@@ -36,6 +36,24 @@
     </item>
     
     <item>
+      <title>Model-based RL梳理</title>
+      <link>https://yshane-ai.github.io/post/21-model-based-rl%E6%A2%B3%E7%90%86/</link>
+      <pubDate>Fri, 10 Dec 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/21-model-based-rl%E6%A2%B3%E7%90%86/</guid>
+      <description>model-based方法概观 在model-free的方法中，无非两种方式，value-based方法先学习值函数（MC或TD）再更新策略，</description>
+    </item>
+    
+    <item>
+      <title>Offline RL梳理</title>
+      <link>https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/</link>
+      <pubDate>Wed, 10 Nov 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/</guid>
+      <description>本质上Offline RL需要从固定的数据集中获得对MDP的理解，并构造一个策略，以在实际交互中获得最多的累计奖励。但是有如下局限： 数据集本身</description>
+    </item>
+    
+    <item>
       <title>DRL总结：DQN，RainBow，DDPG，PPO和A3C等</title>
       <link>https://yshane-ai.github.io/post/5-rl%E6%80%BB%E7%BB%93/</link>
       <pubDate>Fri, 10 Sep 2021 16:01:23 +0800</pubDate>
@@ -123,6 +141,15 @@
       
       <guid>https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/</guid>
       <description>在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据</description>
+    </item>
+    
+    <item>
+      <title>英伟达GPU系列介绍</title>
+      <link>https://yshane-ai.github.io/post/24-nvidia-gpu%E7%B3%BB%E5%88%97%E4%BB%8B%E7%BB%8D/</link>
+      <pubDate>Tue, 10 Dec 2019 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/24-nvidia-gpu%E7%B3%BB%E5%88%97%E4%BB%8B%E7%BB%8D/</guid>
+      <description>Nvidia GeForce RTX 2080ti, Nvidia Tesla T4, Nvidia Titan RTX … 英伟达这些GPU产品的名称看上去眼花缭乱，傻傻分不清。为了搞清楚这些名词，专门花了一些时间整理整理，大体上梳理清楚了脉</description>
     </item>
     
   </channel>

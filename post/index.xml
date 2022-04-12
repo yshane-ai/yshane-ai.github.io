@@ -45,6 +45,24 @@
     </item>
     
     <item>
+      <title>Model-based RL梳理</title>
+      <link>https://yshane-ai.github.io/post/21-model-based-rl%E6%A2%B3%E7%90%86/</link>
+      <pubDate>Fri, 10 Dec 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/21-model-based-rl%E6%A2%B3%E7%90%86/</guid>
+      <description>model-based方法概观 在model-free的方法中，无非两种方式，value-based方法先学习值函数（MC或TD）再更新策略，</description>
+    </item>
+    
+    <item>
+      <title>Offline RL梳理</title>
+      <link>https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/</link>
+      <pubDate>Wed, 10 Nov 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/</guid>
+      <description>本质上Offline RL需要从固定的数据集中获得对MDP的理解，并构造一个策略，以在实际交互中获得最多的累计奖励。但是有如下局限： 数据集本身</description>
+    </item>
+    
+    <item>
       <title>Pytorch加速模型训练</title>
       <link>https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/</link>
       <pubDate>Fri, 01 Oct 2021 16:01:23 +0800</pubDate>
@@ -168,24 +186,6 @@
       
       <guid>https://yshane-ai.github.io/post/12-ppo/</guid>
       <description>算法概述 在PG算法中，策略梯度的计算公式如下所示： $$J(\theta) = E[R(\tau)]$$，策略梯度可以表示为$$\nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau)</description>
-    </item>
-    
-    <item>
-      <title>DQN的Pytorch实现</title>
-      <link>https://yshane-ai.github.io/post/11-dqn/</link>
-      <pubDate>Mon, 04 May 2020 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/11-dqn/</guid>
-      <description>下面是基于Pytorch的DQN实现，使用CartPole-v0环境做测试。 代码实现 import torch import torch.nn as nn import torch.optim as optim import torch.nn.functional as F import gym import numpy as np import random from collections import namedtuple LR= 0.01</description>
-    </item>
-    
-    <item>
-      <title>CURL</title>
-      <link>https://yshane-ai.github.io/post/1-curl/</link>
-      <pubDate>Sun, 26 Apr 2020 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/1-curl/</guid>
-      <description>分享的第一篇笔记，希望大家多多鼓励。 这篇文章来源于ICML2020。 原文链接： Srinivas, Aravind, Michael Laskin, and Pieter Abbeel. &amp;ldquo;Curl: Contrastive unsupervised representations for reinforcement learning.&amp;rdquo; arXiv preprint arXiv:2004.04136 (2020). 背景： 在强化学习领域，解决</description>
     </item>
     
   </channel>

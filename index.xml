@@ -431,6 +431,260 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output&lt;/p&gt;
     </item>
     
     <item>
+      <title>Model-based RL梳理</title>
+      <link>https://yshane-ai.github.io/post/21-model-based-rl%E6%A2%B3%E7%90%86/</link>
+      <pubDate>Fri, 10 Dec 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/21-model-based-rl%E6%A2%B3%E7%90%86/</guid>
+      
+        <description>&lt;h2 id=&#34;model-based方法概观&#34;&gt;model-based方法概观&lt;/h2&gt;
+&lt;p&gt;在model-free的方法中，无非两种方式，value-based方法先学习值函数（MC或TD）再更新策略，policy-based方法直接将真实轨迹数据（real experience）更新策略。而model-based方法呢，顾名思义，会先将着重点放在环境模型(environment dynamics)，通过采样先学习一个对环境的建模，再根据学习到的环境模型做值函数/策略优化。在model-based方法中，planning步骤至关重要，正是通过在learned model基础上做planning才提高了整个强化学习算法迭代的效率。&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/21-Model-based/001-world-model.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/21-Model-based/001-world-model.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/21-Model-based/002.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/21-Model-based/002.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在完成了对环境的建模后，在model-based大类方法中同样有两种路径，一种是通过学到的model生成一些仿真轨迹，通过仿真轨迹估计值函数进而优化策略；另一种是通过学到的model直接优化策略，这也是目前model-based方法常走的路线。&lt;/p&gt;
+&lt;p&gt;Pros：先学习model的一个显而易见的好处，就是解决model-free强化学习方法中样本效率的问题(sample efficiency)。&lt;/p&gt;
+&lt;p&gt;Cons：由于模型是在过程中学习的，难免存在偏差；难以保证收敛。&lt;/p&gt;
+&lt;p&gt;解释一下强化学习问题中model的含义，可以理解为由状态转移分布和回报函数组成的元组$$M=(P, R)$$。其中$$S_{t + 1}\sim P_\eta(S_{t + 1}| S_t, A_t), R_{t + 1}\sim R_\eta(R_{t+ 1}|S_t, A_t)$$。&lt;/p&gt;
+&lt;p&gt;如何学习模型呢？可以用机器学习的基本理论解决，学习状态-动作对到回报的映射可以看作是一个回归问题，loss函数可以设置为均方误差；学习状态-动作对到下一状态的映射可以看作密度估计的问题，loss函数可以设置为KL散度。&lt;/p&gt;
+&lt;p&gt;这个模型的构造也有很多选择（神经网络、高斯过程等等），从而派生出不同的算法。&lt;/p&gt;
+&lt;h3 id=&#34;model-based策略优化&#34;&gt;model-based策略优化&lt;/h3&gt;
+&lt;p&gt;我们跳过表格模型相关的model-based值函数优化系列（如Dyna），直接进入当下比较流行的model-based策略优化系列。&lt;/p&gt;
+&lt;p&gt;以轨迹优化问题为例一步步走进model-based策略优化算法的改进。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/21-Model-based/003.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/21-Model-based/003.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;如果环境模型已知，该问题就是一个最优控制问题。&lt;/p&gt;
+&lt;p&gt;1、如果环境模型未知，我们把model learning和trajectory optimization结合起来，得到算法1：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/21-Model-based/004.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/21-Model-based/004.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在该算法中，第二步通过最小化均方误差训练模型，在得到模型之后，在第三部可通过最优控制领域常见的LQR方法进行求解。&lt;/p&gt;
+&lt;p&gt;但该算法存在一些问题：1.误差容易累积，从而导致最终结果偏移太大；2.状态可能会转移到一些模型还没学到的地方。&lt;/p&gt;
+&lt;p&gt;2、针对算法1的第二类缺陷，我们循环训练模型，把新的经验样本加入训练集，有点类似模仿学习中的Dagger方法：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/21-Model-based/005.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/21-Model-based/005.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;3、在算法2中，每一轮循环我们都是先规划完整个轨迹，再把轨迹数据加入训练集，这可能导致一开始我们就偏离了方向，如下图：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/21-Model-based/007.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/21-Model-based/007.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;为解决这个问题，我们引入模型预测控制（MPC）的思想，每次只执行第一个动作，然后马上观察状态进行重新规划，这样就有助于我们慢慢校正误差。在算法3中，大循环是学习模型，小循环是优化策略。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/21-Model-based/006.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/21-Model-based/006.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其实从基于MPC的变体3还可以推出变体4，如下图：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/21-Model-based/008.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/21-Model-based/008.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在变体4中，可以通过环境动力学模型  回传梯度来优化策略  ，但会出现类似RNN的BPTT算法中由于连乘项的累积出现梯度爆炸或梯度消失的问题。解决这个问题目前有两种路线，一是使用model生成数据，利用model-free方法求解；二是先学习多个局部模型（如LQR控制器），再将这些局部模型通过监督学习合并到一个全局策略模型（如神经网络）。对于第二种路线的典型代表，则是今天讨论的主角，引导性策略搜索（Guided Policy Search，简称GPS），讨论将分为两个部分，局部模型的学习和全局模型的学习。&lt;/p&gt;
+&lt;!-- raw HTML omitted --&gt;
+&lt;!-- raw HTML omitted --&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>Offline RL梳理</title>
+      <link>https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/</link>
+      <pubDate>Wed, 10 Nov 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/</guid>
+      
+        <description>&lt;p&gt;本质上Offline RL需要从固定的数据集中获得对MDP的理解，并构造一个策略，以在实际交互中获得最多的累计奖励。但是有如下局限：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;数据集本身的缺陷。既然称作数据集，那么他必然存在一定局限性，要么数据不充分，某些状态没有被访问过，那么真实的模型由该如何学习。&lt;/li&gt;
+&lt;li&gt;强化学习的经验并不是独立同分布的，例如两个随机初始化的策略，在和环境交互时，产生的交易轨迹并不相同，而自身产生的交互轨迹往往对自己模型的提高时更有用的，其他的轨迹则可能带偏自己的学习路线，例如两个性格不同的人，引导他们学习的方式也应该不同。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;一些简单的思路：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;限制目标策略$\pi(a|s)$和行为策略$\pi_\beta(a|s)$的差异度。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;方法1-基于重要性采样的offline-rl与离线策略评估&#34;&gt;方法1 基于重要性采样的Offline RL与离线策略评估&lt;/h2&gt;
+&lt;p&gt;事实上所有的off-policy算法都可以改为offline方法，最直接的方法之一就是重要性采样，利用从$\pi_\beta(\tau)$中采样出的轨迹来估计$J(\pi)$。&lt;/p&gt;
+&lt;p&gt;但是这种方法受到高方差的困扰。下面是一些改进方法：一个是per-decision importance sampling estimator，通过减少importance weight的乘积项，从而减少variance。&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20-Offline/001-per-decision.svg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/20-Offline/001-per-decision.svg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这个是在step t的时候可以忽略 t 之后的importance weight。&lt;/p&gt;
+&lt;p&gt;另一个是把累计的$$ r(s, a) $$加入一个baseline来增加稳定性，所以引入一个approximate的Q-value，改写为&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20-Offline/002-doubly.svg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/20-Offline/002-doubly.svg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;还可以限制让$\pi_\theta$和$\pi_\beta$尽可能相似，可加上一个constraint&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20-Offline/003-constraint.svg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/20-Offline/003-constraint.svg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;不过这种基于策略梯度的方法还是很少在offline的场景进行利用，主要应用于off-policy的场景。主要是以下几点原因：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Importance sampling 已经有很高的variance了，并且时序下累积，那么这个variance就会exponential blowup. 因此这个最适合当policy之和behavior policy相差不大的情况.&lt;/li&gt;
+&lt;li&gt;Behavior policy是suboptimal.&lt;/li&gt;
+&lt;li&gt;State action space 的高维度 (上述最高效的方法需要估计 value function或者state-marginal density ratio via dynamic programming)&lt;/li&gt;
+&lt;li&gt;The effective horizon of the task. (步长越长，累积误差越大，可以证明当和不同的时候，误差随着步长平方增长)。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;方法2-基于动态规划法的离线rl&#34;&gt;方法2 基于动态规划法的离线RL&lt;/h2&gt;
+&lt;p&gt;这类方法本质上就分为两步，第一步是从Dataset中学出一个Q函数，第二部是通过Q函数来做策略提升。所以首先讲一下传统offline RL是如何用线性函数估计Q函数并且做策略提升的，然后讲一下针对核心问题提出来的一系列改进。&lt;/p&gt;
+&lt;h3 id=&#34;使用线性函数估计q函数&#34;&gt;使用线性函数估计Q函数&lt;/h3&gt;
+&lt;p&gt;动态规划法就要估计一个Q函数。因此分布偏移
+(distributional shift)是这类最大的弊病，因为Q函数是通过
+获得的数据集来学的，他的state distribution和action distribution和自己用学出来的所采样出来的state和action的分布是不一样的，因此直接按照上面做实验中往往效果不佳。
+下面我们具体分析一下到底是哪个分布出现了偏移。
+如果我们把distribution shift分为训练阶段和测试阶段，那么在test的过程中state和action的分布都shift了，而在训练的时候，state的分布没偏移，因为用到的state数据只有采出来的数据，而action的分布偏移了，因为训练时自己学的action是通过最大化Q来得到的，因此可能不在中, 那么Q的估计就不准，在不断的训练迭代中累积误差。所以解决action distribution shift是非常关键的。&lt;/p&gt;
+&lt;p&gt;一种减少这种分布偏差的方法是让学的$\pi$和behavior policy $\pi_\beta$差距尽量小。&lt;/p&gt;
+&lt;p&gt;施加一些对于学到的的限制，一个基本思路就是要让尽可能接近于。
+有两个地方可以施加这种约束，第一个地方就是把约束施加在actor上，称作策略约束(policy constraint)；第二个地方就是施加在reward function或者target-Q value上，这就叫做策略惩罚(policy penalty)&lt;/p&gt;
+&lt;p&gt;策略约束 所有策略约束的方法都可以化归为下面的目标函数。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20-Offline/004-policy-constraint.svg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/20-Offline/004-policy-constraint.svg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中$D(\pi, \pi_\beta)$是表示$\pi$和$\pi_\beta$的距离。&lt;/p&gt;
+&lt;p&gt;策略惩罚 直接把惩罚加到reward或者Q上。还可以避免当前action使得将来的policy偏离$\pi_\beta$。 因此从这个意义上来说应该还比策略约束更高明。策略惩罚可以归纳为下式：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20-Offline/005-policy-penalty.svg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/20-Offline/005-policy-penalty.svg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20-Offline/005-policy-penalty-2.svg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/20-Offline/005-policy-penalty-2.svg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这里直接把$D(\pi, \pi_\beta)$这一项施加到了Q函数上，那么这样学出来的Q本身就会倾向于当action偏离$\pi_\beta$时就只有比较小的值。 接下来分析不同$D(\pi, \pi_\beta)$的表达形式&lt;/p&gt;
+&lt;p&gt;上述方法缺点：直接限制并非最好的方法。
+举个例子，如果本身就是均匀采样，也就是样本空间已经覆盖了所有可能的action，那么估计的Qfunction在训练过程中就不存在extrapolation error，此时就不应该和尽可能相似，因为这样会让的分布不尖锐，而我们希望的分布应该是一个尖锐的的子集。&lt;/p&gt;
+&lt;h3 id=&#34;方法三基于模型的离线强化学习-offline-model-based-rl&#34;&gt;方法三：基于模型的离线强化学习 (Offline Model-Based RL)&lt;/h3&gt;
+&lt;p&gt;Online的Model-based RL已经有许多文章研究，主流方法是从数据集中先学习一个状态转移模型，然后可以直接通过planning来生成action，或者直接训练一个policy函数。但其中一个核心问题仍然是，数据集学出来的状态转移模型是对于的，并非对应于plan的或者学到的策略，所以核心问题仍然是distributional shift。目前极少工作探讨offline model-based RL，所以如何解决model-based RL中的distributional shift 是一个公开问题。
+同时，就算是online的model-based RL也有自身的挑战，主要是高维的observation和long horizon的问题。&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
       <title>Pytorch加速模型训练</title>
       <link>https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/</link>
       <pubDate>Fri, 01 Oct 2021 16:01:23 +0800</pubDate>
@@ -2143,363 +2397,6 @@ $$
 &lt;/div&gt;
 
 </description>
-      
-    </item>
-    
-    <item>
-      <title>PPO的Pytorch实现</title>
-      <link>https://yshane-ai.github.io/post/12-ppo/</link>
-      <pubDate>Thu, 14 May 2020 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/12-ppo/</guid>
-      
-        <description>&lt;h2 id=&#34;算法概述&#34;&gt;算法概述&lt;/h2&gt;
-&lt;p&gt;在PG算法中，策略梯度的计算公式如下所示：&lt;/p&gt;
-&lt;p&gt;$$J(\theta) = E[R(\tau)]$$，策略梯度可以表示为$$\nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau) = \int \nabla_\theta \rho_\tau R(\tau) = \int \rho_\tau \nabla_\theta \log\rho_\tau R(\tau)$$ $$= E[\nabla_\theta \log\rho_\tau R(\tau)] = E[\sum_t\nabla_\theta \log[\pi_\theta(a_t| s_t)] A(s_t, a_t)]$$&lt;/p&gt;
-&lt;p&gt;我们根据策略$\theta$采样得到的轨迹$\tau$做期望，但是，一旦更新了参数，我们的$\theta$就变了，采样的概率会发生变化，所以之前的数据就不能用了。&lt;/p&gt;
-&lt;p&gt;这导致的结果就是PG算法需要花很多时间去采样。&lt;/p&gt;
-&lt;p&gt;PPO的思想就是用另外一个actor$\theta^\prime$去跟环境互动（采样），然后将收集到的数据去更新$\theta$，将数据重复使用多次后再将$\theta^\prime$和$\theta$同步。&lt;/p&gt;
-&lt;p&gt;PPO: $$L(\theta) = E[\min(\frac{\pi_{\theta_k} (a_t| s_t)}{\pi_{\theta} (a_t | s_t)} A(s_t, a_t), clip (\frac{\pi_{\theta_k}(a_t| s_t)}{\pi_{\theta} (a_t|s_t)}, 1-\epsilon, 1+\epsilon)A(s_t, a_t))]$$&lt;/p&gt;
-&lt;p&gt;然后PPO利用了重要性采样来保证样本的策略分布和当前策略的的策略分布保持一致，此外利用clip方法保证策略更新的幅度不要过大。&lt;/p&gt;
-&lt;h2 id=&#34;代码实现&#34;&gt;代码实现&lt;/h2&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; torch
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; torch.nn &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; nn
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; torch.nn.functional &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; F
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; torch.optim &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; optim
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; gym
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; torch.distributions &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; Normal
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; numpy &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; np
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; argparse
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; matplotlib.pyplot &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; plt
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# 对于连续动作，PPO采用的是随机策略，动作基于正态分布进行采样。所以Actor网络的目的就是输出正态分布的$mu$和$sigma$。&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ActorNet&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, n_states, bound):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        super()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;n_states &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; n_states
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;bound &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; bound
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;layer &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Sequential(
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;n_states, &lt;span style=&#34;color:#ae81ff&#34;&gt;128&lt;/span&gt;),
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;ReLU()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        )
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;mu_out &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(&lt;span style=&#34;color:#ae81ff&#34;&gt;128&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;sigma_out &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(&lt;span style=&#34;color:#ae81ff&#34;&gt;128&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, x):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; F&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;relu(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;layer(x))
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        mu &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;bound &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; F&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;tanh(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;mu_out(x))
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        sigma &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; F&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;softplus(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;sigma_out(x))
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; mu, sigma
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Critic网络还是和之前的一样，用来计算$v$值。&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;CriticNet&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, n_states):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        super()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;n_states &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; n_states
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;layer &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Sequential(
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;n_states, &lt;span style=&#34;color:#ae81ff&#34;&gt;128&lt;/span&gt;),
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;ReLU(),
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(&lt;span style=&#34;color:#ae81ff&#34;&gt;128&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        )
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, x):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        v &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;layer(x)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; v
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;PPO&lt;/span&gt;():
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, n_states, n_actions, bound, args):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        super()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;n_states &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; n_states
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;n_actions &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; n_actions
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;bound &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; bound
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;lr &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; args&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;lr
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;gamma &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; args&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;gamma
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;epsilon &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; args&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;epsilon
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;a_update_steps &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; args&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;a_update_steps
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;c_update_steps &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; args&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;c_update_steps
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;_build()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;_build&lt;/span&gt;(self):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# 这里需要注意的是，虽然在choose_action()方法里使用的是actor_model，但是在update()函数里，每次更新之前都会将actor_model的参数赋给actor_old_model，所以之前所采样的数据就相当于是用actor_old_model得到的。&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;actor_model &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; ActorNet(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;n_states, self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;bound)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;actor_old_model &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; ActorNet(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;n_states, self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;bound)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;actor_optim &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; optim&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Adam(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;actor_model&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;parameters(), lr &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;lr)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;critic_model &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; CriticNet(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;n_states)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;critic_optim &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; optim&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Adam(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;critic_model&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;parameters(), lr &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;lr)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;choose_action&lt;/span&gt;(self, s):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        s &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;FloatTensor(s)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        mu, sigma &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;actor_model(s)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        dist &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Normal(mu, sigma)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        action &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; dist&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;sample()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;clamp(action, &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;bound, self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;bound)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;data&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;numpy()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;discount_reward&lt;/span&gt;(self, rewards, s_):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        s_ &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;FloatTensor(s_)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        target &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;critic_model(s_)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;detach()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        target_list &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; []
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; r &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; rewards[::&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            target &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; r &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;gamma &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; target
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            target_list&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;append(target)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        target_list&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;reverse()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        target_list &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cat(target_list)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; target_list
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;actor_learn&lt;/span&gt;(self, states, actions, advantages):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# 下面这段代码所实现的就是PPO-Clip的公式。&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        states &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;FloatTensor(states)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        actions &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;FloatTensor(actions)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;reshape(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        mu, sigma &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;actor_model(states)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        dist &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Normal(mu, sigma)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        old_mu, old_sigma &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;actor_old_model(states)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        old_dist &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Normal(old_mu, old_sigma)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        ratio &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;exp(dist&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;log_prob(actions) &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; old_dist&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;log_prob(actions))
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        surr &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; ratio &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; advantages&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;reshape(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        loss &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;mean(torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;min(surr, torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;clamp(ratio, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;bound, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;bound) &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; advantages&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;reshape(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)))
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;actor_optim&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;zero_grad()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        loss&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;backward()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;actor_optim&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;step()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;critic_learn&lt;/span&gt;(self, states, targets):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        states &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;FloatTensor(states)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        v &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;critic_model(states)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;reshape(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;squeeze(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        loss_func &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;MSELoss()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        loss &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; loss_func(v, targets)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;critic_optim&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;zero_grad()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        loss&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;backward()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;critic_optim&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;step()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;cal_adv&lt;/span&gt;(self, states, targets):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        states &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;FloatTensor(states)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        v &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;critic_model(states)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;reshape(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;squeeze(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        adv &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; targets &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; v
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; adv&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;detach()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;update&lt;/span&gt;(self, states, actions, targets):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;actor_old_model&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;load_state_dict(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;actor_model&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;state_dict())
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        advantages &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cal_adv(states, targets)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;a_update_steps):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;actor_learn(states, actions, advantages)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;c_update_steps):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;critic_learn(states, targets)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; __name__ &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    parser &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; argparse&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;ArgumentParser()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    parser&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;add_argument(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--n_episodes&amp;#39;&lt;/span&gt;, type&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;int, default&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;600&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    parser&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;add_argument(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--len_episode&amp;#39;&lt;/span&gt;, type&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;int, default&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    parser&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;add_argument(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--lr&amp;#39;&lt;/span&gt;, type&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;float, default&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0.0001&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    parser&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;add_argument(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--batch&amp;#39;&lt;/span&gt;, type&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;int, default&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;32&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    parser&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;add_argument(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--gamma&amp;#39;&lt;/span&gt;, type&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;float, default&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0.9&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    parser&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;add_argument(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--seed&amp;#39;&lt;/span&gt;, type&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;int, default&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    parser&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;add_argument(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--epsilon&amp;#39;&lt;/span&gt;, type&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;float, default&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0.2&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    parser&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;add_argument(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--c_update_steps&amp;#39;&lt;/span&gt;, type&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;int, default&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    parser&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;add_argument(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--a_update_steps&amp;#39;&lt;/span&gt;, type&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;int, default&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    args &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; parser&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;parse_args()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    env &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; gym&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;make(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Pendulum-v1&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;seed(args&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;seed)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;manual_seed(args&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;seed)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    n_states &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;observation_space&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;shape[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    n_actions &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;action_space&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;shape[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    bound &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;action_space&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;high[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    agent &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; PPO(n_states, n_actions, bound, args)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    all_ep_r &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; []
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; episode &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(args&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;n_episodes):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        ep_r &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        s &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;reset()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        states, actions, rewards &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [], [], []
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; t &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(args&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;len_episode):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            a &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; agent&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;choose_action(s)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            s_, r, done, _ &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;step(a)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            ep_r &lt;span style=&#34;color:#f92672&#34;&gt;+=&lt;/span&gt; r
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            states&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;append(s)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            actions&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;append(a)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            rewards&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;append((r &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;)       &lt;span style=&#34;color:#75715e&#34;&gt;# 参考了网上的做法&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            s &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; s_
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (t &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; args&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;batch &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;or&lt;/span&gt; t &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; args&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;len_episode &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;:   &lt;span style=&#34;color:#75715e&#34;&gt;# N步更新&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                states &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;array(states)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                actions &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;array(actions)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                rewards &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;array(rewards)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                targets &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; agent&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;discount_reward(rewards, s_)          &lt;span style=&#34;color:#75715e&#34;&gt;# 奖励回溯&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                agent&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;update(states, actions, targets)                &lt;span style=&#34;color:#75715e&#34;&gt;# 进行actor和critic网络的更新&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                states, actions, rewards &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [], [], []
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Episode &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;{:03d}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt; | Reward:&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;{:.03f}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;format(episode, ep_r))
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; episode &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            all_ep_r&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;append(ep_r)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            all_ep_r&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;append(all_ep_r[&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0.9&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; ep_r &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0.1&lt;/span&gt;)          &lt;span style=&#34;color:#75715e&#34;&gt;# 平滑&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    plt&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;plot(np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;arange(len(all_ep_r)), all_ep_r)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    plt&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;show()
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/12-PPO/001.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/12-PPO/001.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-</description>
-      
-    </item>
-    
-    <item>
-      <title>DQN的Pytorch实现</title>
-      <link>https://yshane-ai.github.io/post/11-dqn/</link>
-      <pubDate>Mon, 04 May 2020 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/11-dqn/</guid>
-      
-        <description>&lt;p&gt;下面是基于Pytorch的DQN实现，使用CartPole-v0环境做测试。&lt;/p&gt;
-&lt;h2 id=&#34;代码实现&#34;&gt;代码实现&lt;/h2&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; torch
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; torch.nn &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; nn
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; torch.optim &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; optim
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; torch.nn.functional &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; F
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; gym
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; numpy &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; np
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; random
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; collections &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; namedtuple
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;LR&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0.01&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;GAMMA &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0.9&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;EPS &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0.9&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;BATCH_SIZE &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;32&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;UPDATE_TARGET_INTERVAL &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;CAPACITY &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2000&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;Net&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, obs_space, action_space, hidden_size &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;50&lt;/span&gt;):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        super()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;fc1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(obs_space, hidden_size)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;fc1&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;weight&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;data&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;normal_(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0.1&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;out &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(hidden_size, action_space)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;out&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;weight&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;data&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;normal_(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0.1&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, x):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; F&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;relu(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;fc1(x))
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;out(x)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Transitions &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; namedtuple(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;transition&amp;#39;&lt;/span&gt;, (&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;state&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;action&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;reward&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;next_state&amp;#39;&lt;/span&gt;))
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ReplayMemory&lt;/span&gt;():
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, capacity):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;capacity &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; capacity
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;memory &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; []
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;counter &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;push&lt;/span&gt;(self, &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;args):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; len(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;memory) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;capacity:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;memory&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;append(&lt;span style=&#34;color:#66d9ef&#34;&gt;None&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;memory[self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;counter] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Transitions(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;args)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;counter &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;counter &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;capacity
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;sample&lt;/span&gt;(self, batch_size):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; random&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;sample(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;memory, batch_size)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __len__(self):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; len(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;memory)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;DQN&lt;/span&gt;():
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, obs_space, action_space):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;action_space &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; action_space
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;eval_net, self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;target_net &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Net(obs_space, action_space), Net(obs_space, action_space)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;target_net&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;load_state_dict(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;eval_net&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;state_dict())
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;optimizer &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; optim&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Adam(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;eval_net&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;parameters(), lr &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; LR)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;loss_func &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;MSELoss()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;memory &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; ReplayMemory(CAPACITY)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;learn_step_counter &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;memory_counter &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;select_action&lt;/span&gt;(self, obs):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# obs = torch.unsqueeze(obs, 0)&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;random&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;uniform() &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; EPS:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            action_value &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;eval_net&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;forward(obs)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            action &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; action_value&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;max(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)[&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;view(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            action &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;tensor(np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;random&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;randint(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;action_space))&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;view(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; action
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;store_transitions&lt;/span&gt;(self, &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;args):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;memory&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;push(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;args)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;learn&lt;/span&gt;(self):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;learn_step_counter &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; UPDATE_TARGET_INTERVAL &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;target_net&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;load_state_dict(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;eval_net&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;state_dict())
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;learn_step_counter &lt;span style=&#34;color:#f92672&#34;&gt;+=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        transitions &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;memory&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;sample(BATCH_SIZE)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        batch &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Transitions(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;zip(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;transitions))
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        batch_state &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cat(batch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;state)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        batch_action &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cat(batch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;action)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        batch_next_state &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cat(batch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;next_state)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        batch_reward &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cat(batch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;reward)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        q_eval &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;eval_net(batch_state)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;gather(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, batch_action)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        q_next &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;target_net(batch_next_state)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;detach()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        q_target &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; batch_reward&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;view(BATCH_SIZE, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; GAMMA &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; q_next&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;max(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;view(BATCH_SIZE, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        loss &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;loss_func(q_eval, q_target)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;optimizer&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;zero_grad()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        loss&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;backward()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;optimizer&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;step()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; __name__ &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    env &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; gym&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;make(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;CartPole-v0&amp;#39;&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;unwrapped
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    state_space &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;observation_space&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;shape[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    action_space &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;action_space&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;n
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    dqn &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; DQN(state_space, action_space)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i_episode &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;2000&lt;/span&gt;):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        episode_reward &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        state &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;tensor([env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;reset()])
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# env.render()&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;True&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            action &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; dqn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;select_action(state)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            next_state, reward, done, info &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;step(action&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;action&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;item())
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            x, x_dot, theta, theta_dot &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; next_state
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            r1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;x_threshold &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; abs(x)) &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;x_threshold &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0.8&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            r2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;theta_threshold_radians &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; abs(theta)) &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;theta_threshold_radians &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0.5&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            reward &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;tensor((r1 &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; r2)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;astype(np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;float32))
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            episode_reward &lt;span style=&#34;color:#f92672&#34;&gt;+=&lt;/span&gt; reward&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;item()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            next_state &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;tensor([next_state])
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            reward &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;tensor([reward])&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;view(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            dqn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;store_transitions(state, action, reward, next_state)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            state &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; next_state
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; len(dqn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;memory) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;=&lt;/span&gt; CAPACITY:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                dqn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;learn()
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; done:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                    print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;i_episode, episode_reward&amp;#34;&lt;/span&gt;, i_episode, episode_reward)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                    &lt;span style=&#34;color:#66d9ef&#34;&gt;break&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; done:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#66d9ef&#34;&gt;break&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;env&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;close()
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
       
     </item>
     
