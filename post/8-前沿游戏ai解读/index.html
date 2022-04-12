@@ -69,7 +69,7 @@
 <meta itemprop="name" content="游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟">
 <meta itemprop="description" content="发展 首先简要介绍下游戏AI虐人的时间线。 作为流行多年的主流游戏，MOBA类（Dota2，王者荣耀）和RTS游戏（Starcraft2）由于其"><meta itemprop="datePublished" content="2022-01-04T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2022-01-04T16:01:23+08:00" />
-<meta itemprop="wordCount" content="4184">
+<meta itemprop="wordCount" content="4704">
 <meta itemprop="keywords" content="RL,Game AI," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟"/>
 <meta name="twitter:description" content="发展 首先简要介绍下游戏AI虐人的时间线。 作为流行多年的主流游戏，MOBA类（Dota2，王者荣耀）和RTS游戏（Starcraft2）由于其"/>
@@ -732,6 +732,13 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output</p>
 <li>加入state中：使用人类数据特征作为输入的一部分</li>
 <li>加入reward中：MA的训练需要专家数据相关reward，越接近人类操作该项奖励越高</li>
 </ul>
+<p>比如说Alpha Star会提取出一个统计量$z$，包括：1）建造顺序数据：比如建筑、升级的顺序等；2）累计数据：比如各个单位建造量等。在强化学习和监督学习的过程中，所有策略都会conditional on z。</p>
+<p>在强化学习的过程中，首先从replay 里面随机sample human data，得到对应的统计量z，接着：</p>
+<ol>
+<li><strong>约束动作空间</strong>：基于该统计量，学习过程有一个loss用于最小化和有监督版本智能体的 KL，保证学习到的策略要一定程度相近于监督学习的模仿策略版本。</li>
+<li><strong>设计伪奖赏（pseudo-reward）</strong>：根据累计统计量z和当前的游戏进行过程的累计统计量z的差异来计算pseudo-rewards，具体包括：1) 建造顺序计算编辑距离（edit distance）; 2) 累计数据计算汉明距离（Hamming distance）</li>
+</ol>
+<p>从这里可以看，AlphaStar一定程度上说是一种模仿学习上的成功。他所学到的是基于人类（顶尖人类）的对战轨迹下的一个鲁棒可泛化的策略。<strong>每次的对局所sample的 统计量z，已经一定程度上限制的该智能体本场replay的整体策略选择范围（由建造顺序和单位累计顺序大致决定），AlphaStar做的是给定的策略选择范围z内学习如何应对其他对手策略。</strong></p>
 
     </div>
 
