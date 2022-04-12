@@ -144,6 +144,15 @@
     </item>
     
     <item>
+      <title>RL博弈对手选择策略</title>
+      <link>https://yshane-ai.github.io/post/25-rl%E5%8D%9A%E5%BC%88%E5%AF%B9%E6%89%8B%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5/</link>
+      <pubDate>Thu, 10 Dec 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/25-rl%E5%8D%9A%E5%BC%88%E5%AF%B9%E6%89%8B%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5/</guid>
+      <description>**FSP（Fictitious self-play）**通过与种群中所有之前的智能体比赛来避免出现多个智能体胜负关系成圈的情况。换句话说，F</description>
+    </item>
+    
+    <item>
       <title>Python调试器pdb的使用</title>
       <link>https://yshane-ai.github.io/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/</link>
       <pubDate>Wed, 14 Oct 2020 16:01:23 +0800</pubDate>
@@ -177,15 +186,6 @@
       
       <guid>https://yshane-ai.github.io/post/13-ddpg/</guid>
       <description>原文链接 Lillicrap et al_2019_Continuous control with deep reinforcement learning 算法概述 DQN是传统强化学习算法q-learning+深度Q网络。Q网络用语处理状态空间连续的问题，但解决不了动作空</description>
-    </item>
-    
-    <item>
-      <title>PPO的Pytorch实现</title>
-      <link>https://yshane-ai.github.io/post/12-ppo/</link>
-      <pubDate>Thu, 14 May 2020 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/12-ppo/</guid>
-      <description>算法概述 在PG算法中，策略梯度的计算公式如下所示： $$J(\theta) = E[R(\tau)]$$，策略梯度可以表示为$$\nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau)</description>
     </item>
     
   </channel>

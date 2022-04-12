@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>GPU on Yang Xinxin&#39;s Blog</title>
+    <link>https://yshane-ai.github.io/tags/gpu/</link>
+    <description>Recent content in GPU on Yang Xinxin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>Xinxin Yang</copyright>
+    <lastBuildDate>Tue, 10 Dec 2019 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/tags/gpu/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>英伟达GPU系列介绍</title>
+      <link>https://yshane-ai.github.io/post/24-nvidia-gpu%E7%B3%BB%E5%88%97%E4%BB%8B%E7%BB%8D/</link>
+      <pubDate>Tue, 10 Dec 2019 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/24-nvidia-gpu%E7%B3%BB%E5%88%97%E4%BB%8B%E7%BB%8D/</guid>
+      <description>Nvidia GeForce RTX 2080ti, Nvidia Tesla T4, Nvidia Titan RTX … 英伟达这些GPU产品的名称看上去眼花缭乱，傻傻分不清。为了搞清楚这些名词，专门花了一些时间整理整理，大体上梳理清楚了脉</description>
+    </item>
+    
+  </channel>
+</rss>
