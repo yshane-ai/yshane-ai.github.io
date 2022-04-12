@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Influence - Yang Xinxin&#39;s Blog</title>
+  <title>Off-policy方法梳理：Retrace和Vtrace - Yang Xinxin&#39;s Blog</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="今天分享一篇多智能体相关的工作，发表于ICML2019. 原文链接 Jaques et al_2019_Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement_ICML2019 背景 现在单智能体的任务已经可以处理的很好，如上半年提出" />
+  <meta name="description" content="V-trace 首先介绍一下n step-return和$\lambda$-return，都是对v值的估计。 n-step n step-return是基于TD(0)的扩展" />
 
   <meta name="keywords" content="RL, ML, " />
 
@@ -35,7 +35,7 @@
 <meta name="generator" content="Hugo 0.93.2" />
 
 
-<link rel="canonical" href="https://yshane-ai.github.io/post/2-social-influence/" />
+<link rel="canonical" href="https://yshane-ai.github.io/post/26-off-policy%E6%8A%80%E5%B7%A7%E6%A2%B3%E7%90%86/" />
 
 
 
@@ -59,20 +59,20 @@
 
 
 
-<meta property="og:title" content="Influence" />
-<meta property="og:description" content="今天分享一篇多智能体相关的工作，发表于ICML2019. 原文链接 Jaques et al_2019_Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement_ICML2019 背景 现在单智能体的任务已经可以处理的很好，如上半年提出" />
+<meta property="og:title" content="Off-policy方法梳理：Retrace和Vtrace" />
+<meta property="og:description" content="V-trace 首先介绍一下n step-return和$\lambda$-return，都是对v值的估计。 n-step n step-return是基于TD(0)的扩展" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/2-social-influence/" /><meta property="article:section" content="post" />
-<meta property="article:published_time" content="2020-10-13T16:01:23+08:00" />
-<meta property="article:modified_time" content="2020-10-13T16:01:23+08:00" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/26-off-policy%E6%8A%80%E5%B7%A7%E6%A2%B3%E7%90%86/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-01-13T16:01:23+08:00" />
+<meta property="article:modified_time" content="2022-01-13T16:01:23+08:00" />
 
-<meta itemprop="name" content="Influence">
-<meta itemprop="description" content="今天分享一篇多智能体相关的工作，发表于ICML2019. 原文链接 Jaques et al_2019_Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement_ICML2019 背景 现在单智能体的任务已经可以处理的很好，如上半年提出"><meta itemprop="datePublished" content="2020-10-13T16:01:23+08:00" />
-<meta itemprop="dateModified" content="2020-10-13T16:01:23+08:00" />
-<meta itemprop="wordCount" content="1181">
+<meta itemprop="name" content="Off-policy方法梳理：Retrace和Vtrace">
+<meta itemprop="description" content="V-trace 首先介绍一下n step-return和$\lambda$-return，都是对v值的估计。 n-step n step-return是基于TD(0)的扩展"><meta itemprop="datePublished" content="2022-01-13T16:01:23+08:00" />
+<meta itemprop="dateModified" content="2022-01-13T16:01:23+08:00" />
+<meta itemprop="wordCount" content="1388">
 <meta itemprop="keywords" content="RL," /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Influence"/>
-<meta name="twitter:description" content="今天分享一篇多智能体相关的工作，发表于ICML2019. 原文链接 Jaques et al_2019_Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement_ICML2019 背景 现在单智能体的任务已经可以处理的很好，如上半年提出"/>
+<meta name="twitter:title" content="Off-policy方法梳理：Retrace和Vtrace"/>
+<meta name="twitter:description" content="V-trace 首先介绍一下n step-return和$\lambda$-return，都是对v值的估计。 n-step n step-return是基于TD(0)的扩展"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -525,11 +525,11 @@
           <article class="post bg-white">
     
     <header class="post-header">
-      <h1 class="post-title">Influence</h1>
+      <h1 class="post-title">Off-policy方法梳理：Retrace和Vtrace</h1>
       
       <div class="post-meta">
-        <time datetime="2020-10-13" class="post-time">
-          2020-10-13
+        <time datetime="2022-01-13" class="post-time">
+          2022-01-13
         </time>
         <div class="post-category">
             <a href="https://yshane-ai.github.io/categories/rl/"> RL </a>
@@ -552,15 +552,14 @@
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#原文链接">原文链接</a></li>
-    <li><a href="#背景">背景</a></li>
-    <li><a href="#过程">过程</a>
+    <li><a href="#v-trace">V-trace</a>
       <ul>
-        <li></li>
+        <li><a href="#n-step">n-step</a></li>
+        <li><a href="#lambda-return">$\lambda$-return$</a></li>
+        <li><a href="#retrace">Retrace</a></li>
+        <li><a href="#vtrace">Vtrace</a></li>
       </ul>
     </li>
-    <li><a href="#实验">实验</a></li>
-    <li><a href="#总结">总结</a></li>
   </ul>
 </nav>
   </div>
@@ -568,83 +567,94 @@
 
     
     <div class="post-content">
-      
+      <h2 id="v-trace">V-trace</h2>
+<p>首先介绍一下n step-return和$\lambda$-return，都是对v值的估计。</p>
+<h3 id="n-step">n-step</h3>
+<p>n step-return是基于TD(0)的扩展，公式如下：</p>
+<p>$$
+G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^{n-1} R_{t+n} + \gamma^n \hat v(s_{t+n})
+$$</p>
+<h3 id="lambda-return">$\lambda$-return$</h3>
+<p>$\lambda$-return$则是一种更平滑的估计方式，使用了不同长度的n step-return的加权均值来估计return。</p>
+<p>$$
+G_t^\lambda = (1-\lambda)\sum_{n = 1}^\infty \lambda^{n-1}G_{t:t+n}
+$$</p>
+<p>一般情况下，要计算$G_t^\lambda$需要知道t时刻到t+n时刻的信息才行，这也是我们需要等到回合结束才能计算return并更新policy的原因。这种方式称为前向视图，每一步的价值函数都需要看到未来的信息才能计算,使用这个方式更新参数的算法称为离线$\lambda$-return算法。</p>
+<p>资格迹的算法使用一个迹向量存储只与过去状态相关的梯度信息，随后在下一步信息到来时更新迹向量。这种方式称为后向视图，每一步的迹不需要未来的信息，可以直接计算。</p>
+<p>资格迹向量$z_t$是一个和函数权值向量$w$同纬度的向量，它作为一个短期的记忆，辅助权值向量的更新。</p>
+<p>在TD(\lambda)中$z_t$被初始化为0，并在每一步累加价值函数的梯度：</p>
+<p>$$
+z_t = \gamma z_{t-1} + \nabla \hat v(s_t)
+$$</p>
+<p>每一步可以更新函数权值：</p>
+<p>$$
+\delta_t = R_{t+1} + \gamma \hat v(s_{t+1}) - \hat v(s_t) \
+w_{t+1} = w_t + \alpha \delta_t z_t
+$$</p>
+<p>可以证明(《Reinforcement Learning: An Introduction》习题12.1-12.4），在每一步只计算梯度而不更新权重的情况下，使用资格迹计算的梯度更新与使用离线$\lambda$-return的结果一致。可以理解为每一步的迹向量都是离线$\lambda$-return算法中梯度的一部分。</p>
+<h3 id="retrace">Retrace</h3>
+<ul>
+<li>重要性采样：方差大，对任何策略都适用</li>
+<li>$Q^\pi(\lambda)$：方差小，仅限于两个策略足够接近</li>
+<li>$TB(\lambda)$：方差小，对任意策略都适用</li>
+<li>Retrace$(\lambda)$：方差小，对任意策略适用</li>
+</ul>
+
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
 <figure  itemprop="associatedMedia"
   itemscope itemtype="http://schema.org/ImageObject" >
     <div class="img">
-      <img itemprop="thumbnail" src="/image/02-Influence/000.png" />
+      <img itemprop="thumbnail" src="/image/26-off-policy/001.png" />
     </div>
-    <a href="/image/02-Influence/000.png" itemprop="contentUrl"></a>
+    <a href="/image/26-off-policy/001.png" itemprop="contentUrl"></a>
   </figure>
 </div>
 
-<p>今天分享一篇多智能体相关的工作，发表于ICML2019.</p>
-<h2 id="原文链接">原文链接</h2>
-<p><a href="http://arxiv.org/abs/1810.08647">Jaques et al_2019_Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement_ICML2019</a></p>
-<h2 id="背景">背景</h2>
-<p>现在单智能体的任务已经可以处理的很好，如上半年提出的<strong>Atari57</strong>，在Atari的所有任务上都表现出色。但多智能体相关的研究始终受困于状态空间巨大，动作协调困难等等原因，无法应用于大规模部署。因此，如何引导智能体产生更有意义的动作，比如合作型动作，成为一个很关键的问题。</p>
-<p>本文提出一个很有意思的思路是考虑智能体动作的社会影响力，即对其他智能体的影响，产生有意义的动作则应给予一个奖励，从而达到诱使合作的目的。</p>
-<h2 id="过程">过程</h2>
-<h4 id="动作模型">动作模型</h4>
-<p>这里提出将社会影响力作为一种内在奖励，即产生的动作对周围智能体有较大影响时，则相应给予一定的奖励。奖励函数可重新定义为：$r_t^k=\alpha e_t^k + \beta c_t^k$，其中$e_t^k$和$c_t^k$分别表示外部奖励和内部奖励，内部奖励和社会影响力相关。</p>
-<p>但如何评价这个动作是否有意义，或者有影响力呢？这里提出通过对比“当前动作”与“反动作”造成的周围智能体策略变化程度作为衡量标准，即考虑若不采取“当前动作”，周围智能体的动作是否会相应变化。智能体$k$的内在奖励公式上可以表示为：
-$$
-\begin{aligned}
-c_t^k &amp;= \sum_{j=0,j\neq k}^N\left[D_{KL}[p(a_t^j|a_t^k,s_t^j)||\sum_{\tilde a_t^k}p(a_t^j|\tilde a_t^k,s_t^k)p(\tilde a_t^k|s_t^j)]\right] \
-&amp;=\sum_{j=0,j\neq k}^N\left[D_{KL}[p(a_t^j|a_t^k,s_t^j)||p(a_t^j|s_t^j)]\right]
-\end{aligned}
-$$
-其中$\tilde a_t^k$表示“反动作”。</p>
-<p>根据互信息的定义，上式等价于增大智能体$j$和$k$的动作相关性，即互信息$I(a^k;a^j|s)$，从而诱使产生合作行为。但为了保证上式可以计算，本文提出两点条件：</p>
-<ul>
-<li>使用集中式训练的方法，在训练时可以直接利用对方的策略来观测“反动作”产生的策略变化；</li>
-<li>这种影响力是单边的，即智能体之间的动作影响程度是非对称的。</li>
-</ul>
-<h4 id="通信模型">通信模型</h4>
-<p>此外，除了直接观测动作，本文还提出可以实现合作型通信，即智能体之间可以互相发送信息，通收集周围智能体发送来的信息，选择合适的动作。模型如下所示：</p>
+<p>由于Retrace使用了在1处截断的Importance Sampling，方差得到了降低。同时，因为</p>
+<p>$$
+min(1,\frac{\pi(a_s|x_s)}{\mu(a_s|x_s)}) \geq \pi(a_s|x_s)
+$$</p>
+<p>提高了回报的利用效率。Retrace这个名字引申于资格迹(eligibility trece)，但与原始的&quot;迹&quot;概念不同，在这里表示一种估计return的方法。</p>
+<h3 id="vtrace">Vtrace</h3>
 
 
 <div class="box">
 <figure  itemprop="associatedMedia"
   itemscope itemtype="http://schema.org/ImageObject" >
     <div class="img">
-      <img itemprop="thumbnail" src="/image/02-Influence/001.png" />
+      <img itemprop="thumbnail" src="/image/04-IMPALA/003.png" />
     </div>
-    <a href="/image/02-Influence/001.png" itemprop="contentUrl"></a>
+    <a href="/image/04-IMPALA/003.png" itemprop="contentUrl"></a>
   </figure>
 </div>
 
-<h2 id="实验">实验</h2>
+<p>非常复杂，看不懂，有没有？看看里面一些变量的定义是什么：</p>
 
 
 <div class="box">
 <figure  itemprop="associatedMedia"
   itemscope itemtype="http://schema.org/ImageObject" >
     <div class="img">
-      <img itemprop="thumbnail" src="/image/02-Influence/002.png" />
+      <img itemprop="thumbnail" src="/image/04-IMPALA/006.png" />
     </div>
-    <a href="/image/02-Influence/002.png" itemprop="contentUrl"></a>
+    <a href="/image/04-IMPALA/006.png" itemprop="contentUrl"></a>
   </figure>
 </div>
 
-<p>本文的实验环境如上图所示，其中分两种角色：影响者（Influencer）和被影响者（Influencee）。在这个环境下，每个智能体仅可观测到周围的状态，如黄色智能体的视野边界是黄色方框，而对方框外的信息一无所知（其实这个图感觉不太好，应该把蓝色方框作为影响者）。当黄色智能体观测到影响者向上移动时，便可以推断出上方可能有食物，这时，影响者的动作便是有意义的，即有社会影响力。最终会产生这么一种情况，影响者仅仅在观测到食物时才会向食物方向运动，在其他时候都会静止不动，从而保证自己做的每个动作都是有影响力的。</p>
-
-
-<div class="box">
-<figure  itemprop="associatedMedia"
-  itemscope itemtype="http://schema.org/ImageObject" >
-    <div class="img">
-      <img itemprop="thumbnail" src="/image/02-Influence/003.png" />
-    </div>
-    <a href="/image/02-Influence/003.png" itemprop="contentUrl"></a>
-  </figure>
-</div>
-
-<p>相反，若是影响者在未观测到食物时做随机运动，那么他对周围智能体的影响就会很小，动作的影响力就相应比较低。本文对比了在“动作模型”和“通信模型”下的效果，如下图所示，可见都有相应提升，但“动作模型”的表现更加出色。</p>
-<h2 id="总结">总结</h2>
-<p>本文提出了一种社会影响力机制，通过估计自身行为对周围智能体的影响，相应提供内在奖励，诱使社会合作行为的产生。</p>
+<p>括号里的表达式是Temporal Difference，然而外面的$\rho_t$是什么含义了？</p>
+<p>$$
+\rho_t = \min(\overline\rho, \frac{\pi(a_t|x_t)}{\mu(a_t|x_t)})
+$$</p>
+<p>还有其他变量的定义：</p>
+<p>$$
+c_i = \min(\overline c, \frac{\pi(a_i|x_i)}{\mu(a_i|x_i)})
+$$</p>
+<p>$$
+\overline\rho \geq \overline c
+$$</p>
+<p>看到$\rho_t$和$c_i$的表达式，是不是联想起什么了？这就是Importance Sampling。从策略$mu$中采样，更新当前的策略$\pi$。只不过加上了最大值的限制，不能超过$\overline\rho$和$\overline c$，也就是说进行了截断处理，一般情况下这两个值可以设置成1啦。其中$c$的作用是保证越往后的状态对现在的状态价值更新影响越小，$\rho$的作用是对未来状态价值做了一个importance和截取操作，要求其不能太大。所以总的来说就是用了两个截取保证最后可以收敛。</p>
+<p>总结一下，V-trace与Retrace的想法类似，使用了带有截断的重要性采用权重来权衡方差，偏差以及样本利用效率。它们的不同点在于，Retrace中修正的是动作价值函数Q，而V-trace式修正的状态价值函数V。</p>
 
     </div>
 
@@ -658,7 +668,7 @@ $$
   <p class="copyright-item">
     <span class="item-title">LastMod</span>
     <span class="item-content">
-      2020-10-13
+      2022-01-13
       
     </span>
   </p>
@@ -682,7 +692,7 @@ $$
       
       <nav class="post-nav">
         
-          <a class="prev" href="/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/">
+          <a class="prev" href="/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">
             
             <i class="iconfont">
               <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
@@ -692,12 +702,12 @@ $$
 </svg>
 
             </i>
-            <span class="prev-text nav-default">Python调试器pdb的使用</span>
+            <span class="prev-text nav-default">关于RL实战的一点想法</span>
             <span class="prev-text nav-mobile">Prev</span>
           </a>
         
-          <a class="next" href="/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/">
-            <span class="next-text nav-default">Python中的断言assert和异常exception处理</span>
+          <a class="next" href="/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/">
+            <span class="next-text nav-default">神经网络的初始化和优化</span>
             <span class="prev-text nav-mobile">Next</span>
             
             <i class="iconfont">

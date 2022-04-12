@@ -18,6 +18,15 @@
     </item>
     
     <item>
+      <title>Off-policy方法梳理：Retrace和Vtrace</title>
+      <link>https://yshane-ai.github.io/post/26-off-policy%E6%8A%80%E5%B7%A7%E6%A2%B3%E7%90%86/</link>
+      <pubDate>Thu, 13 Jan 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/26-off-policy%E6%8A%80%E5%B7%A7%E6%A2%B3%E7%90%86/</guid>
+      <description>V-trace 首先介绍一下n step-return和$\lambda$-return，都是对v值的估计。 n-step n step-return是基于TD(0)的扩展</description>
+    </item>
+    
+    <item>
       <title>游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟</title>
       <link>https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/</link>
       <pubDate>Tue, 04 Jan 2022 16:01:23 +0800</pubDate>

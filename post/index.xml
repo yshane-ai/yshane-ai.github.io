@@ -18,6 +18,15 @@
     </item>
     
     <item>
+      <title>Off-policy方法梳理：Retrace和Vtrace</title>
+      <link>https://yshane-ai.github.io/post/26-off-policy%E6%8A%80%E5%B7%A7%E6%A2%B3%E7%90%86/</link>
+      <pubDate>Thu, 13 Jan 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/26-off-policy%E6%8A%80%E5%B7%A7%E6%A2%B3%E7%90%86/</guid>
+      <description>V-trace 首先介绍一下n step-return和$\lambda$-return，都是对v值的估计。 n-step n step-return是基于TD(0)的扩展</description>
+    </item>
+    
+    <item>
       <title>神经网络的初始化和优化</title>
       <link>https://yshane-ai.github.io/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/</link>
       <pubDate>Thu, 13 Jan 2022 16:01:23 +0800</pubDate>
@@ -177,15 +186,6 @@
       
       <guid>https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/</guid>
       <description>断言 断言，可以理解为判断是否断开的预言。 assert 表达式 , 描述 表达式为我们的预期结果，当表达式的结果为False时，抛出 AssertionError 异常，如无异常捕获程序遇到</description>
-    </item>
-    
-    <item>
-      <title>DDPG的Pytorch实现</title>
-      <link>https://yshane-ai.github.io/post/13-ddpg/</link>
-      <pubDate>Tue, 14 Jul 2020 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/13-ddpg/</guid>
-      <description>原文链接 Lillicrap et al_2019_Continuous control with deep reinforcement learning 算法概述 DQN是传统强化学习算法q-learning+深度Q网络。Q网络用语处理状态空间连续的问题，但解决不了动作空</description>
     </item>
     
   </channel>

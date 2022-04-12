@@ -100,6 +100,105 @@ IEEE Network&lt;/p&gt;
     </item>
     
     <item>
+      <title>Off-policy方法梳理：Retrace和Vtrace</title>
+      <link>https://yshane-ai.github.io/post/26-off-policy%E6%8A%80%E5%B7%A7%E6%A2%B3%E7%90%86/</link>
+      <pubDate>Thu, 13 Jan 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/26-off-policy%E6%8A%80%E5%B7%A7%E6%A2%B3%E7%90%86/</guid>
+      
+        <description>&lt;h2 id=&#34;v-trace&#34;&gt;V-trace&lt;/h2&gt;
+&lt;p&gt;首先介绍一下n step-return和$\lambda$-return，都是对v值的估计。&lt;/p&gt;
+&lt;h3 id=&#34;n-step&#34;&gt;n-step&lt;/h3&gt;
+&lt;p&gt;n step-return是基于TD(0)的扩展，公式如下：&lt;/p&gt;
+&lt;p&gt;$$
+G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^{n-1} R_{t+n} + \gamma^n \hat v(s_{t+n})
+$$&lt;/p&gt;
+&lt;h3 id=&#34;lambda-return&#34;&gt;$\lambda$-return$&lt;/h3&gt;
+&lt;p&gt;$\lambda$-return$则是一种更平滑的估计方式，使用了不同长度的n step-return的加权均值来估计return。&lt;/p&gt;
+&lt;p&gt;$$
+G_t^\lambda = (1-\lambda)\sum_{n = 1}^\infty \lambda^{n-1}G_{t:t+n}
+$$&lt;/p&gt;
+&lt;p&gt;一般情况下，要计算$G_t^\lambda$需要知道t时刻到t+n时刻的信息才行，这也是我们需要等到回合结束才能计算return并更新policy的原因。这种方式称为前向视图，每一步的价值函数都需要看到未来的信息才能计算,使用这个方式更新参数的算法称为离线$\lambda$-return算法。&lt;/p&gt;
+&lt;p&gt;资格迹的算法使用一个迹向量存储只与过去状态相关的梯度信息，随后在下一步信息到来时更新迹向量。这种方式称为后向视图，每一步的迹不需要未来的信息，可以直接计算。&lt;/p&gt;
+&lt;p&gt;资格迹向量$z_t$是一个和函数权值向量$w$同纬度的向量，它作为一个短期的记忆，辅助权值向量的更新。&lt;/p&gt;
+&lt;p&gt;在TD(\lambda)中$z_t$被初始化为0，并在每一步累加价值函数的梯度：&lt;/p&gt;
+&lt;p&gt;$$
+z_t = \gamma z_{t-1} + \nabla \hat v(s_t)
+$$&lt;/p&gt;
+&lt;p&gt;每一步可以更新函数权值：&lt;/p&gt;
+&lt;p&gt;$$
+\delta_t = R_{t+1} + \gamma \hat v(s_{t+1}) - \hat v(s_t) \
+w_{t+1} = w_t + \alpha \delta_t z_t
+$$&lt;/p&gt;
+&lt;p&gt;可以证明(《Reinforcement Learning: An Introduction》习题12.1-12.4），在每一步只计算梯度而不更新权重的情况下，使用资格迹计算的梯度更新与使用离线$\lambda$-return的结果一致。可以理解为每一步的迹向量都是离线$\lambda$-return算法中梯度的一部分。&lt;/p&gt;
+&lt;h3 id=&#34;retrace&#34;&gt;Retrace&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;重要性采样：方差大，对任何策略都适用&lt;/li&gt;
+&lt;li&gt;$Q^\pi(\lambda)$：方差小，仅限于两个策略足够接近&lt;/li&gt;
+&lt;li&gt;$TB(\lambda)$：方差小，对任意策略都适用&lt;/li&gt;
+&lt;li&gt;Retrace$(\lambda)$：方差小，对任意策略适用&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/26-off-policy/001.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/26-off-policy/001.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;由于Retrace使用了在1处截断的Importance Sampling，方差得到了降低。同时，因为&lt;/p&gt;
+&lt;p&gt;$$
+min(1,\frac{\pi(a_s|x_s)}{\mu(a_s|x_s)}) \geq \pi(a_s|x_s)
+$$&lt;/p&gt;
+&lt;p&gt;提高了回报的利用效率。Retrace这个名字引申于资格迹(eligibility trece)，但与原始的&amp;quot;迹&amp;quot;概念不同，在这里表示一种估计return的方法。&lt;/p&gt;
+&lt;h3 id=&#34;vtrace&#34;&gt;Vtrace&lt;/h3&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/04-IMPALA/003.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/04-IMPALA/003.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;非常复杂，看不懂，有没有？看看里面一些变量的定义是什么：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/04-IMPALA/006.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/04-IMPALA/006.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;括号里的表达式是Temporal Difference，然而外面的$\rho_t$是什么含义了？&lt;/p&gt;
+&lt;p&gt;$$
+\rho_t = \min(\overline\rho, \frac{\pi(a_t|x_t)}{\mu(a_t|x_t)})
+$$&lt;/p&gt;
+&lt;p&gt;还有其他变量的定义：&lt;/p&gt;
+&lt;p&gt;$$
+c_i = \min(\overline c, \frac{\pi(a_i|x_i)}{\mu(a_i|x_i)})
+$$&lt;/p&gt;
+&lt;p&gt;$$
+\overline\rho \geq \overline c
+$$&lt;/p&gt;
+&lt;p&gt;看到$\rho_t$和$c_i$的表达式，是不是联想起什么了？这就是Importance Sampling。从策略$mu$中采样，更新当前的策略$\pi$。只不过加上了最大值的限制，不能超过$\overline\rho$和$\overline c$，也就是说进行了截断处理，一般情况下这两个值可以设置成1啦。其中$c$的作用是保证越往后的状态对现在的状态价值更新影响越小，$\rho$的作用是对未来状态价值做了一个importance和截取操作，要求其不能太大。所以总的来说就是用了两个截取保证最后可以收敛。&lt;/p&gt;
+&lt;p&gt;总结一下，V-trace与Retrace的想法类似，使用了带有截断的重要性采用权重来权衡方差，偏差以及样本利用效率。它们的不同点在于，Retrace中修正的是动作价值函数Q，而V-trace式修正的状态价值函数V。&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
       <title>神经网络的初始化和优化</title>
       <link>https://yshane-ai.github.io/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/</link>
       <pubDate>Thu, 13 Jan 2022 16:01:23 +0800</pubDate>
@@ -2121,124 +2220,6 @@ $$
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
 &lt;p&gt;本文提出了一种社会影响力机制，通过估计自身行为对周围智能体的影响，相应提供内在奖励，诱使社会合作行为的产生。&lt;/p&gt;
 </description>
-      
-    </item>
-    
-    <item>
-      <title>Python中的断言assert和异常exception处理</title>
-      <link>https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/</link>
-      <pubDate>Fri, 14 Aug 2020 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/</guid>
-      
-        <description>&lt;h2 id=&#34;断言&#34;&gt;断言&lt;/h2&gt;
-&lt;p&gt;断言，可以理解为判断是否断开的预言。&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;assert  表达式 , 描述
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;表达式为我们的预期结果，当表达式的结果为False时，抛出 AssertionError 异常，如无异常捕获程序遇到异常时直接结束运行。反之，表达式结果为True 程序继续向下运行。&lt;/p&gt;
-&lt;p&gt;我们何时使用断言？&lt;/p&gt;
-&lt;p&gt;断言需要慎用，尤其是写测试用例或者程序时，因为我们运行程序时，如果断言失败，无异常捕获程序则会结束运行，导致后面的代码无法执行。&lt;/p&gt;
-&lt;p&gt;断言一般用在防御型的编程、运行时检查程序逻辑、检查约定、程序常量、检查文档时，在从来不会运行失败的代码不必要加上断言。&lt;/p&gt;
-&lt;p&gt;示例1.1：当pi值对修改抛出异常&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;Circle&lt;/span&gt;(object):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   pi &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3.14&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, r):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;       self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;r &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; r
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;area&lt;/span&gt;(self):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;       &lt;span style=&#34;color:#66d9ef&#34;&gt;assert&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pi &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; Circle&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pi, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;pi 值被修改&amp;#39;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;       &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pi &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;r &lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;circle1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Circle(&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;circle1&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pi &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(circle1&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;area())
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;输出结果：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Traceback (most recent call last):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;assert&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pi &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; Circle&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pi, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;pi 值被修改&amp;#39;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;AssertionError&lt;/span&gt;: pi 值被修改
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;异常&#34;&gt;异常&lt;/h2&gt;
-&lt;p&gt;运行期间检测到的错误被称为异常，大多数的异常都不会被程序处理，都以错误信息的形式展现。&lt;/p&gt;
-&lt;p&gt;如下：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Traceback (most recent call last):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt; File &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;lt;input&amp;gt;&amp;#34;&lt;/span&gt;, line &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;module&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;ZeroDivisionError&lt;/span&gt;: division by zero
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;a&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Traceback (most recent call last):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt; File &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;lt;input&amp;gt;&amp;#34;&lt;/span&gt;, line &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;module&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;NameError&lt;/span&gt;: name &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;a&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;is&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;not&lt;/span&gt; defined
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;2&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Traceback (most recent call last):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt; File &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;lt;input&amp;gt;&amp;#34;&lt;/span&gt;, line &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;module&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;TypeError&lt;/span&gt;: Can&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;t convert &amp;#39;&lt;/span&gt;int&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39; object to str implicitly&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;异常以不同的类型出现，这些类型都作为信息的一部分打印出来。如上面例子中的类型有ZeroDivisionError，NameError 和 TypeError异常。&lt;/p&gt;
-&lt;p&gt;错误信息的前面部分显示了异常发生的上下文，并以调用栈的形式显示具体信息。&lt;/p&gt;
-&lt;h3 id=&#34;怎么捕获异常并处理&#34;&gt;怎么捕获异常，并处理？&lt;/h3&gt;
-&lt;p&gt;我们捕获异常使用 try &amp;hellip; except &amp;hellip;，try 与 except 之间是可能会发生异常的语句块，而 except 下的语句块是当异常发生后我们进行处理的语句块。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;True&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;try&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;       i &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; int(input(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;接收一个除数：&amp;#39;&lt;/span&gt;))
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;       print(&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; i)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;except&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;       print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;发生了异常&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;运行程序&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;接收一个除数&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;：&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2.0&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;接收一个除数&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;：&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;发生了异常
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;接收一个除数&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;：&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;a
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;发生了异常
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;怎么捕获特定的异常&#34;&gt;怎么捕获特定的异常？&lt;/h3&gt;
-&lt;p&gt;在 except 后加入异常类型，就可以捕获特定的异常，也可以一次性捕获多个异常，如下示例&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;True&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;try&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;       i &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; int(input(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;接收一个除数：&amp;#39;&lt;/span&gt;))
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;       print(&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; i)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;except&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ZeroDivisionError&lt;/span&gt;:  &lt;span style=&#34;color:#75715e&#34;&gt;# 只捕获ZeroDivisionError异常&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;       print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;发生了ZeroDivisionError异常&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;except&lt;/span&gt; (&lt;span style=&#34;color:#a6e22e&#34;&gt;ValueError&lt;/span&gt;, &lt;span style=&#34;color:#a6e22e&#34;&gt;KeyboardInterrupt&lt;/span&gt;, &lt;span style=&#34;color:#a6e22e&#34;&gt;TypeError&lt;/span&gt;):  &lt;span style=&#34;color:#75715e&#34;&gt;# 捕获元组中的异常&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;       print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;发生了ValueError或KeyboardInterrupt或TypeError异常&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;except&lt;/span&gt;:  &lt;span style=&#34;color:#75715e&#34;&gt;# 可以捕获所有异常&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;       print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;发生了未知异常&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;运行程序&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;接收一个除数&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;：&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;发生了ZeroDivisionError异常
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;接收一个除数&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;：&lt;/span&gt;a
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;发生了ValueError或KeyboardInterrupt或TypeError异常
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;try--except--else--finally--的使用顺序&#34;&gt;try &amp;hellip; except &amp;hellip; else &amp;hellip; finally &amp;hellip; 的使用顺序&lt;/h3&gt;
-&lt;p&gt;try &amp;hellip; except &amp;hellip; else &amp;hellip; finally&amp;hellip;使用顺序，else 必须在 except 后 finally 前，finally 只能在最后；else 与 finally 可有可无。&lt;/p&gt;
-&lt;p&gt;语法上 except 也可以缺少，不过少了except就不能捕获异常，没人会这样写代码。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;try&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;lt;发生异常语句块&amp;gt;&amp;#39;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;except&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;lt;异常类型&amp;gt;&amp;#39;&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;发生了ZeroDivisionError异常&amp;#39;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;没有发生异常才会执行else语句块&amp;#39;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;finally&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;不管有没有发生异常都执行finally语句块&amp;#39;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;try--except--finally--使用场景&#34;&gt;try &amp;hellip; except &amp;hellip; finally &amp;hellip; 使用场景&lt;/h3&gt;
-&lt;p&gt;try &amp;hellip; except &amp;hellip; finally &amp;hellip; 是非常常用，主要用于如关闭数据库连接，文件关闭，释放线程锁等。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;fo &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;None&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;try&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    fo &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; open(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;test.txt&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;r&amp;#34;&lt;/span&gt;, encoding&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;utf-8&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; fo:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        print(i)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;except&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;Exception&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; e:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;捕捉到异常：&amp;#34;&lt;/span&gt;, e)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;finally&lt;/span&gt;:  &lt;span style=&#34;color:#75715e&#34;&gt;# 不管是否异常都会执行&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; fo &lt;span style=&#34;color:#f92672&#34;&gt;is&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;not&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;None&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        fo&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;close()
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;抛出异常-raise&#34;&gt;抛出异常 raise&lt;/h2&gt;
-&lt;p&gt;Python 可以使用 raise 语句抛出一个指定的异常&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;raise 异常类型(‘异常描述’)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;raise 唯一的一个参数是指定要被抛出的异常。它必须是一个异常的实例或者是异常的类（也就是 Exception 的子类）。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;raise NameError(&amp;#39;使用一个还未赋值对象的变量&amp;#39;)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;输出结果：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Traceback (most recent call last):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;raise&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;NameError&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;使用一个还未赋值对象的变量&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;NameError&lt;/span&gt;: 使用一个还未赋值对象的变量
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
       
     </item>
     
