@@ -113,15 +113,16 @@ IEEE Network&lt;/p&gt;
 &lt;p&gt;$$
 G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^{n-1} R_{t+n} + \gamma^n \hat v(s_{t+n})
 $$&lt;/p&gt;
-&lt;h3 id=&#34;lambda-return&#34;&gt;$\lambda$-return$&lt;/h3&gt;
-&lt;p&gt;$\lambda$-return$则是一种更平滑的估计方式，使用了不同长度的n step-return的加权均值来估计return。&lt;/p&gt;
+&lt;h3 id=&#34;lambda--return&#34;&gt;$\lambda$ -return&lt;/h3&gt;
+&lt;p&gt;$\lambda$-return则是一种更平滑的估计方式，使用了不同长度的n step-return的加权均值来估计return。&lt;/p&gt;
+&lt;p&gt;And here is some in-line math: $ k_{n+1} = n^2 + k_n^2 - k_{n-1} $ , followed by some more text.&lt;/p&gt;
 &lt;p&gt;$$
 G_t^\lambda = (1-\lambda)\sum_{n = 1}^\infty \lambda^{n-1}G_{t:t+n}
 $$&lt;/p&gt;
-&lt;p&gt;一般情况下，要计算$G_t^\lambda$需要知道t时刻到t+n时刻的信息才行，这也是我们需要等到回合结束才能计算return并更新policy的原因。这种方式称为前向视图，每一步的价值函数都需要看到未来的信息才能计算,使用这个方式更新参数的算法称为离线$\lambda$-return算法。&lt;/p&gt;
+&lt;p&gt;一般情况下，要计算$G_t^\lambda$需要知道t时刻到t+n时刻的信息才行，这也是我们需要等到回合结束才能计算return并更新policy的原因。这种方式称为&lt;strong&gt;前向视图&lt;/strong&gt;，每一步的价值函数都需要看到未来的信息才能计算,使用这个方式更新参数的算法称为离线$\lambda$-return算法。&lt;/p&gt;
 &lt;p&gt;资格迹的算法使用一个迹向量存储只与过去状态相关的梯度信息，随后在下一步信息到来时更新迹向量。这种方式称为后向视图，每一步的迹不需要未来的信息，可以直接计算。&lt;/p&gt;
 &lt;p&gt;资格迹向量$z_t$是一个和函数权值向量$w$同纬度的向量，它作为一个短期的记忆，辅助权值向量的更新。&lt;/p&gt;
-&lt;p&gt;在TD(\lambda)中$z_t$被初始化为0，并在每一步累加价值函数的梯度：&lt;/p&gt;
+&lt;p&gt;在$TD(\lambda)$中$z_t$被初始化为0，并在每一步累加价值函数的梯度：&lt;/p&gt;
 &lt;p&gt;$$
 z_t = \gamma z_{t-1} + \nabla \hat v(s_t)
 $$&lt;/p&gt;

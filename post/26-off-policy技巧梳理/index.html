@@ -69,7 +69,7 @@
 <meta itemprop="name" content="Off-policy方法梳理：Retrace和Vtrace">
 <meta itemprop="description" content="V-trace 首先介绍一下n step-return和$\lambda$-return，都是对v值的估计。 n-step n step-return是基于TD(0)的扩展"><meta itemprop="datePublished" content="2022-01-13T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2022-01-13T16:01:23+08:00" />
-<meta itemprop="wordCount" content="1388">
+<meta itemprop="wordCount" content="1411">
 <meta itemprop="keywords" content="RL," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Off-policy方法梳理：Retrace和Vtrace"/>
 <meta name="twitter:description" content="V-trace 首先介绍一下n step-return和$\lambda$-return，都是对v值的估计。 n-step n step-return是基于TD(0)的扩展"/>
@@ -555,7 +555,7 @@
     <li><a href="#v-trace">V-trace</a>
       <ul>
         <li><a href="#n-step">n-step</a></li>
-        <li><a href="#lambda-return">$\lambda$-return$</a></li>
+        <li><a href="#lambda--return">$\lambda$ -return</a></li>
         <li><a href="#retrace">Retrace</a></li>
         <li><a href="#vtrace">Vtrace</a></li>
       </ul>
@@ -574,15 +574,16 @@
 <p>$$
 G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^{n-1} R_{t+n} + \gamma^n \hat v(s_{t+n})
 $$</p>
-<h3 id="lambda-return">$\lambda$-return$</h3>
-<p>$\lambda$-return$则是一种更平滑的估计方式，使用了不同长度的n step-return的加权均值来估计return。</p>
+<h3 id="lambda--return">$\lambda$ -return</h3>
+<p>$\lambda$-return则是一种更平滑的估计方式，使用了不同长度的n step-return的加权均值来估计return。</p>
+<p>And here is some in-line math: $ k_{n+1} = n^2 + k_n^2 - k_{n-1} $ , followed by some more text.</p>
 <p>$$
 G_t^\lambda = (1-\lambda)\sum_{n = 1}^\infty \lambda^{n-1}G_{t:t+n}
 $$</p>
-<p>一般情况下，要计算$G_t^\lambda$需要知道t时刻到t+n时刻的信息才行，这也是我们需要等到回合结束才能计算return并更新policy的原因。这种方式称为前向视图，每一步的价值函数都需要看到未来的信息才能计算,使用这个方式更新参数的算法称为离线$\lambda$-return算法。</p>
+<p>一般情况下，要计算$G_t^\lambda$需要知道t时刻到t+n时刻的信息才行，这也是我们需要等到回合结束才能计算return并更新policy的原因。这种方式称为<strong>前向视图</strong>，每一步的价值函数都需要看到未来的信息才能计算,使用这个方式更新参数的算法称为离线$\lambda$-return算法。</p>
 <p>资格迹的算法使用一个迹向量存储只与过去状态相关的梯度信息，随后在下一步信息到来时更新迹向量。这种方式称为后向视图，每一步的迹不需要未来的信息，可以直接计算。</p>
 <p>资格迹向量$z_t$是一个和函数权值向量$w$同纬度的向量，它作为一个短期的记忆，辅助权值向量的更新。</p>
-<p>在TD(\lambda)中$z_t$被初始化为0，并在每一步累加价值函数的梯度：</p>
+<p>在$TD(\lambda)$中$z_t$被初始化为0，并在每一步累加价值函数的梯度：</p>
 <p>$$
 z_t = \gamma z_{t-1} + \nabla \hat v(s_t)
 $$</p>
@@ -797,6 +798,28 @@ $$</p>
 
   </a>
    
+  
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [["$", "$"]],
+    },
+    displayMath: [
+      ["$$", "$$"],
+      ["\[\[", "\]\]"],
+    ],
+    svg: {
+      fontCache: "global",
+    },
+  };
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+></script>
+
 </div>
 
 <div class="copyright">
