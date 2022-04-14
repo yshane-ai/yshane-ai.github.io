@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Recommendation System on Yang Xinxin&#39;s Blog</title>
+    <link>https://yshane-ai.github.io/categories/recommendation-system/</link>
+    <description>Recent content in Recommendation System on Yang Xinxin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>Xinxin Yang</copyright>
+    <lastBuildDate>Thu, 25 Feb 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/recommendation-system/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>推荐系统之RL的应用</title>
+      <link>https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-rl/</link>
+      <pubDate>Thu, 25 Feb 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-rl/</guid>
+      <description>背景 新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过滤、深度学习方法在建模user-item交互关系时，经常面临以下三个问题</description>
+    </item>
+    
+    <item>
+      <title>推荐系统之EE问题和基本的Bandit算法</title>
+      <link>https://yshane-ai.github.io/post/34-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-bandit/</link>
+      <pubDate>Tue, 16 Feb 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/34-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-bandit/</guid>
+      <description>推荐系统中的EE问题 Exploration and Exploitation(EE问题，探索与开发)是计算广告和推荐系统里常见的一个问题，为什么会有EE问题？简单来说，</description>
+    </item>
+    
+    <item>
+      <title>推荐系统之神经协同过滤</title>
+      <link>https://yshane-ai.github.io/post/33-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E7%A5%9E%E7%BB%8F%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4/</link>
+      <pubDate>Wed, 10 Feb 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/33-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E7%A5%9E%E7%BB%8F%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4/</guid>
+      <description>背景 本文讨论的主要是隐性反馈协同过滤解决方案，先来明确两个概念：显性反馈和隐性反馈： 显性反馈行为包括用户明确表示对物品喜好的行为 隐性反馈行为</description>
+    </item>
+    
+    <item>
+      <title>推荐系统之GBDT&#43;LR </title>
+      <link>https://yshane-ai.github.io/post/32-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-gbdt-lr/</link>
+      <pubDate>Fri, 29 Jan 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/32-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-gbdt-lr/</guid>
+      <description>GBDT和LR的融合在广告点击率预估中算是发展比较早的算法，为什么会在这里写这么一篇呢？本来想尝试写一下阿里的深度兴趣网络(Deep Interest Net</description>
+    </item>
+    
+    <item>
+      <title>推荐系统之评价指标AUC</title>
+      <link>https://yshane-ai.github.io/post/31-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-auc/</link>
+      <pubDate>Tue, 19 Jan 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/31-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-auc/</guid>
+      <description>背景 CTR问题我们有两种角度去理解，一种是分类的角度，即将点击和未点击作为两种类别。另一种是回归的角度，将点击和未点击作为回归的值。不管是分</description>
+    </item>
+    
+    <item>
+      <title>推荐系统之多值离散特征的embedding解决方案</title>
+      <link>https://yshane-ai.github.io/post/30-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%A4%9A%E7%A6%BB%E6%95%A3%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%96%B9%E6%A1%88/</link>
+      <pubDate>Sun, 10 Jan 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/30-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%A4%9A%E7%A6%BB%E6%95%A3%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%96%B9%E6%A1%88/</guid>
+      <description>多值离散特征的embedding解决方案 背景 在处理DeepFM数据时，由于每一个离散特征只有一个取值，因此我们在处理的过程中，将原始数据处理</description>
+    </item>
+    
+    <item>
+      <title>推荐系统之DeepFM</title>
+      <link>https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-deepfm/</link>
+      <pubDate>Sat, 26 Dec 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-deepfm/</guid>
+      <description>背景 特征组合的挑战 对于一个基于CTR预估的推荐系统，最重要的是学习到用户点击行为背后隐含的特征组合。在不同的推荐场景中，低阶组合特征或者高阶</description>
+    </item>
+    
+    <item>
+      <title>推荐系统之FFM</title>
+      <link>https://yshane-ai.github.io/post/28-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-ffm/</link>
+      <pubDate>Sat, 19 Dec 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/28-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-ffm/</guid>
+      <description>背景 在CTR预估中，经常会遇到one-hot类型的变量，one-hot类型变量会导致严重的数据特征稀疏的情况，为了解决这一问题，在上一讲中，</description>
+    </item>
+    
+    <item>
+      <title>推荐系统之FM与MF傻傻分不清楚</title>
+      <link>https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm-mf/</link>
+      <pubDate>Mon, 14 Dec 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm-mf/</guid>
+      <description>FM 因子分解机(Factorization Machine, FM)是由Steffen Rendle提出的一种基于矩阵分解思想的机器学习算法，FM的提出是为了解决</description>
+    </item>
+    
+    <item>
+      <title>推荐系统之FM </title>
+      <link>https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm/</link>
+      <pubDate>Thu, 10 Dec 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm/</guid>
+      <description>背景 在计算广告和推荐系统中，CTR预估(click-through rate)是非常重要的一个环节，判断一个商品的是否进行推荐需要根据CTR预</description>
+    </item>
+    
+  </channel>
+</rss>
