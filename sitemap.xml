@@ -191,6 +191,41 @@
   </url>
   
   <url>
+    <loc>https://yshane-ai.github.io/tags/recommendation-system/</loc>
+    <lastmod>2021-03-30T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/categories/recommendation-system/</loc>
+    <lastmod>2021-03-30T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/</loc>
+    <lastmod>2021-03-30T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/37-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mlr/</loc>
+    <lastmod>2021-03-19T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/36-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-din/</loc>
+    <lastmod>2021-03-13T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
     <loc>https://yshane-ai.github.io/tags/incentive-mechanism/</loc>
     <lastmod>2021-03-02T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
@@ -214,20 +249,6 @@
   <url>
     <loc>https://yshane-ai.github.io/categories/mcs/</loc>
     <lastmod>2021-03-02T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/tags/recommendation-system/</loc>
-    <lastmod>2021-02-25T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/categories/recommendation-system/</loc>
-    <lastmod>2021-02-25T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>

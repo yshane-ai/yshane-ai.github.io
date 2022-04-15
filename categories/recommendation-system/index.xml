@@ -7,7 +7,34 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Thu, 25 Feb 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/recommendation-system/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 30 Mar 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/recommendation-system/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>推荐系统之谷歌MMOE架构</title>
+      <link>https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/</link>
+      <pubDate>Tue, 30 Mar 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/</guid>
+      <description>多任务学习最近越来越受欢迎，咱们前面也介绍过几篇阿里多任务学习的模型，不过多任务学习的效果受不同任务之间的相关性影响较大，因此本文基于Mix</description>
+    </item>
+    
+    <item>
+      <title>推荐系统之阿里MLR算法</title>
+      <link>https://yshane-ai.github.io/post/37-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mlr/</link>
+      <pubDate>Fri, 19 Mar 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/37-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mlr/</guid>
+      <description>1 背景 业界常用的CTR预估算法的不足如下表所示： 方法 简介 不足 逻辑回归 使用了Sigmoid函数将函数值映射到0~1区间作为CTR的预估值。LR</description>
+    </item>
+    
+    <item>
+      <title>推荐系统之阿里深度兴趣网络DIN</title>
+      <link>https://yshane-ai.github.io/post/36-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-din/</link>
+      <pubDate>Sat, 13 Mar 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/36-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-din/</guid>
+      <description>这一篇，我们来简单理解一下阿里提出的一个重要的推荐系统模型-深度兴趣网络(DIN，Deep Interest Network)。该方法由盖坤大神领导的阿里妈妈</description>
+    </item>
+    
     <item>
       <title>推荐系统之RL的应用</title>
       <link>https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-rl/</link>

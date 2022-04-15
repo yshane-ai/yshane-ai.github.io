@@ -117,6 +117,33 @@
     </item>
     
     <item>
+      <title>推荐系统之谷歌MMOE架构</title>
+      <link>https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/</link>
+      <pubDate>Tue, 30 Mar 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/</guid>
+      <description>多任务学习最近越来越受欢迎，咱们前面也介绍过几篇阿里多任务学习的模型，不过多任务学习的效果受不同任务之间的相关性影响较大，因此本文基于Mix</description>
+    </item>
+    
+    <item>
+      <title>推荐系统之阿里MLR算法</title>
+      <link>https://yshane-ai.github.io/post/37-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mlr/</link>
+      <pubDate>Fri, 19 Mar 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/37-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mlr/</guid>
+      <description>1 背景 业界常用的CTR预估算法的不足如下表所示： 方法 简介 不足 逻辑回归 使用了Sigmoid函数将函数值映射到0~1区间作为CTR的预估值。LR</description>
+    </item>
+    
+    <item>
+      <title>推荐系统之阿里深度兴趣网络DIN</title>
+      <link>https://yshane-ai.github.io/post/36-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-din/</link>
+      <pubDate>Sat, 13 Mar 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/36-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-din/</guid>
+      <description>这一篇，我们来简单理解一下阿里提出的一个重要的推荐系统模型-深度兴趣网络(DIN，Deep Interest Network)。该方法由盖坤大神领导的阿里妈妈</description>
+    </item>
+    
+    <item>
       <title>Incentive Mechanism in Mobile Crowdsensing</title>
       <link>https://yshane-ai.github.io/post/incentive-mechanism-in-mobile-crowdsensing/</link>
       <pubDate>Tue, 02 Mar 2021 16:01:23 +0800</pubDate>
@@ -159,33 +186,6 @@
       
       <guid>https://yshane-ai.github.io/post/32-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-gbdt-lr/</guid>
       <description>GBDT和LR的融合在广告点击率预估中算是发展比较早的算法，为什么会在这里写这么一篇呢？本来想尝试写一下阿里的深度兴趣网络(Deep Interest Net</description>
-    </item>
-    
-    <item>
-      <title>HRL&amp;Hindsight</title>
-      <link>https://yshane-ai.github.io/post/hrlhindsight/</link>
-      <pubDate>Tue, 26 Jan 2021 16:01:25 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/hrlhindsight/</guid>
-      <description>今天记录一篇利用hindsight方法加速分层强化学习的文章，发表于ICLR2019。 原文链接 Levy et al_2019_LEARNING MULTI-LEVEL HIERARCHIES WITH HINDSIGHT 背景 通常直接学习一个复杂任务是很</description>
-    </item>
-    
-    <item>
-      <title>MADDPG-Based-MCS</title>
-      <link>https://yshane-ai.github.io/post/maddpg-based-mcs/</link>
-      <pubDate>Tue, 26 Jan 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/maddpg-based-mcs/</guid>
-      <description>今天分享自己的一片工作，也算是终于出版了！ 原文链接 Gu et al_2020. &amp;ldquo;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&amp;rdquo; IEEE Transactions on Industrial Informatics(2020) 背景 移动群感知是近些年发展比较热门的一个领域，主要是</description>
-    </item>
-    
-    <item>
-      <title>推荐系统之评价指标AUC</title>
-      <link>https://yshane-ai.github.io/post/31-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-auc/</link>
-      <pubDate>Tue, 19 Jan 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/31-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-auc/</guid>
-      <description>背景 CTR问题我们有两种角度去理解，一种是分类的角度，即将点击和未点击作为两种类别。另一种是回归的角度，将点击和未点击作为回归的值。不管是分</description>
     </item>
     
   </channel>

@@ -1447,6 +1447,583 @@ $$&lt;/p&gt;
     </item>
     
     <item>
+      <title>推荐系统之谷歌MMOE架构</title>
+      <link>https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/</link>
+      <pubDate>Tue, 30 Mar 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/</guid>
+      
+        <description>&lt;p&gt;多任务学习最近越来越受欢迎，咱们前面也介绍过几篇阿里多任务学习的模型，不过多任务学习的效果受不同任务之间的相关性影响较大，因此本文基于Mixture-of-Experts (MoE)模型，提出了一种显式建模任务相关性的模型Multi-gate Mixture-of-Experts (MMoE) ，一起来学习一下。&lt;/p&gt;
+&lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
+&lt;p&gt;近年来，深度神经网络的应用越来越广，如推荐系统。推荐系统通常需要同时优化多个目标，如电影推荐中不仅需要预测用户是否会购买，还需要预测用户对于电影的评分，在比如电商领域同时需要预测物品的点击率CTR和转化率CVR。因此，多任务学习模型成为研究领域的一大热点。&lt;/p&gt;
+&lt;p&gt;许多多任务学习模型取得了不错的效果，但是实践中多任务学习模型并不总比单任务模型效果更突出。这主要是因为不同任务之间的相关性低（如数据的分布不同等等）导致的。&lt;/p&gt;
+&lt;p&gt;是不是真的如上述所说，任务之间的相关性会影响多任务学习的效果呢，咱们先在第二节中做一个实验。&lt;/p&gt;
+&lt;h2 id=&#34;2-任务相关性试验&#34;&gt;2 任务相关性试验&lt;/h2&gt;
+&lt;h3 id=&#34;21-一般的多任务学习模型框架&#34;&gt;2.1 一般的多任务学习模型框架&lt;/h3&gt;
+&lt;p&gt;一般的多任务学习模型框架如下：&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/112.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/112.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;对于不同的任务，底层的参数和网络结构是共享的，然后上层经过不同的神经网络得到对应任务的输出。 假设底层输出是$f(x)$，那么第k个任务的输出$y_k$为：&lt;/p&gt;
+&lt;p&gt;$$
+y_k = h^k (f(x))
+$$&lt;/p&gt;
+&lt;p&gt;其中$h^k$是第$k$个任务上层神经网络的参数。&lt;/p&gt;
+&lt;h3 id=&#34;22-任务相关性实验&#34;&gt;2.2 任务相关性实验&lt;/h3&gt;
+&lt;p&gt;接下来，我们通过一个实验来探讨任务相关性和多任务学习效果的关系。&lt;/p&gt;
+&lt;p&gt;假设模型中包含两个回归任务，而数据通过采样生成，并且规定输入相同，输出label不同。那么任务的相关性就使用label之间的皮尔逊相关系数来表示，相关系数越大，表示任务之间越相关，数据生成的过程如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/113.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/113.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;首先，生成了两个垂直的单位向量u1和u2，并根据两个单位向量生成了模型的系数w1和w2，如上图中的第二步。w1和w2之间的cosine距离即为p，大伙可以根据cosine的计算公式得到。&lt;/p&gt;
+&lt;p&gt;随后基于正态分布的到输入数据x，而y根据下面的两个式子的到：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/114.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/114.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;注意，这里x和y之间并非线性的关系，因为模型的第二步是多个sin函数，因此label之间的皮尔逊相关系数和参数w1和w2之间的cosine距离并不相等，但是呈现出一个正相关的关系，如下图：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/115.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/115.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;因此，本文中使用参数的cosine距离来近似表示任务之间的相关性。&lt;/p&gt;
+&lt;h3 id=&#34;23-实验结果&#34;&gt;2.3 实验结果&lt;/h3&gt;
+&lt;p&gt;基于上述数据生成过程以及任务相关性的表示方法，分别测试任务相关性在0.5、0.9和1时的多任务学习模型的效果，如下图：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/116.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/116.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;可以看到的是，随着任务相关性的提升，模型的loss越小，效果越好，从而印证了前面的猜想。&lt;/p&gt;
+&lt;h2 id=&#34;3-mmoe模型&#34;&gt;3 MMoE模型&lt;/h2&gt;
+&lt;h3 id=&#34;31-moe模型&#34;&gt;3.1 MoE模型&lt;/h3&gt;
+&lt;p&gt;先来看一下Mixture-of-Experts (MoE)模型（文中后面称作 One-gate Mixture-of-Experts (OMoE)），如下图所示：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/117.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/117.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;可以看到，相较于一般的多任务学习框架，共享的底层分为了多个expert，同时设置了一个Gate，使不同的数据可以多样化的使用共享层。此时共享层的输出可以表示为：&lt;/p&gt;
+&lt;p&gt;$$
+y = \sum_{i = 1}^n g_i(x)f_i(x)
+$$&lt;/p&gt;
+&lt;p&gt;其中$f_i$代表第$i$个expert的输出，$g_i$代表第$i$个expert对应的权重，是基于输入数据得到的，计算公式为$g(x) = softmax(W_g x)$。&lt;/p&gt;
+&lt;h3 id=&#34;32-mmoe模型&#34;&gt;3.2 MMoE模型&lt;/h3&gt;
+&lt;p&gt;相较于MoE模型，Multi-gate Mixture-of-Experts (MMoE)模型为每一个task设置了一个gate，使不同的任务和不同的数据可以多样化的使用共享层，模型结构如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/118.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/118.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;此时每个任务的共享层的输出不同，第k个任务的共享层输出计算公式如下：&lt;/p&gt;
+&lt;p&gt;$$
+f^k(x) = \sum_{i = 1}^n g_i^k(x)f_i(x) \
+$$&lt;/p&gt;
+&lt;p&gt;$$
+g^k(x) = softmax(W_{gk} x)
+$$&lt;/p&gt;
+&lt;p&gt;随后每个任务对应的共享层输出，经过多层全连接神经网络得到每个任务的输出：&lt;/p&gt;
+&lt;p&gt;$$
+y_k = h^k(f^k(x))
+$$&lt;/p&gt;
+&lt;p&gt;从直观上考虑，如果两个任务并不十分相关，那么经过Gate之后，二者得到的权重系数会差别比较大，从而可以利用部分expert网络输出的信息，近似于多个单任务学习模型。如果两个任务紧密相关，那么经过Gate得到的权重分布应该相差不多，类似于一般的多任务学习框架。&lt;/p&gt;
+&lt;h2 id=&#34;4-实验结果&#34;&gt;4 实验结果&lt;/h2&gt;
+&lt;p&gt;先回顾上面介绍的三种多任务学习的架构：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/119.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/119.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;实验分为三部分：人工合成数据集（即本文第二部分所介绍的人工生成的数据集）、UCI census-income dataset和Large-scale Content Recommendation。&lt;/p&gt;
+&lt;h3 id=&#34;41-人工合成数据集-实验结果&#34;&gt;4.1 人工合成数据集-实验结果&lt;/h3&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/120.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/120.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&#34;42-uci-census-income-dataset-实验结果&#34;&gt;4.2 UCI census-income dataset-实验结果&lt;/h3&gt;
+&lt;p&gt;这块文中介绍了几种多任务学习的模式，这里就不过多介绍了。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/121.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/121.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&#34;43-large-scale-content-recommendation-实验结果&#34;&gt;4.3 Large-scale Content Recommendation-实验结果&lt;/h3&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/122.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/122.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+</description>
+      
+    </item>
+    
+    <item>
+      <title>推荐系统之阿里MLR算法</title>
+      <link>https://yshane-ai.github.io/post/37-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mlr/</link>
+      <pubDate>Fri, 19 Mar 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/37-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mlr/</guid>
+      
+        <description>&lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
+&lt;p&gt;业界常用的CTR预估算法的不足如下表所示：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th style=&#34;text-align:center&#34;&gt;方法&lt;/th&gt;
+&lt;th style=&#34;text-align:center&#34;&gt;简介&lt;/th&gt;
+&lt;th style=&#34;text-align:center&#34;&gt;不足&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;逻辑回归&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;使用了Sigmoid函数将函数值映射到0~1区间作为CTR的预估值。LR这种线性模型很容易并行化，处理上亿条训练样本不是问题。&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;线性模型的学习能力有限，需要引入大量的领域知识来人工设计特征以及特征之间的交叉组合来间接补充算法的非线性学习能力，非常消耗人力和机器资源，迁移性不够友好。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;Kernel方法&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;将低维特征映射到高维特征空间&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;复杂度太高而不易实现&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;树模型&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;如Facebook的GBDT+LR算法，有效地解决了LR模型的特征组合问题&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;是对历史行为的记忆，缺乏推广性，树模型只能学习到历史数据中的特定规则，对于新规则缺乏推广性&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;FM模型&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;自动学习高阶属性的权值，不用通过人工的方式选取特征来做交叉&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;FM模型只能拟合特定的非线性模式，常用的就是二阶FM&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;深度神经网络&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;使用神经网络拟合数据之间的高阶非线性关系，非线性拟合能力足够强&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;适合数据规律的、具备推广性的网络结构业界依然在探索中，尤其是要做到端到端规模化上线，这里面的技术挑战依然很大&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;那么挑战来了，如何设计算法从大规模数据中挖掘出具有推广性的非线性模式？&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;MLR算法&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;2011-2012年期间，阿里妈妈资深专家盖坤创新性地提出了MLR(mixed logistic regression)算法，引领了广告领域CTR预估算法的全新升级。MLR算法创新地提出并实现了直接在原始空间学习特征之间的非线性关系，基于数据自动发掘可推广的模式，相比于人工来说效率和精度均有了大幅提升。&lt;/p&gt;
+&lt;p&gt;MLR可以看做是对LR的一个自然推广，它采用分而治之的思路，用分片线性的模式来拟合高维空间的非线性分类面，其形式化表达如下：&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/107.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/107.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中u是聚类参数，决定了空间的划分，w是分类参数，决定空间内的预测。这里面超参数分片数m可以较好地平衡模型的拟合与推广能力。当m=1时MLR就退化为普通的LR，m越大模型的拟合能力越强，但是模型参数规模随m线性增长，相应所需的训练样本也随之增长。因此实际应用中m需要根据实际情况进行选择。例如，在阿里的场景中，m一般选择为12。下图中MLR模型用4个分片可以完美地拟合出数据中的菱形分类面。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/108.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/108.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在实际中，MLR算法常用的形式如下，使用softmax作为分片函数：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/109.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/109.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在这种情况下，MLR模型可以看作是一个FOE model：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/110.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/110.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;关于损失函数的设计，阿里采用了 neg-likelihood loss function以及L1，L2正则，形式如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/111.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/111.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;由于加入了正则项，MLR算法变的不再是平滑的凸函数，梯度下降法不再适用，因此模型参数的更新使用LBFGS和OWLQN的结合，具体的优化细节大家可以参考论文(&lt;a href=&#34;https://arxiv.org/pdf/1704.05194.pdf&#34;&gt;https://arxiv.org/pdf/1704.05194.pdf&lt;/a&gt;)。&lt;/p&gt;
+&lt;p&gt;MLR算法适合于工业级的大规模稀疏数据场景问题，如广告CTR预估。背后的优势体现在两个方面：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;端到端的非线性学习：从模型端自动挖掘数据中蕴藏的非线性模式，省去了大量的人工特征设计，这 使得MLR算法可以端到端地完成训练，在不同场景中的迁移和应用非常轻松。&lt;/li&gt;
+&lt;li&gt;稀疏性：MLR在建模时引入了L1和L2,1范数正则，可以使得最终训练出来的模型具有较高的稀疏度， 模型的学习和在线预测性能更好。当然，这也对算法的优化求解带来了巨大的挑战。&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>推荐系统之阿里深度兴趣网络DIN</title>
+      <link>https://yshane-ai.github.io/post/36-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-din/</link>
+      <pubDate>Sat, 13 Mar 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/36-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-din/</guid>
+      
+        <description>&lt;p&gt;这一篇，我们来简单理解一下阿里提出的一个重要的推荐系统模型-深度兴趣网络(DIN，Deep Interest Network)。该方法由盖坤大神领导的阿里妈妈的精准定向检索及基础算法团队提出，充分利用/挖掘用户历史行为数据中的信息来提高CTR预估的性能。&lt;/p&gt;
+&lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;深度学习在CTR预估领域已经有了广泛的应用，常见的算法比如Wide&amp;amp;Deep，DeepFM等。这些方法一般的思路是：通过Embedding层，将高维离散特征转换为固定长度的连续特征，然后通过多个全联接层，最后通过一个sigmoid函数转化为0-1值，代表点击的概率。即Sparse Features -&amp;gt; Embedding Vector -&amp;gt; MLPs -&amp;gt; Sigmoid -&amp;gt; Output.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;这种方法的优点在于：通过神经网络可以拟合高阶的非线性关系，同时减少了人工特征的工作量。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;不过，阿里的研究者们通过观察收集到的线上数据，发现了用户行为数据中有两个很重要的特性：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Diversity：用户在浏览电商网站的过程中显示出的兴趣是十分多样性的。&lt;/li&gt;
+&lt;li&gt;Local activation: 由于用户兴趣的多样性，只有部分历史数据会影响到当次推荐的物品是否被点击，而不是所有的历史记录。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这两种特性是密不可分的。&lt;/p&gt;
+&lt;p&gt;举个简单的例子，观察下面的表格：&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/092.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/092.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Diversity体现在年轻的母亲的历史记录中体现的兴趣十分广泛，涵盖羊毛衫、手提袋、耳环、童装、运动装等等。而爱好游泳的人同样兴趣广泛，历史记录涉及浴装、旅游手册、踏水板、马铃薯、冰激凌、坚果等等。&lt;/p&gt;
+&lt;p&gt;Local activation体现在，当我们给爱好游泳的人推荐goggle(护目镜)时，跟他之前是否购买过薯片、书籍、冰激凌的关系就不大了，而跟他游泳相关的历史记录如游泳帽的关系就比较密切。&lt;/p&gt;
+&lt;p&gt;针对上面提到的用户行为中存在的两种特性，阿里将其运用于自身的推荐系统中，推出了深度兴趣网路DIN，接下来，我们就一起来看一下模型的一些实现细节，然后我们会给出一个简化版的tensorflow实现。&lt;/p&gt;
+&lt;p&gt;针对上面提到的用户行为中存在的两种特性，阿里将其运用于自身的推荐系统中，推出了深度兴趣网路DIN。&lt;/p&gt;
+&lt;h2 id=&#34;2-模型设计&#34;&gt;2 模型设计&lt;/h2&gt;
+&lt;h3 id=&#34;21-整体框架&#34;&gt;2.1 整体框架&lt;/h3&gt;
+&lt;p&gt;我们先来看一下推荐系统的整体框架：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/093.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/093.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;整个流程可以描述为：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;检查用户历史行为数据&lt;/li&gt;
+&lt;li&gt;使用matching module产生候选ads。&lt;/li&gt;
+&lt;li&gt;通过ranking module做point-wise的排序，即得到每个候选ads的点击概率，并根据概率排序得到推荐列表。&lt;/li&gt;
+&lt;li&gt;记录下用户在当前展示广告下的反应(点击与否)，作为label。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;22-特征设计&#34;&gt;2.2 特征设计&lt;/h3&gt;
+&lt;p&gt;本文将所涉及到的特征分为四个部分：用户特征、用户行为特征、广告特征、上下文特征，具体如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/094.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/094.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中，用户行为特征是multi-hot的，即多值离散特征。针对这种特征，由于每个涉及到的非0值个数是不一样的，常见的做法就是将id转换成embedding之后，加一层pooling层，比如average-pooling，sum-pooling，max-pooling。DIN中使用的是weighted-sum，其实就是加权的sum-pooling，权重经过一个activation unit计算得到。这里我们后面还会再介绍到。&lt;/p&gt;
+&lt;h3 id=&#34;23-基准模型&#34;&gt;2.3 基准模型&lt;/h3&gt;
+&lt;p&gt;在介绍DIN之前，我们先来看一下一个基准模型，结构如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/095.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/095.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这里element-wise的意思其实就是元素级别的加减，同时，可不要忽略广播的存在哟。一个元素和一个向量相乘，也可以看作element-wise的，因为这个元素会广播成和向量一样的长度嘛，嘻嘻。&lt;/p&gt;
+&lt;p&gt;可以看到，Base Model首先吧one-hot或multi-hot特征转换为特定长度的embedding，作为模型的输入，然后经过一个DNN的part，得到最终的预估值。特别地，针对multi-hot的特征，做了一次element-wise+的操作，这里其实就是sum-pooling，这样，不管特征中有多少个非0值，经过转换之后的长度都是一样的！&lt;/p&gt;
+&lt;h3 id=&#34;24-deep-interest-network&#34;&gt;2.4 Deep Interest Network&lt;/h3&gt;
+&lt;p&gt;Base Model有一个很大的问题，它对用户的历史行为是同等对待的，没有做任何处理，这显然是不合理的。一个很显然的例子，离现在越近的行为，越能反映你当前的兴趣。因此，对用户历史行为基于Attention机制进行一个加权，阿里提出了深度兴趣网络（Deep Interest Network)，先来看一下模型结构：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/096.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/096.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Attention机制简单的理解就是，针对不同的广告，用户历史行为与该广告的权重是不同的。假设用户有ABC三个历史行为，对于广告D，那么ABC的权重可能是0.8、0.1、0.1；对于广告E，那么ABC的权重可能是0.3、0.6、0.1。这里的权重，就是Attention机制即上图中的Activation Unit所需要学习的。&lt;/p&gt;
+&lt;p&gt;为什么要引入这一个机制呢？难道仅仅是通过观察历史数据拍脑袋决定的么？当然不是，如果不用Local activation的话，将会出现下面的情况：假设用户的兴趣的Embedding是Vu，候选广告的Embedding是Va，用户兴趣和候选的广告的相关性可以写作F(U,A) = Va * Vu。如果没有Local activation机制的话，那么同一个用户对于不同的广告，Vu都是相同的。举例来说，如果有两个广告A和B，用户兴趣和A，B的相似性都很高，那么在Va和Vb连线上的广告都会有很高的相似性。这样的限制使得模型非常难学习到有效的用户和广告的embedding表示。&lt;/p&gt;
+&lt;p&gt;在加入Activation Unit之后，用户的兴趣表示计算如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/097.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/097.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中，Vi表示behavior id i的嵌入向量，比如good_id,shop_id等。Vu是所有behavior ids的加权和，表示的是用户兴趣；Va是候选广告的嵌入向量；wi是候选广告影响着每个behavior id的权重，也就是Local Activation。wi通过Activation Unit计算得出，这一块用函数去拟合，表示为g(Vi,Va)。&lt;/p&gt;
+&lt;h2 id=&#34;3-模型细节&#34;&gt;3 模型细节&lt;/h2&gt;
+&lt;h3 id=&#34;31-评价指标gauc&#34;&gt;3.1 评价指标GAUC&lt;/h3&gt;
+&lt;p&gt;模型使用的评价指标是GAUC，我们先来看一下GAUC的计算公式：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/098.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/098.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;我们首先要肯定的是，AUC是要分用户看的，我们的模型的预测结果，只要能够保证对每个用户来说，他想要的结果排在前面就好了。
+假设有两个用户A和B，每个用户都有10个商品，10个商品中有5个是正样本，我们分别用TA，TB，FA，FB来表示两个用户的正样本和负样本。也就是说，20个商品中有10个是正样本。假设模型预测的结果大小排序依次为TA，FA，TB，FB。如果把两个用户的结果混起来看，AUC并不是很高，因为有5个正样本排在了后面，但是分开看的话，每个用户的正样本都排在了负样本之前，AUC应该是1。显然，分开看更容易体现模型的效果，这样消除了用户本身的差异。&lt;/p&gt;
+&lt;p&gt;但是上文中所说的差异是在用户点击数即样本数相同的情况下说的。还有一种差异是用户的展示次数或者点击数，如果一个用户有1个正样本，10个负样本，另一个用户有5个正样本，50个负样本，这种差异同样需要消除。那么GAUC的计算，不仅将每个用户的AUC分开计算，同时根据用户的展示数或者点击数来对每个用户的AUC进行加权处理。进一步消除了用户偏差对模型的影响。通过实验证明，GAUC确实是一个更加合理的评价指标。&lt;/p&gt;
+&lt;h3 id=&#34;32-dice激活函数&#34;&gt;3.2 Dice激活函数&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;从Relu到PRelu&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Relu激活函数形式如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/099.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/099.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Relu激活函数在值大于0时原样输出，小于0时输出为0。这样的话导致了许多网络节点的更新缓慢。因此又了PRelu，也叫Leaky Relu，形式如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/100.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/100.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这样，及时值小于0，网络的参数也得以更新，加快了收敛速度。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;从PReLU到Dice&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;尽管对Relu进行了修正得到了PRelu，但是仍然有一个问题，即我们认为分割点都是0，但实际上，分割点应该由数据决定，因此文中提出了Dice激活函数。&lt;/p&gt;
+&lt;p&gt;Dice激活函数的全称是Data Dependent Activation Function，形式如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/101.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/101.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中，期望和方差的计算如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/102.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/102.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;可也看到，每一个yi对应了一个概率值pi。pi的计算主要分为两步：将yi进行标准化和进行sigmoid变换。&lt;/p&gt;
+&lt;h3 id=&#34;33-自适应正则-adaptive-regularization&#34;&gt;3.3 自适应正则 Adaptive Regularization&lt;/h3&gt;
+&lt;p&gt;CTR中输入稀疏而且维度高，通常的做法是加入L1、L2、Dropout等防止过拟合。但是论文中尝试后效果都不是很好。用户数据符合长尾定律long-tail law，也就是说很多的feature id只出现了几次，而一小部分feature id出现很多次。这在训练过程中增加了很多噪声，并且加重了过拟合。&lt;/p&gt;
+&lt;p&gt;对于这个问题一个简单的处理办法就是：直接去掉出现次数比较少的feature id。但是这样就人为的丢掉了一些信息，导致模型更加容易过拟合，同时阈值的设定作为一个新的超参数，也是需要大量的实验来选择的。&lt;/p&gt;
+&lt;p&gt;因此，阿里提出了自适应正则的做法，即：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;针对feature id出现的频率，来自适应的调整他们正则化的强度；&lt;/li&gt;
+&lt;li&gt;对于出现频率高的，给与较小的正则化强度；&lt;/li&gt;
+&lt;li&gt;对于出现频率低的，给予较大的正则化强度。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;计算公式如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/103.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/103.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&#34;4-效果展示&#34;&gt;4 效果展示&lt;/h2&gt;
+&lt;p&gt;下图是对Local Activation效果的一个展示，可以看到，对于候选的广告是一件衣服的时候，用户历史行为中跟衣服相关的权重较高，而非衣服的部分，权重较低。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/104.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/104.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;下图是对使用不同正则项的结果进行的展示，可以发现，使用自适应正则的情况下，模型的验证集误差和验证集GAUC均是最好的。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/105.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/105.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;下图对比了Base Model和DIN的实验结果，可以看到，DIN模型在加入Dice激活函数以及自适应正则之后，模型的效果有了一定的提升：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/106.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/106.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+</description>
+      
+    </item>
+    
+    <item>
       <title>Incentive Mechanism in Mobile Crowdsensing</title>
       <link>https://yshane-ai.github.io/post/incentive-mechanism-in-mobile-crowdsensing/</link>
       <pubDate>Tue, 02 Mar 2021 16:01:23 +0800</pubDate>
@@ -2186,495 +2763,6 @@ $$&lt;/p&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-</description>
-      
-    </item>
-    
-    <item>
-      <title>推荐系统之GBDT&#43;LR </title>
-      <link>https://yshane-ai.github.io/post/32-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-gbdt-lr/</link>
-      <pubDate>Fri, 29 Jan 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/32-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-gbdt-lr/</guid>
-      
-        <description>&lt;p&gt;GBDT和LR的融合在广告点击率预估中算是发展比较早的算法，为什么会在这里写这么一篇呢？本来想尝试写一下阿里的深度兴趣网络(Deep Interest Network)，发现阿里之前还有一个算法MLR，然后去查找相关的资料，里面提及了树模型也就是GBDT+LR方案的缺点，恰好之前也不太清楚GBDT+LR到底是怎么做的，所以今天我们先来了解一下GBDT和LR的融合方案。&lt;/p&gt;
-&lt;h3 id=&#34;背景&#34;&gt;背景&lt;/h3&gt;
-&lt;p&gt;在CTR预估问题的发展初期，使用最多的方法就是逻辑回归(LR)，LR使用了Sigmoid变换将函数值映射到0~1区间，映射后的函数值就是CTR的预估值。&lt;/p&gt;
-&lt;p&gt;LR属于线性模型，容易并行化，可以轻松处理上亿条数据，但是学习能力十分有限，需要大量的特征工程来增加模型的学习能力。但大量的特征工程耗时耗力同时并不一定会带来效果提升。因此，如何&lt;strong&gt;自动发现有效的特征、特征组合，弥补人工经验不足，缩短LR特征实验周期&lt;/strong&gt;，是亟需解决的问题。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;FM模型通过隐变量的方式，发现两两特征之间的组合关系，但这种特征组合仅限于两两特征之间&lt;/strong&gt;，后来发展出来了使用深度神经网络去挖掘更高层次的特征组合关系。但其实在使用神经网络之前，&lt;strong&gt;GBDT也是一种经常用来发现特征组合的有效思路&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;Facebook 2014年的文章介绍了通过GBDT解决LR的特征组合问题，随后Kaggle竞赛也有实践此思路，GBDT与LR融合开始引起了业界关注。&lt;/p&gt;
-&lt;p&gt;在介绍这个模型之前，我们先来介绍两个问题：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;为什么要使用集成的决策树模型&lt;/strong&gt;，而不是单棵的决策树模型：一棵树的表达能力很弱，不足以表达多个有区分性的特征组合，多棵树的表达能力更强一些。可以更好的发现有效的特征和特征组合&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;为什么建树采用GBDT而非RF&lt;/strong&gt;：RF也是多棵树，但从效果上有实践证明不如GBDT。且GBDT前面的树，&lt;strong&gt;特征分裂主要体现对多数样本有区分度的特征&lt;/strong&gt;；后面的树，主要体现的是&lt;strong&gt;经过前N颗树，残差仍然较大的少数样本。优先选用在整体上有区分度的特征&lt;/strong&gt;，再选用针对少数样本有区分度的特征，思路更加合理，这应该也是用GBDT的原因。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;了解了为什么要用GBDT，我们就来看看到底二者是怎么融合的吧！&lt;/p&gt;
-&lt;h3 id=&#34;gbdt和lr的融合方案&#34;&gt;GBDT和LR的融合方案&lt;/h3&gt;
-&lt;p&gt;GBDT和LR的融合方案，FaceBook的paper中有个例子：&lt;/p&gt;
-
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/033.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/033.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;图中共有两棵树，x为一条输入样本，遍历两棵树后，x样本分别落到两颗树的叶子节点上，每个叶子节点对应LR一维特征，那么通过遍历树，就得到了该样本对应的所有LR特征。构造的新特征向量是取值0/1的。举例来说：上图有两棵树，左树有三个叶子节点，右树有两个叶子节点，最终的特征即为五维的向量。对于输入x，假设他落在左树第一个节点，编码[1,0,0]，落在右树第二个节点则编码[0,1]，所以整体的编码为[1,0,0,0,1]，这类编码作为特征，输入到LR中进行分类。&lt;/p&gt;
-&lt;p&gt;这个方案还是很简单的吧，在继续介绍下去之前，我们先介绍一下代码实践部分。&lt;/p&gt;
-&lt;h3 id=&#34;gbdtlr代码实践&#34;&gt;GBDT+LR代码实践&lt;/h3&gt;
-&lt;p&gt;本文介绍的代码只是一个简单的Demo，实际中大家需要根据自己的需要进行参照或者修改。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;训练GBDT模型&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;本文使用lightgbm包来训练我们的GBDT模型，训练共100棵树，每棵树有64个叶子结点。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; lightgbm &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; lgb
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; pandas &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; pd
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; numpy &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; np
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; sklearn.metrics &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; mean_squared_error
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; sklearn.linear_model &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; 
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;df_train &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; pd&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;read_csv(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;data/train.csv&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;df_test &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; pd&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;read_csv(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;data/test.csv&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;NUMERIC_COLS &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ps_reg_01&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ps_reg_02&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ps_reg_03&amp;#34;&lt;/span&gt;,
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ps_car_12&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ps_car_13&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ps_car_14&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ps_car_15&amp;#34;&lt;/span&gt;,
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;]
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(df_test&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;head(&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;))
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;y_train &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; df_train[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;target&amp;#39;&lt;/span&gt;]  &lt;span style=&#34;color:#75715e&#34;&gt;# training label&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;y_test &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; df_test[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;target&amp;#39;&lt;/span&gt;]  &lt;span style=&#34;color:#75715e&#34;&gt;# testing label&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;X_train &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; df_train[NUMERIC_COLS]  &lt;span style=&#34;color:#75715e&#34;&gt;# training dataset&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;X_test &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; df_test[NUMERIC_COLS]  &lt;span style=&#34;color:#75715e&#34;&gt;# testing dataset&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# create dataset for lightgbm&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;lgb_train &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; lgb&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Dataset(X_train, y_train)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;lgb_eval &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; lgb&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Dataset(X_test, y_test, reference&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;lgb_train)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;params &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;task&amp;#39;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;train&amp;#39;&lt;/span&gt;,
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;boosting_type&amp;#39;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;gbdt&amp;#39;&lt;/span&gt;,
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;objective&amp;#39;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;binary&amp;#39;&lt;/span&gt;,
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;metric&amp;#39;&lt;/span&gt;: {&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;binary_logloss&amp;#39;&lt;/span&gt;},
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;num_leaves&amp;#39;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;64&lt;/span&gt;,
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;num_trees&amp;#39;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;,
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;learning_rate&amp;#39;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;0.01&lt;/span&gt;,
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;feature_fraction&amp;#39;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;0.9&lt;/span&gt;,
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;bagging_fraction&amp;#39;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;0.8&lt;/span&gt;,
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;bagging_freq&amp;#39;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;,
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;verbose&amp;#39;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# number of leaves,will be used in feature transformation&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;num_leaf &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;64&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Start training...&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# train&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;gbm &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; lgb&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;train(params,
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                lgb_train,
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                num_boost_round&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;,
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                valid_sets&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;lgb_train)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Save model...&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# save model to file&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;gbm&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;save_model(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;model.txt&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Start predicting...&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# predict and get data on leaves, training data&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;特征转换&lt;/p&gt;
-&lt;p&gt;在训练得到100棵树之后，我们需要得到的不是GBDT的预测结果，而是每一条训练数据落在了每棵树的哪个叶子结点上，因此需要使用下面的语句：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;y_pred &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; gbm&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;predict(X_train, pred_leaf&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;True&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;打印上面结果的输出，可以看到shape是(8001,100)，即训练数据量*树的棵树&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;array(y_pred)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;shape)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(y_pred[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;])
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;8001&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;[[&lt;span style=&#34;color:#ae81ff&#34;&gt;43&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;26&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;47&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;47&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;47&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;19&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;36&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;19&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;50&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;52&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;29&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;46&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;23&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;13&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;27&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;27&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;13&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;22&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;57&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;17&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;55&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;54&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;57&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;59&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;42&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;22&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;22&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;22&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;13&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;27&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;58&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;23&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;58&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;14&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;32&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;60&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;32&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;46&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;57&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;48&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;57&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;34&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;54&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;35&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;55&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;13&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;23&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;15&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;51&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;40&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;47&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;40&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;29&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;24&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;24&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;31&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;24&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;55&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;41&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;22&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;57&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;57&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;55&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;57&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;12&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;18&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;30&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;15&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;17&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;30&lt;/span&gt;]]
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后我们需要将每棵树的特征进行one-hot处理，如前面所说，假设第一棵树落在43号叶子结点上，那我们需要建立一个64维的向量，除43维之外全部都是0。因此用于LR训练的特征维数共num_trees * num_leaves。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Writing transformed training data&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;transformed_training_matrix &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;zeros([len(y_pred), len(y_pred[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]) &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; num_leaf],
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                                       dtype&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;int64)  &lt;span style=&#34;color:#75715e&#34;&gt;# N * num_tress * num_leafs&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, len(y_pred)):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    temp &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;arange(len(y_pred[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;])) &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; num_leaf &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;array(y_pred[I])
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    transformed_training_matrix[i][temp] &lt;span style=&#34;color:#f92672&#34;&gt;+=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;当然，对于测试集也要进行同样的处理:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;y_pred &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; gbm&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;predict(X_test, pred_leaf&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;True&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Writing transformed testing data&amp;#39;&lt;/span&gt;)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;transformed_testing_matrix &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;zeros([len(y_pred), len(y_pred[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]) &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; num_leaf], dtype&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;int64)
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, len(y_pred)):
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    temp &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;arange(len(y_pred[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;])) &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; num_leaf &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;array(y_pred[I])
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    transformed_testing_matrix[i][temp] &lt;span style=&#34;color:#f92672&#34;&gt;+=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;LR训练
-然后我们可以用转换后的训练集特征和label训练我们的LR模型，并对测试集进行测试：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;lm &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; LogisticRegression(penalty&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;l2&amp;#39;&lt;/span&gt;,C&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0.05&lt;/span&gt;) &lt;span style=&#34;color:#75715e&#34;&gt;# logestic model construction&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;lm&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;fit(transformed_training_matrix,y_train)  &lt;span style=&#34;color:#75715e&#34;&gt;# fitting the data&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;y_pred_test &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; lm&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;predict_proba(transformed_testing_matrix)   &lt;span style=&#34;color:#75715e&#34;&gt;# Give the probabilty on each label&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我们这里得到的不是简单的类别，而是每个类别的概率。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;效果评价&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;在Facebook的paper中，模型使用NE(Normalized Cross-Entropy)，进行评价，计算公式如下:&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/034.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/034.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;代码如下：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;NE &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; len(y_pred_test) &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; sum(((&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;y_test)&lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;log(y_pred_test[:,&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;  (&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;y_test)&lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;log(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; y_pred_test[:,&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;])))
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Normalized Cross Entropy &amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; str(NE))
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;反思&#34;&gt;反思&lt;/h3&gt;
-&lt;p&gt;现在的GBDT和LR的融合方案真的适合现在的大多数业务数据么？现在的业务数据是什么？是大量离散特征导致的高维度离散数据。而树模型对这样的离散特征，是不能很好处理的，要说为什么，因为这容易导致过拟合。下面的一段话来自知乎：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/035.jfif&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/035.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;用盖坤的话说，GBDT只是对历史的一个记忆罢了，没有推广性，或者说泛化能力。&lt;/p&gt;
-&lt;p&gt;但这并不是说对于大规模的离散特征，GBDT和LR的方案不再适用，感兴趣的话大家可以看一下参考文献2和3，这里就不再介绍了。&lt;/p&gt;
-&lt;p&gt;刚才提到了阿里的盖坤大神，他的团队在2017年提出了两个重要的用于CTR预估的模型，MLR和DIN，之后的系列中，我们会讲解这两种模型的理论和实战！欢迎大家继续关注！&lt;/p&gt;
-</description>
-      
-    </item>
-    
-    <item>
-      <title>HRL&amp;Hindsight</title>
-      <link>https://yshane-ai.github.io/post/hrlhindsight/</link>
-      <pubDate>Tue, 26 Jan 2021 16:01:25 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/hrlhindsight/</guid>
-      
-        <description>&lt;p&gt;今天记录一篇利用hindsight方法加速分层强化学习的文章，发表于ICLR2019。&lt;/p&gt;
-&lt;h2 id=&#34;原文链接&#34;&gt;原文链接&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&#34;https://openreview.net/forum?id=ryzECoAcY7&#34;&gt;Levy et al_2019_LEARNING MULTI-LEVEL HIERARCHIES WITH HINDSIGHT&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
-&lt;p&gt;通常直接学习一个复杂任务是很困难的事，如下左图中，摇摆很难通过摸索到达黄色方块处。假如可以对操作对象加以正确引导，将一个长远目标分成几个小目标分阶段完成，那么整个任务处理起来就变得简单，如下右图中紫色方块作为阶段性目标，不断指引摇摆到达黄色方块处。&lt;/p&gt;
-
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-giphy.gif&#34; alt=&#34;左图无目标引导，右图紫色方块代表阶段性目标&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/30-giphy.gif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;左图无目标引导，右图紫色方块代表阶段性目标&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;分层强化学习就是利用这种思想，分别训练两个网络，上层网络用于生成阶段性目标，下层网络在给定目标的条件下直接与环境进行交互。然而直接使用分层方式进行训练会造成学习的不稳定，主要是因为不断变化的转换函数和奖励函数造成。&lt;/p&gt;
-&lt;h3 id=&#34;转换函数&#34;&gt;转换函数&lt;/h3&gt;
-&lt;p&gt;由于下层网络也在不断学习，在给定目标B的情况下，下层策略可能最终会到达C、D、E等位置，而随着学习的不断进行，状态转换函数也一直在变化，进而对上层网络的学习造成阻碍。如下图所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-unstable.gif&#34; alt=&#34;Agent在给定目标B的情况下，每次产生的行为存在不一致的情况&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/30-unstable.gif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;Agent在给定目标B的情况下，每次产生的行为存在不一致的情况&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&#34;奖励函数&#34;&gt;奖励函数&lt;/h3&gt;
-&lt;p&gt;由于分层后，不同目标和动作导致的行进轨迹不同，进而得到的奖励不同，对模型整体的学习造成阻碍，如下图所示;&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-reward.gif&#34; alt=&#34;Agent可通过不同的轨迹到达同一个位置，此时的奖励应该是相似的&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/30-reward.gif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;Agent可通过不同的轨迹到达同一个位置，此时的奖励应该是相似的&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;总的来说，以上两个困难会导致&lt;/p&gt;
-&lt;p&gt;$$
-Q_{Target}(s_t,a_t)=r_{t+1}+\tau V_\pi (s_{t+1})
-$$&lt;/p&gt;
-&lt;p&gt;中的$$r_{t+1}$$和$$s_{t+1}$$对于相同的状态-动作却没有相同的输出，进而阻碍网络的稳定训练。&lt;/p&gt;
-&lt;h2 id=&#34;过程&#34;&gt;过程&lt;/h2&gt;
-&lt;h3 id=&#34;结构&#34;&gt;结构&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;确定性的、基于目标的策略网络：对于第$$i,0\leq i\leq k$$层策略，根据状态和目标生成动作，$$\pi_i: s_i,g_i\to a_i$$，其中$$g_i$$可以是一个或一组状态，是上层策略的输出；&lt;/li&gt;
-&lt;li&gt;动作空间：对于底层策略，其动作空间为设定的与环境交互的一系列动作，而非底层策略的动作空间则等于状态空间，即将选择某个状态或某组状态作为下一层的阶段目标；&lt;/li&gt;
-&lt;li&gt;嵌套策略：文章采用了嵌套（nested）结构，如下图所示：&lt;/li&gt;
-&lt;/ul&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-three_level_structure.png&#34; alt=&#34;3层的层次强化学习架构示意图&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/30-three_level_structure.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;3层的层次强化学习架构示意图&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&#34;模块&#34;&gt;模块&lt;/h3&gt;
-&lt;p&gt;接下来将结合一组具体的轨迹对Hindsight用法进行介绍，在下图中，红色圈代表每个阶段的goal，白色圈代表真实到达的状态，黄色代表目标终点。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-trajectory.gif&#34; alt=&#34;Agent训练过程轨迹示意图&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/30-trajectory.gif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;Agent训练过程轨迹示意图&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;ul&gt;
-&lt;li&gt;动作hindsight：高层网络的动作即为下层网络的目标，但高层策略给定目标后下层网络往往不能真正完成这些目标，因此通过hindsight方法将经验中的下层目标，即高层动作替换为真实到达的状态，充分利用这些经验达到学习的目的；该方法解决了前面提到的转换函数不稳定的挑战。&lt;/li&gt;
-&lt;li&gt;目标hindsight：当最终目标很难到达时，大部分经验的奖励都是负的，没有学习价值。通过将最终目标替换为真实到达的状态，可以有效增加可学习的样本，有效解决稀疏奖励的问题。&lt;/li&gt;
-&lt;/ul&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-high-level-goal.png&#34; alt=&#34;上层策略&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/30-high-level-goal.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;上层策略&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-low-level-goal.png&#34; alt=&#34;下层策略&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/30-low-level-goal.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;下层策略&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;ul&gt;
-&lt;li&gt;目标检验：有时一些上层的目标下层根本无法达到，我们称这种目标为不好的目标，为了减少这类目标，本文采用了目标检验机制对这类目标进行惩罚。如在上图中agent位于$$s_2$$时当前策略无法到达$$g_2$$，则$$g_2$$就是一个不好的目标，通过增加对不好目标的惩罚样本，可以有效解决Q值过高估计的问题。&lt;/li&gt;
-&lt;/ul&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-subgoal-testing.png&#34; alt=&#34;对不好的经验进行惩罚&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/30-subgoal-testing.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;对不好的经验进行惩罚&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h2 id=&#34;实验&#34;&gt;实验&lt;/h2&gt;
-&lt;h3 id=&#34;对比&#34;&gt;对比&lt;/h3&gt;
-&lt;p&gt;文章首先在6种不同的环境下对比了分别采用1，2，3层策略的效果，结果显示，随着层数增加，agent的表现也越来越好：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-comparison.png&#34; alt=&#34;分别采用1、2、3层策略的效果对比&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/30-comparison.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;分别采用1、2、3层策略的效果对比&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&#34;演示&#34;&gt;演示&lt;/h3&gt;
-&lt;p&gt;两层策略：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-2_level.gif&#34; alt=&#34;结果演示&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/30-2_level.gif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;结果演示&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;三层策略：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/30-3_level.gif&#34; alt=&#34;结果演示&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/30-3_level.gif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;结果演示&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h2 id=&#34;结论&#34;&gt;结论&lt;/h2&gt;
-&lt;p&gt;文章提出一种使用hindsight方法解决分层强化学习训练中不稳定问题的方法，通过对历史样本的改造，增加样本的学习价值，可以有效加速模型的训练。&lt;/p&gt;
-</description>
-      
-    </item>
-    
-    <item>
-      <title>MADDPG-Based-MCS</title>
-      <link>https://yshane-ai.github.io/post/maddpg-based-mcs/</link>
-      <pubDate>Tue, 26 Jan 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/maddpg-based-mcs/</guid>
-      
-        <description>&lt;p&gt;今天分享自己的一片工作，也算是终于出版了！&lt;/p&gt;
-&lt;h2 id=&#34;原文链接&#34;&gt;原文链接&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&#34;https://ieeexplore.ieee.org/document/9201550&#34;&gt;Gu et al_2020. &amp;ldquo;Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing in Industrial Systems&amp;rdquo; IEEE Transactions on Industrial Informatics(2020)&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
-&lt;p&gt;移动群感知是近些年发展比较热门的一个领域，主要是通过利用移动用户来感知周围环境，这样做有以下三点优势：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;能够充分利用移动用户的感知资源，降低了不必要的开销；&lt;/li&gt;
-&lt;li&gt;由于用户的可移动性，可以保证感知数据的样本丰富度；&lt;/li&gt;
-&lt;li&gt;通过一种奖励机制，可以在有限的预算内获取尽可能多的感知资源；&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;本文就是通过强化学习来学习这么一种奖励机制，让每个用户在观测信息不完全的状态下能够制定出一个比较好的价格策略。&lt;/p&gt;
-&lt;h2 id=&#34;过程&#34;&gt;过程&lt;/h2&gt;
-&lt;h4 id=&#34;模型&#34;&gt;模型&lt;/h4&gt;
-&lt;p&gt;整个场景可以描述为一个买卖双方博弈的模型：移动用户作为卖家，为自身的单位感知时间制定价格；任务发起者作为买家，在给定的预算内去购买移动用户的时间，收集感知数据。&lt;/p&gt;
-
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20210126-architecture.png&#34; alt=&#34;群感知框架&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/20210126-architecture.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;群感知框架&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;这里构建一个第三方平台，作为买家的代理，在卖家给出价格后，将整个社会的资源利用最大化作为优化目标（也称作Social Welfare），求解一种最优的购买方案。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;每个用户的报价$$p_i$$是对执行感知任务每单位时间的预期回报，与任务种类无关；&lt;/li&gt;
-&lt;li&gt;每个用户对于不同的感知任务有不同的贡献价值，可表示为权重$$w_{ij}$$；&lt;/li&gt;
-&lt;li&gt;每个用户在每个时间段只具备有限的感知时间，表示为$$t_i$$，并且每个时间步只能执行一种感知任务，但这一段时间内可以轮流执行多种感知任务；&lt;/li&gt;
-&lt;li&gt;每个感知任务都只有有限的预算支付给移动用户，表示为$$b_j$$；&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&#34;移动用户&#34;&gt;移动用户&lt;/h4&gt;
-&lt;p&gt;由于移动用户的自私属性，每个用户只想尽可能最大化自己的收益，可以表示为：
-$$
-\psi_i\left(p_i, \bm{x}&lt;em&gt;i\right) = p_i \sum&lt;/em&gt;{j\in \mathcal{V}} x_{ij}, \ \forall i\in \mathcal{U}
-$$
-其中$$x_{ij}$$表示任务$$j$$从用户$$i$$处购买的时间，$$p_i$$表示用户$$i$$的报价；&lt;/p&gt;
-&lt;p&gt;这里将每个用户都作为一个智能体，从而构建一个多智能体竞争的场景。同时，每个用户的观测信息只有自己与平台的交易记录，而无法观测到其他用户的行为与动作。基于MADDPG，我们为每个用户都构建了一套网络用于训练，网络的输入输出可以表示为：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;输入: 前$$L$$时间刻的交易信息，包括自己的报价$${p_i^{t-k}}_{k\in(1,L)}$$和平台购买的时间$${\bm{x}&lt;em&gt;i^{t-k}}&lt;/em&gt;{k\in(1,L)}$$;&lt;/li&gt;
-&lt;li&gt;输出：当前的报价$$p_i^t$$；&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这里给出整体的训练模型，如下图所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20210126-MAAC.png&#34; alt=&#34;MAAC模型架构&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/20210126-MAAC.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;MAAC模型架构&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h4 id=&#34;感知平台&#34;&gt;感知平台&lt;/h4&gt;
-&lt;p&gt;平台的优化目标可以表示为从移动用户处收集的数据价值，考虑到任务的资金预算和用户的时间，以上问题可以规划为一个限制条件下的凸优化问题：
-$$
-\max \phi\left(\bm{x}, \bm{p}\right) = \sum_{j\in \mathcal{V}} \log\left(\sum_{i\in \mathcal{U}} \omega_{ij} x_{ij}\right)
-$$
-其中满足以下限制条件：
-$$
-\sum_{j \in \mathcal{V}} x_{ij} \leq t_i, \ \forall i \in \mathcal{U} \
-\sum_{i \in \mathcal{U}} p_i x_{ij} \leq b_j, \ \forall j\in \mathcal{V}
-$$
-通过拉格朗日法可以求解得最优购买策略$$\bm{x}^*$$。&lt;/p&gt;
-&lt;h2 id=&#34;实验&#34;&gt;实验&lt;/h2&gt;
-&lt;p&gt;本文的场景为一个多智能体的竞争场景，每个用户制定的价格即不能太高，以至于平台不会购买他的时间；也不能过低，以至于获得的回报甚至无法弥补执行任务的成本。在这个动态的环境里，每个用户都需要跟其他的用户进行交互，最终达到一种理想的“按劳分配”的价格策略。&lt;/p&gt;
-&lt;p&gt;文章最终实验的结果也比较符合预期，在初期每个用户报价都比较低的时候，任务的预算还有剩余，提升报价可以提高自己的回报，因此每个用户都竞相提高报价。但在后期过高的报价导致平台不再从他这里购买时间，报价逐渐降低并趋于稳定。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20210126-convergence.png&#34; alt=&#34;训练过程&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/20210126-convergence.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;训练过程&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;由于用户之间的竞争关系，每个用户的价格也都相对合理，从而平台可以在有限的预算内，整体感知资源的利用接近于达到最大值。&lt;/p&gt;
-&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
-&lt;p&gt;其实MADDPG在是实际应用中会受限于训练与执行场景不同的短板，包括本文也是，训练时利用到的信息是全局的，但是非全局信息有可能导致不会收敛。&lt;/p&gt;
-&lt;p&gt;接下来还有很多工作要做，一起加油！！&lt;/p&gt;
 </description>
       
     </item>
