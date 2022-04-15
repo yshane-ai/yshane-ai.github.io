@@ -69,7 +69,7 @@
 <meta itemprop="name" content="推荐系统之RL的应用">
 <meta itemprop="description" content="背景 新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过滤、深度学习方法在建模user-item交互关系时，经常面临以下三个问题"><meta itemprop="datePublished" content="2021-02-25T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-02-25T16:01:23+08:00" />
-<meta itemprop="wordCount" content="2559">
+<meta itemprop="wordCount" content="2555">
 <meta itemprop="keywords" content="Recommendation System," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="推荐系统之RL的应用"/>
 <meta name="twitter:description" content="背景 新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过滤、深度学习方法在建模user-item交互关系时，经常面临以下三个问题"/>
@@ -707,7 +707,7 @@
       <h3 id="背景">背景</h3>
 <p>新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过滤、深度学习方法在建模user-item交互关系时，经常面临以下三个问题：</p>
 <ol>
-<li>难以处理新闻推荐的动态变化。这种动态变化体现在两个方面，首先新闻具有很强的时效性，其次是用户对于新闻阅读的兴趣是不断变化的，如下图所示：</li>
+<li>难以处理新闻推荐的动态变化。这种动态变化体现在两个方面，首先新闻具有很强的时效性，其次是用户对于新闻阅读的兴趣是不断变化的，如下图所示。因此，在建模过程中，不仅要考虑用户对当前推荐的反馈，还要考虑长期的影响。就好比买股票，不能只考虑眼前的收益，而是要考虑未来的预期收益。</li>
 </ol>
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
@@ -721,9 +721,10 @@
   </figure>
 </div>
 
-<p>因此，在建模过程中，不仅要考虑用户对当前推荐的反馈，还要考虑长期的影响。就好比买股票，不能只考虑眼前的收益，而是要考虑未来的预期收益。
-2. 当前的推荐算法通常只考虑用户的点击／未点击 或者 用户的评分作为反馈，然而，用户隔多久会再次使用服务也能在一定程度上反映用户对推荐结果的满意度。
-3. 目前的推荐系统倾向于推荐用户重复或相似内容的东西，这也许会降低用户在同一个主题上的兴趣度。因此需要进行exploration。传统方法 e -greedy strategy 或者 Upper Con dence Bound (UCB) 都会在短期对推荐系统的效果造成一定的影响，需要更有效的exploration策略。</p>
+<ol start="2">
+<li>当前的推荐算法通常只考虑用户的点击／未点击 或者 用户的评分作为反馈，然而，用户隔多久会再次使用服务也能在一定程度上反映用户对推荐结果的满意度。</li>
+<li>目前的推荐系统倾向于推荐用户重复或相似内容的东西，这也许会降低用户在同一个主题上的兴趣度。因此需要进行exploration。传统方法 $\epsilon$-greedy strategy 或者 Upper Confidence Bound (UCB) 都会在短期对推荐系统的效果造成一定的影响，需要更有效的exploration策略。</li>
+</ol>
 <p>因此，本文提出了基于强化学习的推荐系统框架来解决上述提到的三个问题：</p>
 <ol>
 <li>首先，使用DQN网络来有效建模新闻推荐的动态变化属性，DQN可以将短期回报和长期回报进行有效的模拟。</li>
