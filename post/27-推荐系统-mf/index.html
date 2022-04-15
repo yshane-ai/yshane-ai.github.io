@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>推荐系统之MF - Yang Xinxin&#39;s Blog</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="Xinxin Yang" />
+  <meta name="description" content="本篇的思维导图如下： 1 用户行为数据 用户行为数据在网站上最简单的存在形式就是日志，比如用户在电子商务网站中的网页浏览、购买、点击、评分和评论等" />
+
+  <meta name="keywords" content="RL, ML, " />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.93.2" />
+
+
+<link rel="canonical" href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mf/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.b3a8813c06e6d785beba22bf8264e174fa2cb3a396b22f9ba24e2c00c18aaf7f.css" integrity="sha256-s6iBPAbm14W&#43;uiK/gmThdPoss6OWsi&#43;bok4sAMGKr38=" media="screen" crossorigin="anonymous">
+
+
+
+
+
+<meta property="og:title" content="推荐系统之MF" />
+<meta property="og:description" content="本篇的思维导图如下： 1 用户行为数据 用户行为数据在网站上最简单的存在形式就是日志，比如用户在电子商务网站中的网页浏览、购买、点击、评分和评论等" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mf/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2020-12-14T16:01:23+08:00" />
+<meta property="article:modified_time" content="2020-12-14T16:01:23+08:00" />
+
+<meta itemprop="name" content="推荐系统之MF">
+<meta itemprop="description" content="本篇的思维导图如下： 1 用户行为数据 用户行为数据在网站上最简单的存在形式就是日志，比如用户在电子商务网站中的网页浏览、购买、点击、评分和评论等"><meta itemprop="datePublished" content="2020-12-14T16:01:23+08:00" />
+<meta itemprop="dateModified" content="2020-12-14T16:01:23+08:00" />
+<meta itemprop="wordCount" content="5874">
+<meta itemprop="keywords" content="Recommendation System," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="推荐系统之MF"/>
+<meta name="twitter:description" content="本篇的思维导图如下： 1 用户行为数据 用户行为数据在网站上最简单的存在形式就是日志，比如用户在电子商务网站中的网页浏览、购买、点击、评分和评论等"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Xinxin</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/">Home</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/post/">Archives</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/tags/">Tags</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/categories/">Categories</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/about/">About</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          <div class="mobile-menu-parent">
+            <span class="mobile-submenu-open"></span>
+            <a href="https://yshane-ai.github.io/">
+              docs
+            </a>
+          </div>
+          <ul class="mobile-submenu-list">
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/7-alpha-go/">Alpha Go</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/1-curl/">CURL</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/13-ddpg/">DDPG的Pytorch实现</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/11-dqn/">DQN的Pytorch实现</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/5-rl%E6%80%BB%E7%BB%93/">DRL总结：DQN，RainBow，DDPG，PPO和A3C等</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/hrlhindsight/">HRL&amp;Hindsight</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/4-imapla/">IMPALA</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/incentive-mechanism-in-mobile-crowdsensing/">Incentive Mechanism in Mobile Crowdsensing</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/2-social-influence/">Influence</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/maddpg-based-mcs/">MADDPG-Based-MCS</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/21-model-based-rl%E6%A2%B3%E7%90%86/">Model-based RL梳理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/26-off-policy%E6%8A%80%E5%B7%A7%E6%A2%B3%E7%90%86/">Off-policy方法梳理：Retrace和Vtrace</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/">Offline RL梳理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/12-ppo/">PPO的Pytorch实现</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/16-python%E4%B8%ADmap%E5%92%8Creduce%E4%BD%BF%E7%94%A8/">Python中map和reduce函数使用</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/">Python中的断言assert和异常exception处理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/3-pythondict/">Python的字典dict原理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/">Python调试器pdb的使用</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/17-python%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/">Python高阶函数、装饰器和匿名函数总结</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/">Pytorch加速模型训练</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/">Pytorch根据概率生成action</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/25-rl%E5%8D%9A%E5%BC%88%E5%AF%B9%E6%89%8B%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5/">RL博弈对手选择策略</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-deepfm/">推荐系统之DeepFM</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/34-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-bandit/">推荐系统之EE问题和基本的Bandit算法</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/28-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-ffm/">推荐系统之FFM</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm/">推荐系统之FM</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm-mf/">推荐系统之FM与MF傻傻分不清楚</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/32-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-gbdt-lr/">推荐系统之GBDT&#43;LR </a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mf/">推荐系统之MF</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-rl/">推荐系统之RL的应用</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/30-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%A4%9A%E7%A6%BB%E6%95%A3%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%96%B9%E6%A1%88/">推荐系统之多值离散特征的embedding解决方案</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/33-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E7%A5%9E%E7%BB%8F%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4/">推荐系统之神经协同过滤</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/31-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-auc/">推荐系统之评价指标AUC</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/">游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/">神经网络的初始化和优化</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/24-nvidia-gpu%E7%B3%BB%E5%88%97%E4%BB%8B%E7%BB%8D/">英伟达GPU系列介绍</a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      Xinxin
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/">Home</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/post/">Archives</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/tags/">Tags</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/categories/">Categories</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item active">
+        
+          
+          <a class="menu-item-link menu-parent" href="https://yshane-ai.github.io/">docs</a>
+          <ul class="submenu">
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/7-alpha-go/">Alpha Go</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/1-curl/">CURL</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/13-ddpg/">DDPG的Pytorch实现</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/11-dqn/">DQN的Pytorch实现</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/5-rl%E6%80%BB%E7%BB%93/">DRL总结：DQN，RainBow，DDPG，PPO和A3C等</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/hrlhindsight/">HRL&amp;Hindsight</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/4-imapla/">IMPALA</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/incentive-mechanism-in-mobile-crowdsensing/">Incentive Mechanism in Mobile Crowdsensing</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/2-social-influence/">Influence</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/maddpg-based-mcs/">MADDPG-Based-MCS</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/21-model-based-rl%E6%A2%B3%E7%90%86/">Model-based RL梳理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/26-off-policy%E6%8A%80%E5%B7%A7%E6%A2%B3%E7%90%86/">Off-policy方法梳理：Retrace和Vtrace</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/">Offline RL梳理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/12-ppo/">PPO的Pytorch实现</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/16-python%E4%B8%ADmap%E5%92%8Creduce%E4%BD%BF%E7%94%A8/">Python中map和reduce函数使用</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/">Python中的断言assert和异常exception处理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/3-pythondict/">Python的字典dict原理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/">Python调试器pdb的使用</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/17-python%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/">Python高阶函数、装饰器和匿名函数总结</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/">Pytorch加速模型训练</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/">Pytorch根据概率生成action</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/25-rl%E5%8D%9A%E5%BC%88%E5%AF%B9%E6%89%8B%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5/">RL博弈对手选择策略</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-deepfm/">推荐系统之DeepFM</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/34-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-bandit/">推荐系统之EE问题和基本的Bandit算法</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/28-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-ffm/">推荐系统之FFM</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm/">推荐系统之FM</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm-mf/">推荐系统之FM与MF傻傻分不清楚</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/32-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-gbdt-lr/">推荐系统之GBDT&#43;LR </a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mf/">推荐系统之MF</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-rl/">推荐系统之RL的应用</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/30-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%A4%9A%E7%A6%BB%E6%95%A3%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%96%B9%E6%A1%88/">推荐系统之多值离散特征的embedding解决方案</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/33-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E7%A5%9E%E7%BB%8F%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4/">推荐系统之神经协同过滤</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/31-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-auc/">推荐系统之评价指标AUC</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/">游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/">神经网络的初始化和优化</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/24-nvidia-gpu%E7%B3%BB%E5%88%97%E4%BB%8B%E7%BB%8D/">英伟达GPU系列介绍</a>
+              </li>
+            
+          </ul>
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">推荐系统之MF</h1>
+      
+      <div class="post-meta">
+        <time datetime="2020-12-14" class="post-time">
+          2020-12-14
+        </time>
+        <div class="post-category">
+            <a href="https://yshane-ai.github.io/categories/recommendation-system/"> Recommendation System </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Table of Contents</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-用户行为数据">1 用户行为数据</a></li>
+    <li><a href="#2-用户行为分析">2 用户行为分析</a>
+      <ul>
+        <li><a href="#21-用户活跃度和物品流行度">2.1 用户活跃度和物品流行度</a></li>
+        <li><a href="#22-用户活跃度和物品流行度的关系">2.2 用户活跃度和物品流行度的关系</a></li>
+      </ul>
+    </li>
+    <li><a href="#3-基于领域的算法">3 基于领域的算法</a>
+      <ul>
+        <li><a href="#31-基于用户的协同过滤算法usercf">3.1 基于用户的协同过滤算法(UserCF)</a></li>
+        <li><a href="#32-基于物品的协同过滤算法itemcf">3.2 基于物品的协同过滤算法（ItemCF）</a></li>
+        <li><a href="#33-usercf和itemcf的比较">3.3 UserCF和ItemCF的比较</a></li>
+      </ul>
+    </li>
+    <li><a href="#4-隐语义模型">4 隐语义模型</a></li>
+    <li><a href="#基于图的模型">基于图的模型</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <p>本篇的思维导图如下：</p>
+
+<link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/069.webp" />
+    </div>
+    <a href="/image/23-Recommendation/069.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<h2 id="1-用户行为数据">1 用户行为数据</h2>
+<p>用户行为数据在网站上最简单的存在形式就是日志，比如用户在电子商务网站中的网页浏览、购买、点击、评分和评论等活动。
+用户行为在个性化推荐系统中一般分两种——显性反馈行为(explicit feedback)和隐性反馈 行为(implicit feedback)。显性反馈行为包括用户明确表示对物品喜好的行为。网站中收集显性反馈的主要方式就是评分和喜欢/不喜欢。隐性反馈行为指的是那些不能明确反应用户喜好 的行为。最具代表性的隐性反馈行为就是页面浏览行为。
+按照反馈的明确性分，用户行为数据可以分为显性反馈和隐性反馈，但按照反馈的方向分， 又可以分为正反馈和负反馈。正反馈指用户的行为倾向于指用户喜欢该物品，而负反馈指用户的 行为倾向于指用户不喜欢该物品。在显性反馈中，很容易区分一个用户行为是正反馈还是负反馈， 而在隐性反馈行为中，就相对比较难以确定。</p>
+<h2 id="2-用户行为分析">2 用户行为分析</h2>
+<p>在利用用户行为数据设计推荐算法之前，研究人员首先需要对用户行为数据进行分析，了解 数据中蕴含的一般规律，这样才能对算法的设计起到指导作用。</p>
+<h3 id="21-用户活跃度和物品流行度">2.1 用户活跃度和物品流行度</h3>
+<p>很多关于互联网数据的研究发现，互联网上的很多数据分布都满足一种称为Power Law3的分布，这个分布在互联网领域也称<strong>长尾分布</strong>。</p>
+<p>$$
+f(x) = \alpha x^k
+$$</p>
+<p>如果定义物品的流行度K为被K个用户产生过行为，而用户的活跃度K定义为对K个物品产生过行为，那么二者的分布大概如下图所示(横轴代表物品的流行度／用户的活跃度，纵轴代表物品数／用户数）：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/070.webp" />
+    </div>
+    <a href="/image/23-Recommendation/070.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/071.webp" />
+    </div>
+    <a href="/image/23-Recommendation/071.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>可以看到，不管是物品的流行度还是用户的活跃度，都近似于长尾分布。</p>
+<h3 id="22-用户活跃度和物品流行度的关系">2.2 用户活跃度和物品流行度的关系</h3>
+<p>一般认为，新用户倾向于浏览热门的物品，因为他 们对网站还不熟悉，只能点击首页的热门物品，而老用户会逐渐开始浏览冷门的物品。如果用横坐标表示用户活跃度，纵坐标表示具有某个活跃度的所有用户评过分的物品的平均流行度。图中曲线呈明显下 降的趋势，这表明用户越活跃，越倾向于浏览冷门的物品。</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/072.webp" />
+    </div>
+    <a href="/image/23-Recommendation/072.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>仅仅基于用户行为数据设计的推荐算法一般称为协同过滤算法。学术界对协同过滤算法进行了深入研究，提出了很多方法，比如基于邻域的方法(neighborhood-based)、隐语义模型 (latent factor model)、基于图的随机游走算法(random walk on graph)等。在这些方法中， 最著名的、在业界得到最广泛应用的算法是基于邻域的方法，而基于邻域的方法主要包含下
+面两种算法。</p>
+<ol>
+<li>基于用户的协同过滤算法：这种算法给用户推荐和他兴趣相似的其他用户喜欢的物品。</li>
+<li>基于物品的协同过滤算法： 这种算法给用户推荐和他之前喜欢的物品相似的物品。</li>
+</ol>
+<h2 id="3-基于领域的算法">3 基于领域的算法</h2>
+<p>基于邻域的算法是推荐系统中最基本的算法，该算法不仅在学术界得到了深入研究，而且在业界得到了广泛应用。基于邻域的算法分为两大类，一类是基于用户的协同过滤算法，另一类是基于物品的协同过滤算法。现在我们所说的协同过滤，基本上就就是指基于用户或者是基于物品的协同过滤算法，因此，我们可以说基于邻域的算法即是我们常说的协同过滤算法。</p>
+<h3 id="31-基于用户的协同过滤算法usercf">3.1 基于用户的协同过滤算法(UserCF)</h3>
+<p>基于用户的协同过滤算法的基本思想是：在一个在线个性化推荐系统中，当一个用户A需要个性化推荐时，可以先找到和他有相似兴趣的其他用户，然后把那些用户喜欢的、而用户A没有听说过的物品推荐给A。</p>
+<p>从上面的描述中可以看到，基于用户的协同过滤算法主要包括两个步骤。</p>
+<ol>
+<li>找到和目标用户兴趣相似的用户集合。</li>
+<li>找到这个集合中的用户喜欢的，且目标用户没有听说过的物品推荐给目标用户。</li>
+</ol>
+<p>这里，步骤1的关键是计算两个用户的兴趣相似度，协同过滤算法主要利用行为的相似度计算兴趣的相似度。给定用户u和用户v，令N(u)表示用户u曾经有过正反馈的物品集合，令N(v) 为用户v曾经有过正反馈的物品集合。那么我们可以通过以下两种方法计算用户的相似度：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/073.webp" alt="基于Jaccard公式"/>
+    </div>
+    <a href="/image/23-Recommendation/073.webp" itemprop="contentUrl"></a>
+      <figcaption>
+          <p>基于Jaccard公式</p>
+      </figcaption>
+  </figure>
+</div>
+
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/074.webp" alt="基于余弦相似度"/>
+    </div>
+    <a href="/image/23-Recommendation/074.webp" itemprop="contentUrl"></a>
+      <figcaption>
+          <p>基于余弦相似度</p>
+      </figcaption>
+  </figure>
+</div>
+
+<p>余弦相似度为什么是上面这种写法呢，因为这里，我们并不是用的用户对物品的评分，而是用的0-1表示，所以对两个集合做交集，相当于进行了点乘。如果我们的矩阵是用户对物品的评分，那么计算余弦相似度的时候可以利用用户的具体评分而不是0-1值。</p>
+<p>如果简单的基于余弦相似度，显得过于粗糙，以图书为例，如果两个用户都曾经买过《新华字典》，这丝毫不能说明他们兴趣相似， 因为绝大多数中国人小时候都买过《新华字典》。但如果两个用户都买过《数据挖掘导论》，那可 以认为他们的兴趣比较相似，因为只有研究数据挖掘的人才会买这本书。换句话说，两个用户对冷门物品采取过同样的行为更能说明他们兴趣的相似度，因此，我们可以基于物品的流行度对热门物品进行一定的惩罚：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/075.webp" />
+    </div>
+    <a href="/image/23-Recommendation/075.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>得到用户之间的兴趣相似度后，UserCF算法会给用户推荐和他兴趣最相似的K个用户喜欢的物品。如下的公式度量了UserCF算法中用户u对物品i的感兴趣程度：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/076.webp" />
+    </div>
+    <a href="/image/23-Recommendation/076.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>其中，S(u, K)包含和用户u兴趣最接近的K个用户，N(i)是对物品i有过行为的用户集合，$w_{uv}$ 是用户u和用户v的兴趣相似度，rvi代表用户v对物品i的兴趣。</p>
+<h3 id="32-基于物品的协同过滤算法itemcf">3.2 基于物品的协同过滤算法（ItemCF）</h3>
+<p>UserCF在一些网站(如Digg)中得到了应用，但该算法有一些缺点。首先， 随着网站的用户数目越来越大，计算用户兴趣相似度矩阵将越来越困难，其运算时间复杂度和空间复杂度的增长和用户数的增长近似于平方关系。其次，基于用户的协同过滤很难对推荐结果作出解释。因此，著名的电子商务公司亚马逊提出了另一个算法——基于物品的协同过滤算法。
+基于物品的协同过滤算法(简称ItemCF)给用户推荐那些和他们之前喜欢的物品相似的物品。 比如，该算法会因为你购买过《数据挖掘导论》而给你推荐《机器学习》。不过，ItemCF算法并不利用物品的内容属性计算物品之间的相似度，它主要通过分析用户的行为记录计算物品之间的相似度。该算法认为，物品A和物品B具有很大的相似度是因为喜欢物品A的用户大都也喜欢物品 B。</p>
+<p>基于物品的协同过滤算法主要分为两步。</p>
+<ol>
+<li>计算物品之间的相似度。</li>
+<li>根据物品的相似度和用户的历史行为给用户生成推荐列表。</li>
+</ol>
+<p>ItemCF的第一步是计算物品之间的相似度，在网站中，我们经常看到这么一句话：Customers Who Bought This Item Also Bought，那么从这句话的定义出发，我们可以用下面的公式定义物品相似度：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/077.webp" />
+    </div>
+    <a href="/image/23-Recommendation/077.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>这里，分母|N(i)|是喜欢物品i的用户数，而分子 $N(i)|| N(j)$ 是同时喜欢物品i和物品j的用户 数。因此，上述公式可以理解为喜欢物品i的用户中有多少比例的用户也喜欢物品j。但是却存在一个问题。如果物品j很热门，很多人都喜欢，
+那么Wij就会很大，接近1。因此，该公式会造成任何物品都会和热门的物品有很大的相似度，这 对于致力于挖掘长尾信息的推荐系统来说显然不是一个好的特性。为了避免推荐出热门的物品，可以用下面的公式:</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/078.webp" />
+    </div>
+    <a href="/image/23-Recommendation/078.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>这里由于还是0-1的原因，我们的余弦相似度可以写成上面的形式。但是，是不是每个用户的贡献都相同呢? 假设有这么一个用户，他是开书店的，并且买了当当网上80%的书准备用来自己卖。那么， 他的购物车里包含当当网80%的书。假设当当网有100万本书，也就是说他买了80万本。从前面 对ItemCF的讨论可以看到，这意味着因为存在这么一个用户，有80万本书两两之间就产生了相似度。这个用户虽然活跃，但是买这些书并非都是出于自身的兴趣，而且这些书覆 盖了当当网图书的很多领域，所以这个用户对于他所购买书的两两相似度的贡献应该远远小于一个只买了十几本自己喜欢的书的文学青年。因此，我们要对这样的用户进行一定的惩罚，John S. Breese在论文1中提出了一个称为IUF(Inverse User Frequence)，即用户活跃度对数的 倒数的参数，他也认为活跃用户对物品相似度的贡献应该小于不活跃的用户，他提出应该增加IUF参数来修正物品相似度的计算公式:</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/079.webp" />
+    </div>
+    <a href="/image/23-Recommendation/079.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>在得到物品之间的相似度后，ItemCF通过如下公式计算用户u对一个物品j的兴趣：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/080.webp" />
+    </div>
+    <a href="/image/23-Recommendation/080.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>这里N(u)是用户喜欢的物品的集合，S(j,K)是和物品j最相似的K个物品的集合，wji是物品j和i 的相似度，rui是用户u对物品i的兴趣。</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/081.webp" />
+    </div>
+    <a href="/image/23-Recommendation/081.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>这里N(u)是用户喜欢的物品的集合，S(j,K)是和物品j最相似的K个物品的集合，wji是物品j和i 的相似度，rui是用户u对物品i的兴趣。</p>
+<h3 id="33-usercf和itemcf的比较">3.3 UserCF和ItemCF的比较</h3>
+<p>首先我们提出一个问题，为什么新闻网站一般使用UserCF，而图书、电商网站一般使用ItemCF呢？
+首先回顾一下UserCF算法和ItemCF算法的推荐原理。UserCF给用户推荐那些和他有共同兴 趣爱好的用户喜欢的物品，而ItemCF给用户推荐那些和他之前喜欢的物品类似的物品。从这个算法的原理可以看到，UserCF的推荐结果着重于反映和用户兴趣相似的小群体的热点，而ItemCF的推荐结果着重于维系用户的历史兴趣。换句话说，<strong>UserCF的推荐更社会化，反映了用户所在的小型兴趣群体中物品的热门程度，而ItemCF的推荐更加个性化，反映了用户自己的兴趣传承</strong>。
+在新闻网站中，用户的兴趣不是特别细化，绝大多数用户都喜欢看热门的新闻。个性化新闻推荐更加强调抓住 新闻热点，热门程度和时效性是个性化新闻推荐的重点，而个性化相对于这两点略显次要。因此，UserCF可以给用户推荐和他有相似爱好的一群其他用户今天都在看的新闻，这样在抓住热点和时效性的同时，保证了一定程度的个性化。同时，在新闻网站中，物品的更新速度远远快于新用户的加入速度，而且对于新用户，完全可以给他推荐最热门的新闻，因此UserCF显然是利大于弊。</p>
+<p>但是，在图书、电子商务和电影网站，比如亚马逊、豆瓣、Netflix中，ItemCF则能极大地发 挥优势。首先，在这些网站中，用户的兴趣是比较固定和持久的。一个技术人员可能都是在购买技术方面的书，而且他们对书的热门程度并不是那么敏感，事实上越是资深的技术人员，他们看的书就越可能不热门。此外，这些系统中的用户大都不太需要流行度来辅助他们判断一个物品的好坏，而是可以通过自己熟悉领域的知识自己判断物品的质量。因此，这些网站中个性化推荐的任务是帮助用户发现和他研究领域相关的物品。因此，ItemCF算法成为了这些网站的首选算法。此外，这些网站的物品更新速度不会特别快，一天一次更新物品相似度矩阵对它们来说不会造成太大的损失，是可以接受的。同时，从技术上考虑，UserCF需要维护一个用户相似度的矩阵，而ItemCF需要维护一个物品相似度矩阵。从存储的角度说，如果用户很多，那么维护用户兴趣相似度矩阵需要很大的空间，同理，如果物品很多，那么维护物品相似度矩阵代价较大。</p>
+<p>下表是对二者的一个全面的比较：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/082.webp" />
+    </div>
+    <a href="/image/23-Recommendation/082.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<h2 id="4-隐语义模型">4 隐语义模型</h2>
+<p>隐语义模型是最近几年推荐系统领域最为热门的研究话题，它的核心思想是通过隐含特征 (latent factor)联系用户兴趣和物品。</p>
+<p>使用隐语义模型的基本思路是：对于某个用户，首先得到他的兴趣分类，然后从分类中挑选他可能喜欢的物品。那么这个方法大概需要解决三个问题：</p>
+<ol>
+<li>如何给物品进行分类?</li>
+<li>如何确定用户对哪些类的物品感兴趣，以及感兴趣的程度?</li>
+<li>对于一个给定的类，选择哪些属于这个类的物品推荐给用户，以及如何确定这些物品在一个类中的权重?</li>
+</ol>
+<p>隐含语义分析技术从诞生到今天产生了很多著名的模型和方法，其中和该技术相关且耳熟能详的名词有pLSA、LDA、隐含类别模型(latent class model)、隐含主题模型(latent topic model)、 矩阵分解(matrix factorization)。这些技术和方法在本质上是相通的，其中很多方法都可以用于个性化推荐系统。我们将以LFM为例介绍隐含语义分析技术在推荐系统中的应用。</p>
+<p>LFM通过如下公式计算用户u对物品i的兴趣：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/083.webp" />
+    </div>
+    <a href="/image/23-Recommendation/083.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>这个公式中 pu,k 和 qi,k 是模型的参数，其中 pu,k 度量了用户u的兴趣和第k个隐类的关系，而 qi,k 度量了第k个隐类和物品i之间的关系。那么，下面的问题就是如何计算这两个参数。
+对最优化理论或者机器学习有所了解的读者，可能对如何计算这两个参数都比较清楚。这两 个参数是从数据集中计算出来的。要计算这两个参数，需要一个训练集，对于每个用户u，训练 集里都包含了用户u喜欢的物品和不感兴趣的物品，通过学习这个数据集，就可以获得上面的模型参数。我们可以通过最小化下面的损失函数来得到最合适的p和q：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/084.webp" />
+    </div>
+    <a href="/image/23-Recommendation/084.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>上面的式子中，后面的两项是为了防止过拟合的正则化项，求解上面的式子可以使用随机梯度下降来得到，这里就不再赘述。</p>
+<p>LFM模型在实际使用中有一个困难，那就是它很难实现实时的推荐。经典的LFM模型 每次训练时都需要扫描所有的用户行为记录，这样才能计算出用户隐类向量(pu)和物品隐类向量(qi)。而且LFM的训练需要在用户行为记录上反复迭代才能获得比较好的性能。</p>
+<h2 id="基于图的模型">基于图的模型</h2>
+<p>用户行为很容易用二分图表示，因此很多图的算法都可以用到推荐系统中。
+令$G(V，E)$表示用户物品二分图，其中$V = (V_U, V_I)$由用户顶点集合$V_U$和物品顶点集合$V_I$组成。对于数据集中每一个二元组(u, i)，图中都有一套对应的边 $e(vu ,vi )$，其中$vu∈VU$是用户u 对应的顶点$vi\in VI$ 是物品i对应的顶点。下图是一个简单的用户物品二分图模型，其中圆形节点代表用户，方形节点代表物品，圆形节点和方形节点之间的边代表用户对物品的行为。比如图中用户节点A和物品节点a、b、d相连，说明用户A对物品a、b、d产生过行为。</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/085.webp" />
+    </div>
+    <a href="/image/23-Recommendation/085.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>在得到二分图之后，推荐的任务就变为度量用户顶点 vu和与vu没有边直接相连的物品节点在图上的相关性，相关性越高的物品在推荐列表中的权重就越高。图中两个顶点的相关性主要取决于下面三个因素：</p>
+<ol>
+<li>两个顶点之间的路径数;</li>
+<li>两个顶点之间路径的长度;</li>
+<li>两个顶点之间的路径经过的顶点。</li>
+</ol>
+<p>而相关性高的一对顶点一般具有如下特征:</p>
+<ol>
+<li>两个顶点之间有很多路径相连;</li>
+<li>连接两个顶点之间的路径长度都比较短;</li>
+<li>连接两个顶点之间的路径不会经过出度比较大的顶点。</li>
+</ol>
+<p>基于上面3个主要因素，本节介绍的是一种基于随机游走的PersonalRank算法：假设要给用户u进行个性化推荐，可以从用户u对应的节点vu开始在用户物品二分图上进行随 机游走。游走到任何一个节点时，首先按照概率α决定是继续游走，还是停止这次游走并从vu节 点开始重新游走。如果决定继续游走，那么就从当前节点指向的节点中按照均匀分布随机选择一 个节点作为游走下次经过的节点。这样，经过很多次随机游走后，每个物品节点被访问到的概率 会收敛到一个数。最终的推荐列表中物品的权重就是物品节点的访问概率。如果将上面的描述表示成公式，可以得到如下公式:</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/086.webp" />
+    </div>
+    <a href="/image/23-Recommendation/086.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">Author</span>
+    <span class="item-content">Xinxin Yang</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">LastMod</span>
+    <span class="item-content">
+      2020-12-14
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">License</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://yshane-ai.github.io/tags/recommendation-system/">Recommendation System</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm-mf/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">推荐系统之FM与MF傻傻分不清楚</span>
+            <span class="prev-text nav-mobile">Prev</span>
+          </a>
+        
+          <a class="next" href="/post/25-rl%E5%8D%9A%E5%BC%88%E5%AF%B9%E6%89%8B%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5/">
+            <span class="next-text nav-default">RL博弈对手选择策略</span>
+            <span class="prev-text nav-mobile">Next</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="shaneyang03@gmail.com" rel="me noopener" class="iconfont"
+      title="email"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/yshane-ai" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://www.zhihu.com/people/xin-shao-49-78" rel="me noopener" class="iconfont"
+      title="zhihu"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M351.791182 562.469462l192.945407 0c0-45.367257-21.3871-71.939449-21.3871-71.939449L355.897709 490.530013c3.977591-82.182744 7.541767-187.659007 8.816806-226.835262l159.282726 0c0 0-0.86367-67.402109-18.578124-67.402109s-279.979646 0-279.979646 0 16.850783-88.141456 39.318494-127.053698c0 0-83.60514-4.510734-112.121614 106.962104S81.344656 355.077018 76.80834 367.390461c-4.536316 12.313443 24.62791 5.832845 36.941354 0 12.313443-5.832845 68.050885-25.924439 84.252893-103.69571l86.570681 0c1.165546 49.28652 4.596691 200.335724 3.515057 226.835262L109.86113 490.530013c-25.275663 18.147312-33.701566 71.939449-33.701566 71.939449L279.868105 562.469462c-8.497535 56.255235-23.417339 128.763642-44.275389 167.210279-33.05279 60.921511-50.55235 116.65793-169.802314 212.576513 0 0-19.442818 14.257725 40.829917 9.073656 60.273758-5.185093 117.305683-20.739347 156.840094-99.807147 20.553105-41.107233 41.805128-93.250824 58.386782-146.138358l-0.055259 0.185218 167.855986 193.263655c0 0 22.035876-51.847855 5.832845-108.880803L371.045711 650.610918l-42.1244 31.157627-0.045025 0.151449c11.69946-41.020252 20.11206-81.5749 22.726607-116.858498C351.665315 564.212152 351.72876 563.345412 351.791182 562.469462z"></path>
+  <path d="M584.918753 182.033893l0 668.840094 70.318532 0 28.807093 80.512708 121.875768-80.512708 153.600307 0L959.520453 182.033893 584.918753 182.033893zM887.150192 778.934538l-79.837326 0-99.578949 65.782216-23.537066-65.782216-24.855084 0L659.341766 256.673847l227.807403 0L887.149169 778.934538z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://yshane-ai.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+  
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [["$", "$"]],
+    },
+    displayMath: [
+      ["$$", "$$"],
+      ["\[\[", "\]\]"],
+    ],
+    svg: {
+      fontCache: "global",
+    },
+  };
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+></script>
+
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2021 -
+    2022
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        Xinxin Yang
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.dee43230127a73d039a734510fa896c89c3c7ce0cf0be0c7a7433f8fd69b76dc.js" integrity="sha256-3uQyMBJ6c9A5pzRRD6iWyJw8fODPC&#43;DHp0M/j9abdtw=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/katex.min.css"
+    integrity="sha384-BdGj8xC2eZkQaxoQ8nSLefg4AV4/AwB3Fj+8SUSo7pnKP6Eoy18liIKTPn9oBYNG"
+    crossorigin="anonymous">
+
+  
+  <script defer
+    src="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/katex.min.js"
+    integrity="sha384-JiKN5O8x9Hhs/UE5cT5AAJqieYlOZbGT3CHws/y97o3ty4R7/O5poG9F3JoiOYw1"
+    crossorigin="anonymous"></script>
+
+  
+  <script defer
+    src="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/contrib/auto-render.min.js"
+    integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI"
+    crossorigin="anonymous" onload="renderMathInElement(document.body);">
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        
+      });
+    });
+  </script>
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

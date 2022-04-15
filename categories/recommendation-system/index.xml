@@ -83,14 +83,23 @@
     <item>
       <title>推荐系统之FM与MF傻傻分不清楚</title>
       <link>https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm-mf/</link>
-      <pubDate>Mon, 14 Dec 2020 16:01:23 +0800</pubDate>
+      <pubDate>Thu, 17 Dec 2020 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm-mf/</guid>
       <description>FM 因子分解机(Factorization Machine, FM)是由Steffen Rendle提出的一种基于矩阵分解思想的机器学习算法，FM的提出是为了解决</description>
     </item>
     
     <item>
-      <title>推荐系统之FM </title>
+      <title>推荐系统之MF</title>
+      <link>https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mf/</link>
+      <pubDate>Mon, 14 Dec 2020 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mf/</guid>
+      <description>本篇的思维导图如下： 1 用户行为数据 用户行为数据在网站上最简单的存在形式就是日志，比如用户在电子商务网站中的网页浏览、购买、点击、评分和评论等</description>
+    </item>
+    
+    <item>
+      <title>推荐系统之FM</title>
       <link>https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm/</link>
       <pubDate>Thu, 10 Dec 2020 16:01:23 +0800</pubDate>
       

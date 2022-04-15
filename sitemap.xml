@@ -325,6 +325,13 @@
   
   <url>
     <loc>https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm-mf/</loc>
+    <lastmod>2020-12-17T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mf/</loc>
     <lastmod>2020-12-14T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
