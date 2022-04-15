@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Python · Yang Xinxin&#39;s Blog</title>
+  <title>推荐系统之冷启动问题 - Yang Xinxin&#39;s Blog</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="Yang Xinxin&#39;s Blog." />
+  <meta name="description" content="本章的思维导图如下： 1 背景 如何在没有大量用户数据的情况下设计个性化推荐系统并且让用户对推荐结果满意从而愿意使用推荐系统， 就是冷启动的问题。冷" />
+
   <meta name="keywords" content="RL, ML, " />
 
 
@@ -34,8 +35,8 @@
 <meta name="generator" content="Hugo 0.93.2" />
 
 
-<link rel="canonical" href="https://yshane-ai.github.io/tags/python/" />
-<link href="/tags/python/index.xml" rel="alternate" type="application/rss+xml" title="Yang Xinxin&#39;s Blog" />
+<link rel="canonical" href="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%86%B7%E5%90%AF%E5%8A%A8%E9%97%AE%E9%A2%98/" />
+
 
 
 
@@ -58,15 +59,20 @@
 
 
 
-<meta property="og:title" content="Python" />
-<meta property="og:description" content="Yang Xinxin&#39;s Blog." />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://yshane-ai.github.io/tags/python/" />
+<meta property="og:title" content="推荐系统之冷启动问题" />
+<meta property="og:description" content="本章的思维导图如下： 1 背景 如何在没有大量用户数据的情况下设计个性化推荐系统并且让用户对推荐结果满意从而愿意使用推荐系统， 就是冷启动的问题。冷" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%86%B7%E5%90%AF%E5%8A%A8%E9%97%AE%E9%A2%98/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2020-12-30T16:01:23+08:00" />
+<meta property="article:modified_time" content="2020-12-30T16:01:23+08:00" />
 
-<meta itemprop="name" content="Python">
-<meta itemprop="description" content="Yang Xinxin&#39;s Blog."><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Python"/>
-<meta name="twitter:description" content="Yang Xinxin&#39;s Blog."/>
+<meta itemprop="name" content="推荐系统之冷启动问题">
+<meta itemprop="description" content="本章的思维导图如下： 1 背景 如何在没有大量用户数据的情况下设计个性化推荐系统并且让用户对推荐结果满意从而愿意使用推荐系统， 就是冷启动的问题。冷"><meta itemprop="datePublished" content="2020-12-30T16:01:23+08:00" />
+<meta itemprop="dateModified" content="2020-12-30T16:01:23+08:00" />
+<meta itemprop="wordCount" content="2203">
+<meta itemprop="keywords" content="Recommendation System," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="推荐系统之冷启动问题"/>
+<meta name="twitter:description" content="本章的思维导图如下： 1 背景 如何在没有大量用户数据的情况下设计个性化推荐系统并且让用户对推荐结果满意从而愿意使用推荐系统， 就是冷启动的问题。冷"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -434,7 +440,7 @@
 
       </li>
     
-        <li class="menu-item">
+        <li class="menu-item active">
         
           
           <a class="menu-item-link menu-parent" href="https://yshane-ai.github.io/">docs</a>
@@ -612,110 +618,241 @@
     <main id="main" class="main bg-llight">
       <div class="content-wrapper">
         <div id="content" class="content container">
-          
-
-<section id="archive" class="archive">
-  
+          <article class="post bg-white">
     
-      <div class="archive-title tag">
-        <h2 class="archive-name">Tag: Python</h2>
+    <header class="post-header">
+      <h1 class="post-title">推荐系统之冷启动问题</h1>
+      
+      <div class="post-meta">
+        <time datetime="2020-12-30" class="post-time">
+          2020-12-30
+        </time>
+        <div class="post-category">
+            <a href="https://yshane-ai.github.io/categories/recommendation-system/"> Recommendation System </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
       </div>
+    </header>
+
     
-  
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Table of Contents</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-背景">1 背景</a></li>
+    <li><a href="#2-利用用户注册信息">2 利用用户注册信息</a></li>
+    <li><a href="#3-选择合适的物品启动用户的兴趣">3 选择合适的物品启动用户的兴趣</a></li>
+    <li><a href="#4-利用物品的内容信息">4 利用物品的内容信息</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
 
-  
-    <div class="archive-post">
-      <time datetime="2021-10-01" class="archive-post-time">
-        2021-10-01
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/" class="archive-post-link">
-          Pytorch加速模型训练
-        </a>
-      </span>
+    
+    <div class="post-content">
+      <p>本章的思维导图如下：</p>
+
+<link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/087.webp" />
     </div>
-  
-    <div class="archive-post">
-      <time datetime="2021-08-01" class="archive-post-time">
-        2021-08-01
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/17-python%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/" class="archive-post-link">
-          Python高阶函数、装饰器和匿名函数总结
-        </a>
-      </span>
+    <a href="/image/23-Recommendation/087.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<h2 id="1-背景">1 背景</h2>
+<p>如何在没有大量用户数据的情况下设计个性化推荐系统并且让用户对推荐结果满意从而愿意使用推荐系统， 就是冷启动的问题。冷启动问题主要分为三类：</p>
+<ol>
+<li>用户冷启动:用户冷启动主要解决如何给新用户做个性化推荐的问题。</li>
+<li>系统冷启动:系统冷启动主要解决如何在一个新开发的网站上(还没有用户，也没有用户行为，只有一些物品的信息)设计个性化推荐系统。</li>
+<li>物品冷启动:物品冷启动主要解决如何将新的物品推荐给可能对它感兴趣的用户这一问题。</li>
+</ol>
+<p>对于这3种不同的冷启动问题，有不同的解决方案。一般来说，可以参考如下解决方案。</p>
+<ol>
+<li>提供非个性化的推荐，非个性化推荐的最简单例子就是热门排行榜。</li>
+<li>利用用户注册时提供的年龄、性别等数据做粗粒度的个性化。</li>
+<li>利用用户的社交网络账号登录(需要用户授权)，导入用户在社交网站上的好友信息，然后给用户推荐其好友喜欢的物品。</li>
+<li>要求用户在登录时对一些物品进行反馈，收集用户对这些物品的兴趣信息，然后给用户推荐那些和这些物品相似的物品。</li>
+<li>对于新加入的物品，可以利用内容信息，将它们推荐给喜欢过和它们相似的物品的用户。</li>
+<li>在系统冷启动时，可以引入专家的知识，通过一定的高效方式迅速建立起物品的相关度表。</li>
+</ol>
+<h2 id="2-利用用户注册信息">2 利用用户注册信息</h2>
+<p>用户的注册信息分3种。</p>
+<ol>
+<li>人口统计学信息 ，包括年龄、性别、职业、民族、学历和居住地。</li>
+<li>用户兴趣的描述，有一些网站会让用户用文字描述他们的兴趣。</li>
+<li>从其他网站导入的用户站外行为数据，比如一些来自豆瓣或新浪微博的行为数据和社交网络数据</li>
+</ol>
+<p>基于用户注册信息的推荐算法其核心问题是计算每种特征的用户喜欢的物品。也就是说，对于每种特征f，计算具有这种特征的用户对各个物品的喜好程度p(f, i)。p(f,i) 可以简单地定义为物品i在具有f的特征的用户中的热门程度:</p>
+<p>$$
+p(f,i) = |N(i)\cap U(f)|
+$$</p>
+<p>其中 N(i) 是喜欢物品i的用户集合，U(f) 是具有特征f的用户集合。上面这种定义可以比较准确地预测具有某种特征的用户是否喜欢某个物品。但是，在这种定义下，往往热门的物品会在各种特征的用户中都具有比较高的权重。也就是说具有比较高的N(i)的物品会在每一类用户中都有比较高的p(f,i)。给用户推荐热门物品并不是推荐系统的主要任务，推荐系统应该帮助用户发现他们不容易发现的物品。因此，我们可以将 p(f,i) 定义为喜欢物品i的用户中具有特征f的比例：</p>
+<p>$$
+p(f,i) = \frac{|N(i)\cap U(f)|}{N(i)| + \alpha}
+$$</p>
+<p>这里使用$\alpha$的目的是解决系数问题，比如一个物品只被一个用户喜欢过，而这个用户刚好就有特征f，那么有$p(f,i)=1$。但是这种情况没有统计意义，因此我们为分母加上一个比较大的数，可以避免这样的物品产生比较大的权重。</p>
+<h2 id="3-选择合适的物品启动用户的兴趣">3 选择合适的物品启动用户的兴趣</h2>
+<p>解决用户冷启动问题的另一个方法是在新用户第一次访问推荐系统时，不立即给用户展示推荐结果，而是给用户推荐一些物品，让用户反馈他们对这些物品的兴趣，然后根据用户反馈提供个性化推荐。一般来说，能够来启动用户兴趣的物品需要具有以下的特点：
+比较热门：如果要让用户对一个物品进行反馈，前提是用户知道这个物品是什么东西。
+具有代表性和区分性：启动用户兴趣的物品不能是大众化或老少咸宜的，因为这样的物品 对用户的兴趣没有区分性。
+启动物品集合需要有多样性：在冷启动时，我们不知道用户的兴趣，而用户兴趣的可能 性非常多，为了匹配多样的兴趣，我们需要提供具有很高覆盖率的启动物品集合，这些物品能覆盖几乎所有主流的用户兴趣。</p>
+<h2 id="4-利用物品的内容信息">4 利用物品的内容信息</h2>
+<p>物品冷启动需要解决的问题是如何将新加入的物品推荐给对它感兴趣的用户。物品冷启动在 新闻网站等时效性很强的网站中非常重要。一般来说，物品的内容可以通过向量空间模型1表示，该模型会将物品表示成一个关键词向 量。如果物品的内容是一些诸如导演、演员等实体的话，可以直接将这些实体作为关键词。但如 果内容是文本的形式，则需要引入一些理解自然语言的技术抽取关键词。下图展示了从文本生 成关键词向量的主要步骤。对于中文，首先要对文本进行分词，将字流变成词流，然后从词流中检测出命名实体(如人名、地名、组织名等)，这些实体和一些其他重要的词将组成关键词集合，最后对关键词进行排名，计算每个关键词的权重，从而生成关键词向量。</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/088.webp" />
     </div>
-  
-    <div class="archive-post">
-      <time datetime="2021-07-14" class="archive-post-time">
-        2021-07-14
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/16-python%E4%B8%ADmap%E5%92%8Creduce%E4%BD%BF%E7%94%A8/" class="archive-post-link">
-          Python中map和reduce函数使用
-        </a>
-      </span>
+    <a href="/image/23-Recommendation/088.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>对于物品d，它的内容表示成一个关键词向量如下：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/089.webp" />
     </div>
-  
-    <div class="archive-post">
-      <time datetime="2021-01-13" class="archive-post-time">
-        2021-01-13
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/3-pythondict/" class="archive-post-link">
-          Python的字典dict原理
-        </a>
-      </span>
+    <a href="/image/23-Recommendation/089.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>其中，ei 就是关键词，wi 是关键词对应的权重。如果物品是文本，我们可以用信息检索领域著 名的TF-IDF公式计算词的权重:</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/090.webp" />
     </div>
-  
-    <div class="archive-post">
-      <time datetime="2020-10-14" class="archive-post-time">
-        2020-10-14
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/" class="archive-post-link">
-          Python调试器pdb的使用
-        </a>
-      </span>
+    <a href="/image/23-Recommendation/090.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>如果物品是电影，可以根据演员在剧中的重要程度赋予他们权重。向量空间模型的优点是简单，缺点是丢失了一些信息，比如关键词之间的关系信息。不过在绝大多数应用中，向量空间模型对于文本的分类、聚类、相似度计算已经可以给出令人满意的结果。
+在给定物品内容的关键词向量后，物品的内容相似度可以通过向量之间的余弦相似度计算:</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/091.webp" />
     </div>
-  
-    <div class="archive-post">
-      <time datetime="2020-08-14" class="archive-post-time">
-        2020-08-14
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/" class="archive-post-link">
-          Python中的断言assert和异常exception处理
-        </a>
-      </span>
+    <a href="/image/23-Recommendation/091.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>得到物品的相似度之后，可以利用ItemCF算法的思想，给用户推荐和他历史上 喜欢的物品内容相似的物品。</p>
+<p>一般来说，基于物品的内容信息进行推荐，忽视了用户行为，从而也忽视了物品的流行度以及用户行为中所包含的规律，所以它的精度比较低，但结果的新颖度却比较高，因为它可能推荐出用户所没有听说过的物品。但有时，基于物品内容的推荐的精度可能超过协同过滤算法，如果用户的行为强 烈受某一内容属性的影响，那么内容过滤的算法还是可以在精度上超过协同过滤算法的。不过这 种强的内容特征不是所有物品都具有的，而且需要丰富的领域知识才能获得，所以很多时候内容 过滤算法的精度比协同过滤算法差。</p>
+
     </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">Author</span>
+    <span class="item-content">Xinxin Yang</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">LastMod</span>
+    <span class="item-content">
+      2020-12-30
+      
+    </span>
+  </p>
   
-</section>
+  <p class="copyright-item">
+    <span class="item-title">License</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
 
 
+    
+    
 
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://yshane-ai.github.io/tags/recommendation-system/">Recommendation System</a>
+          
+        </div>
 
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/30-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%A4%9A%E7%A6%BB%E6%95%A3%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%96%B9%E6%A1%88/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
 
+            </i>
+            <span class="prev-text nav-default">推荐系统之多值离散特征的embedding解决方案</span>
+            <span class="prev-text nav-mobile">Prev</span>
+          </a>
+        
+          <a class="next" href="/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-deepfm/">
+            <span class="next-text nav-default">推荐系统之DeepFM</span>
+            <span class="prev-text nav-mobile">Next</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
 
   
   
+
+  
+  
+
   
 
   
   
 
   
-  
 
   
-  
 
   
+
+    
+
   
-
-
-
-
 
         </div>
       </div>
@@ -771,6 +908,27 @@
   </a>
    
   
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [["$", "$"]],
+    },
+    displayMath: [
+      ["$$", "$$"],
+      ["\[\[", "\]\]"],
+    ],
+    svg: {
+      fontCache: "global",
+    },
+  };
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+></script>
+
 </div>
 
 <div class="copyright">
@@ -837,6 +995,30 @@
 
 
 
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/katex.min.css"
+    integrity="sha384-BdGj8xC2eZkQaxoQ8nSLefg4AV4/AwB3Fj+8SUSo7pnKP6Eoy18liIKTPn9oBYNG"
+    crossorigin="anonymous">
+
+  
+  <script defer
+    src="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/katex.min.js"
+    integrity="sha384-JiKN5O8x9Hhs/UE5cT5AAJqieYlOZbGT3CHws/y97o3ty4R7/O5poG9F3JoiOYw1"
+    crossorigin="anonymous"></script>
+
+  
+  <script defer
+    src="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/contrib/auto-render.min.js"
+    integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI"
+    crossorigin="anonymous" onload="renderMathInElement(document.body);">
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        
+      });
+    });
+  </script>
 
 
 
