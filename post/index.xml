@@ -117,6 +117,15 @@
     </item>
     
     <item>
+      <title>推荐系统之DSSM双塔架构</title>
+      <link>https://yshane-ai.github.io/post/39-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-dssm/</link>
+      <pubDate>Fri, 09 Apr 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/39-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-dssm/</guid>
+      <description>本文主要介绍项目中用于商业兴趣建模的DSSM双塔模型。作为推荐领域中大火的双塔模型，因为效果不错并且对工业界十分友好，所以被各大厂广泛应用于</description>
+    </item>
+    
+    <item>
       <title>推荐系统之谷歌MMOE架构</title>
       <link>https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/</link>
       <pubDate>Tue, 30 Mar 2021 16:01:23 +0800</pubDate>
@@ -177,15 +186,6 @@
       
       <guid>https://yshane-ai.github.io/post/33-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E7%A5%9E%E7%BB%8F%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4/</guid>
       <description>背景 本文讨论的主要是隐性反馈协同过滤解决方案，先来明确两个概念：显性反馈和隐性反馈： 显性反馈行为包括用户明确表示对物品喜好的行为 隐性反馈行为</description>
-    </item>
-    
-    <item>
-      <title>推荐系统之GBDT&#43;LR </title>
-      <link>https://yshane-ai.github.io/post/32-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-gbdt-lr/</link>
-      <pubDate>Fri, 29 Jan 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/32-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-gbdt-lr/</guid>
-      <description>GBDT和LR的融合在广告点击率预估中算是发展比较早的算法，为什么会在这里写这么一篇呢？本来想尝试写一下阿里的深度兴趣网络(Deep Interest Net</description>
     </item>
     
   </channel>
