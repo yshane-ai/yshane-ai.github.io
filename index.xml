@@ -1447,6 +1447,199 @@ $$&lt;/p&gt;
     </item>
     
     <item>
+      <title>推荐系统之召回和排序技术发展总结</title>
+      <link>https://yshane-ai.github.io/post/40-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%8F%AC%E5%9B%9E%E7%AD%96%E7%95%A5%E6%80%BB%E7%BB%93/</link>
+      <pubDate>Sun, 18 Apr 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/40-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%8F%AC%E5%9B%9E%E7%AD%96%E7%95%A5%E6%80%BB%E7%BB%93/</guid>
+      
+        <description>&lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
+&lt;p&gt;现代移动互联网充斥着各种各样的信息，如购物、新闻，短视频，直播等等，经常使用户迷失在海量的信息中，无法找到真正感兴趣的内容。&lt;/p&gt;
+&lt;p&gt;因此推荐算法应运而生，应用于各大领域：“吃”有美团、饿了么等；“穿”有淘宝等；“住”有蛋壳、自如等；“行”有汽车之家等；“娱乐”有抖音、快手等；“旅行”有携程、去哪儿等。&lt;/p&gt;
+&lt;p&gt;当你打开App，就会有各种的推荐场景映入眼帘，例如：猜你喜欢、为你推荐等。推荐主要是根据用户的历史行为、相似用户、及相似物品等信息，进一步分析用户的消费点进而触达用户。&lt;/p&gt;
+&lt;p&gt;在工业推荐系统中，推荐系统包含两个步骤：召回和排序。&lt;/p&gt;
+&lt;p&gt;（1）召回环节：主要根据用户部分特征，从海量的物品库里，快速找回一小部分用户潜在感兴趣的物品。此环节要求速度快。&lt;/p&gt;
+&lt;p&gt;（2）排序环节：排序环节可以融入较多特征，使用复杂的模型，精准地做个性化推荐。此环节要求精度高。&lt;/p&gt;
+&lt;p&gt;下图展示了推荐系统的整体架构。&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/145.jfif&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/145.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&#34;2-召回算法&#34;&gt;2 召回算法&lt;/h2&gt;
+&lt;p&gt;召回环节是推荐系统中很关键的一个环节，但是大多数召回环节偏向策略型导向，技术含量不高。召回环节一般采用多路召回，随便想到一个策略就可以当做一路召回。下图展示了召回环节的多路召回策略。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/146.jfif&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/146.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;召回内容可分为非个性化召回和个性化召回。例如：热门召回、高点击或高转化召回、新物料召回等召回方式是非个性化召回；用户的兴趣标签或物品的标签、及协同过滤等召回方式是个性化的召回。接下来主要介绍一下有点技术含量的个性化召回。&lt;/p&gt;
+&lt;h3 id=&#34;21-基于内容的协同过滤&#34;&gt;2.1 基于内容的协同过滤&lt;/h3&gt;
+&lt;p&gt;以电影推荐为例，我们知道用户对于历史观看过的电影的评分，将原始数据格式转化为评分矩阵，如下图所示：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/147.jfif&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/147.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;用户只看过少部分电影，我们想要知道对于未看过的电影，用户可能对其的喜爱程度（打分）是多高。建模的过程就是填充空白项的过程，这样就得到了所有用户对所有电影的评分（喜好程度），然后就可进行个性化推荐。这种协同过滤方法基于场景一般采用UserCF或者ItemCF。&lt;/p&gt;
+&lt;p&gt;UserCF基于用户的相似度进行推荐，特点是具有较强的社交特性，用户能够快速得知与自己兴趣相似的人最近喜欢的是什么。例如用户A和用户B的兴趣类似，如果用户A对周星驰的电影《功夫》比较感兴趣，则系统更倾向于向用户B推荐该电影。&lt;/p&gt;
+&lt;p&gt;ItemCF 更适用于兴趣变化比较稳定的应用，用户在一段时间内更倾向于寻找一类物品，这时利用物品相似度为其推荐相关物品是契合用户动机的。例如X电影和Y电影为相关程度较高的搞笑类电影，如果用户A对X电影比较感兴趣，则系统更倾向于向用户A推荐Y电影。&lt;/p&gt;
+&lt;h3 id=&#34;22-基于模型的协同过滤&#34;&gt;2.2 基于模型的协同过滤&lt;/h3&gt;
+&lt;p&gt;基于模型的协同过滤算法是目前最主流的协同过滤类型，所包含算法非常之多，如矩阵分解、聚类算法、深度模型、图神经网络、知识图谱等。&lt;/p&gt;
+&lt;p&gt;该方式最终将用户和物品的信息通过Embedding的形式来表征，即生成User Embedding和Item Embedding供线上召回环节实时使用。Embedding向量的生成方式一般分为两类：&lt;/p&gt;
+&lt;h4 id=&#34;221-基于矩阵分解生成隐向量&#34;&gt;2.2.1 基于矩阵分解生成隐向量&lt;/h4&gt;
+&lt;p&gt;矩阵分解属于标准的MF（Matrix Factorization）方法，通过评分矩阵分解出代表用户的隐向量矩阵和代表物品的隐向量矩阵。矩阵分解过程如下图所示：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/148.jfif&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/148.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中：R矩阵表示打分矩阵，X矩阵表示用户信息，Y矩阵表示物品信息；m表示用户个数，n表示物品个数，k表示表征用户或物品的向量长度。&lt;/p&gt;
+&lt;p&gt;通过矩阵分解，将得到用户的Embedding（X）和物品的Embedding（Y），该Embedding使得的乘积是R矩阵的近似表示。上述例子可以得到用户的Embedding表示为[1, 0.1]，物品的Embedding表示为[0.9, -0.2]。&lt;/p&gt;
+&lt;h3 id=&#34;222--基于深度学习生成隐向量&#34;&gt;2.2.2  基于深度学习生成隐向量&lt;/h3&gt;
+&lt;p&gt;随着深度学习的兴起，有学者提出了新的模型：即借鉴深度学习中的方法，使用深度神经网络（DNN）从数据中自动学习用户/物品隐向量的交互函数，在增强效果的同时也可以引入一定的泛化能力。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/149.jfif&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/149.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;上图展示了一个抽象的深度召回模型的离线和在线的通用架构，核心思想是：将用户特征和物品特征分离，各自通过某个具体的模型，分别表征出用户Embedding以及物品Embedding。在线上，可以根据用户兴趣Embedding，采用类似ANN或Faiss等高效检索工具，快速找出和用户兴趣匹配的物品。理论上任何有监督“双塔结构”模型（见下图），都可以用来做这个召回模型，比如DSSM，YouTubeNet等。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/150.jfif&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/150.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中：User特征可以是画像特征、统计特征、多类型行为序列特征等；Item特征可以是画像特征、统计特征、文本特征、图片特征等。&lt;/p&gt;
+&lt;p&gt;下面介绍2个经典的深度召回模型。&lt;/p&gt;
+&lt;p&gt;（1）DSSM模型&lt;/p&gt;
+&lt;p&gt;DSSM模型是由微软提出的应用于文本相似度匹配场景下的一个算法，后来经过改良后应用于推荐场景下的召回环节。DSSM模型结构如图7所示。可以看出DSSM模型是个标准的“双塔”结构的模型。Q表示Query，即用户端的信息；D表示Document，即候选物品集端的信息。Query 和 Document 的语义相似性可以用这两个语义Embedding向量的 cos 距离来表示：&lt;/p&gt;
+&lt;p&gt;然后通过Softmax 函数可以把Query 与正样本 Doc 的语义相似性转化为一个后验概率：&lt;/p&gt;
+&lt;p&gt;然而应用于推荐召回时，这里不再使用Softmax模型（即公式2），而是对每对预测一个cos值（即只应用公式1）。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/151.jfif&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/151.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;（2）YouTubeNet模型&lt;/p&gt;
+&lt;p&gt;YouTubeNet模型是推荐系统领域中最为经典的论文之一“Deep Neural Networks for YouTube Recommendations”，这篇视频推荐模型框架基本上奠定了后面推荐系统的主要步骤。主要框架如下图所示：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/152.jfif&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/152.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;特征：用户观看过视频的Embedding向量、用户搜索词的Embedding向量、用户画像特征、context上下文特征等。&lt;/p&gt;
+&lt;p&gt;训练模型：三层ReLU神经网络之后接Softmax层，去预测用户下一个感兴趣的视频，输出是在所有候选视频集合上的概率分布。训练完成之后，最后一层Relu的输出作为User Embedding，Softmax的权重可当做当前预测Item的Embedding表示。&lt;/p&gt;
+&lt;p&gt;线上预测：通过UserId找到相应的User Embedding，然后使用NN方法（比如Faiss）找到相似度最高的topN条候选结果返回。&lt;/p&gt;
+&lt;h2 id=&#34;3-排序算法介绍&#34;&gt;3 排序算法介绍&lt;/h2&gt;
+&lt;p&gt;排序环节是推荐系统最关键，也是最具有技术含量的部分，目前大多数推荐技术其实都聚焦在这块。排序环节主要包含两部分：特征工程和模型。&lt;/p&gt;
+&lt;h3 id=&#34;31-特征工程&#34;&gt;3.1 特征工程&lt;/h3&gt;
+&lt;p&gt;特征是模型的核心内容，在排序模型中所采用的特征比召回模型的特征更细致化。在工业界不会轻易地展示出具体的特征，即不传之秘。但是主要包含以下几个方面：&lt;/p&gt;
+&lt;p&gt;（1）用户端特征：画像特征，偏好特征，统计特征，行为序列特征等；&lt;/p&gt;
+&lt;p&gt;（2）物品端特征：画像特征，统计特征，文本特征，图像特征等；&lt;/p&gt;
+&lt;p&gt;（3）上下文特征：时间，地点，天气，网络，设备，召回源等；&lt;/p&gt;
+&lt;h3 id=&#34;32-点击预估模型&#34;&gt;3.2 点击预估模型&lt;/h3&gt;
+&lt;h4 id=&#34;321-机器学习点击预估模型&#34;&gt;3.2.1 机器学习点击预估模型&lt;/h4&gt;
+&lt;p&gt;在深度学习之前，早期的排序模型采用的是传统的机器学习模型，如LR、FM、GBDT+LR等。&lt;/p&gt;
+&lt;p&gt;（1）LR一般代指逻辑回归模型，是广义线性模型，一般用于解决二分类问题。优点就是模型简单，训练速度快，消耗资源少；缺点也很明显，缺少非线性的特征交叉，泛化性较低。&lt;/p&gt;
+&lt;p&gt;（2）为了将特征交叉考虑进去，FM模型被广泛使用。FM模型在LR模型的基础上增加了自动二阶特征交叉的部分。不同于只有用户、物品Id两类特征的CF模型（即MF模型），FM可以添加任意多的特征。隐向量的引入也使得模型可以泛化到未曾出现过的特征组合中，兼顾了模型的记忆性和泛化性。&lt;/p&gt;
+&lt;p&gt;（3）为了寻找不同特征之间的组合，FaceBook公司率先提出用GBDT进行特征组合，自上而下每条路径代表一种高阶特征交叉，然后叶子节点编号作为LR的输入。但是这种方法的缺点是可能导致过拟合高维稀疏数据，GBDT不能将数据batch输入，无法并行，因此速度慢、泛化性差。&lt;/p&gt;
+&lt;p&gt;3.2.2 深度学习点击预估模型&lt;/p&gt;
+&lt;p&gt;目前大部分科技公司都在应用深度学习模型进行Feed流推荐，下图是推荐系统领域的一位大牛 @王喆 总结的深度学习CTR模型最全演化图谱。该演进图详细了描述在技术层面的改进点。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/153.jfif&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/153.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;主要是以多层感知机为核心，通过改变神经网络的结构，构建特点各异的深度学习推荐模型。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;（1）改变神经网络的复杂结构&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;从最简单的单层神经网络模型AutoRec（自编码器推荐）到经典的深度神经网络结构Deep Crossing（深度特征交叉），其主要在于增加了模型的层级和结构复杂度。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;（2）改变特征的交叉方式&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这类模型的主要改变在于丰富了深度学习网络中特征交叉的方式。例如改变了用户向量和物品向量互操作方式的NeuralCF（Neural Collaborative Filtering，神经网络协同过滤），定义了多种特征向量交叉操作的PNN（Product-based Neural Network, 即操作神经网络）模型。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;（3）模型组合&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这类模型主要是指Wide &amp;amp; Deep 模型及其后续变种的 Deep &amp;amp; Cross、DeepFM等，其思路主要是通过组合两种或多种不同特点、优势互补的深度学习网络，提升模型的预测能力；&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;（4）FM算法的深度模型演进&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;传统的推荐算法FM在深度学习时代有了更广阔的发展势头，其中包括NFM（Neural Factorization Machine, 神经网络因子分解机）、FNN（Factorization-machine supported Neural Network,基于因子分解机支持的神经网络）、AFM（Attention Neural Factorization Machine,注意力因子分解机）等，它们对FM的改进方向各不相同。例如：NFM组要使用神经网络提升FM二阶部分的特征交叉能力，AFM是引入了注意力机制的FM模型，FNN利用FM的结果进行网络的初始化。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;（5）注意力机制和推荐模型的结合&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;此类模型主要是将“注意力机制（Attention）”应用于深度学习模型中，主要包括结合FM和注意力机制的AFM模型、引入注意力机制的CTR预估模型DIN（Deep Interest Network，深度兴趣模型）。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;（6）序列模型与推荐模型的结合&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这类模型主要特点是使用序列模型模拟用户行为或用户兴趣的演变趋势，代表作有阿里算法团队的DIEN（Deep Interest Evolution Network,深度兴趣进化网络）及DSIN（Deep Session Interest Network，深度会话兴趣网络）。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;（7）强化学习与推荐算法模型的结合&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这类算法是将强化学习的思想应用于推荐系统领域，强调模型的在线学习和实时更新，代表作模型为DRN（Deep Reinforcement Learning Network,深度强化学习网络）。&lt;/p&gt;
+&lt;p&gt;除了模型的创新改进，在“多任务学习”和“多模态融合”角度也能增加模型的表达能力。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;（8）多任务模型&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在优化推荐效果的时候，很多时候不仅仅需要关注 CTR 指标，同时还需要优化例如 CVR ( 转化率 )、视频播放时长、用户停留时长、用户翻页深度、关注率、点赞率这些指标。那么能不能使用一个模型来同时优化两个或多个任务呢？这就属于多任务学习（Multi-Task Learning）。业界比较有名的是：&lt;/p&gt;
+&lt;p&gt;（a）阿里算法团队提出的ESMM（Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate），有效解决了真实场景中CVR预估面临的数据稀疏以及样本选择偏差这两个关键问题。&lt;/p&gt;
+&lt;p&gt;（b）谷歌算法团队提出的YouTube多目标排序系统（Recommending What Video to Watch Next: A Multitask Ranking System）。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;（9）多模态信息融合&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;所谓模态，指的是不同类型的或者模态形式的信息存在形式，即异构数据，比如文本、图片、视频、音频、互动行为、社交关系等。让模型能够接受不同模态类型的信息，并做知识和信息互补，更全面理解实体或者行为。这不仅仅是推荐领域的技术趋势，也是人工智能领域都面临的重大发展方向，所以这个方向特别值得重视。&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
       <title>推荐系统之DSSM双塔架构</title>
       <link>https://yshane-ai.github.io/post/39-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-dssm/</link>
       <pubDate>Fri, 09 Apr 2021 16:01:23 +0800</pubDate>
@@ -2608,363 +2801,6 @@ $$&lt;/p&gt;
 &lt;li&gt;List-Wise的推荐与item-wise推荐相比，效果是否更突出。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;不过，文章中没有给出具体的实验结果，这部分的效果还不得而知。&lt;/p&gt;
-</description>
-      
-    </item>
-    
-    <item>
-      <title>推荐系统之RL的应用</title>
-      <link>https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-rl/</link>
-      <pubDate>Thu, 25 Feb 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-rl/</guid>
-      
-        <description>&lt;h3 id=&#34;背景&#34;&gt;背景&lt;/h3&gt;
-&lt;p&gt;新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过滤、深度学习方法在建模user-item交互关系时，经常面临以下三个问题：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;难以处理新闻推荐的动态变化。这种动态变化体现在两个方面，首先新闻具有很强的时效性，其次是用户对于新闻阅读的兴趣是不断变化的，如下图所示。因此，在建模过程中，不仅要考虑用户对当前推荐的反馈，还要考虑长期的影响。就好比买股票，不能只考虑眼前的收益，而是要考虑未来的预期收益。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/046.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/046.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;ol start=&#34;2&#34;&gt;
-&lt;li&gt;当前的推荐算法通常只考虑用户的点击／未点击 或者 用户的评分作为反馈，然而，用户隔多久会再次使用服务也能在一定程度上反映用户对推荐结果的满意度。&lt;/li&gt;
-&lt;li&gt;目前的推荐系统倾向于推荐用户重复或相似内容的东西，这也许会降低用户在同一个主题上的兴趣度。因此需要进行exploration。传统方法 $\epsilon$-greedy strategy 或者 Upper Confidence Bound (UCB) 都会在短期对推荐系统的效果造成一定的影响，需要更有效的exploration策略。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;因此，本文提出了基于强化学习的推荐系统框架来解决上述提到的三个问题：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;首先，使用DQN网络来有效建模新闻推荐的动态变化属性，DQN可以将短期回报和长期回报进行有效的模拟。&lt;/li&gt;
-&lt;li&gt;将用户活跃度（activeness score）作为一种新的反馈信息，用户活跃度在后面会详细介绍。&lt;/li&gt;
-&lt;li&gt;使用Dueling Bandit Gradient Descent方法来进行有效的探索。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;算法的框架如下图所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/047.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/047.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;本文的贡献主要有：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;提出了一种强化学习的框架用于在线新闻的个性化推荐&lt;/li&gt;
-&lt;li&gt;使用用户活跃度作为一种新的反馈，来提高推荐的准确性&lt;/li&gt;
-&lt;li&gt;使用了一种更加高效的探索算法：Dueling Bandit Gradient Descent&lt;/li&gt;
-&lt;li&gt;模型可以进行在线学习和更新，在离线和在线实验上的表现都超过了传统的算法。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&#34;问题定义&#34;&gt;问题定义&lt;/h3&gt;
-&lt;p&gt;下面是本文中的一些符号约定：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/048.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/048.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&#34;模型介绍&#34;&gt;模型介绍&lt;/h3&gt;
-&lt;p&gt;模型整体框架如下图所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/049.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/049.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;有几个关键的环节：&lt;/p&gt;
-&lt;p&gt;PUSH：在每一个时刻，用户发送请求时，agent根据当前的state产生k篇新闻推荐给用户，这个推荐结果是exploitation和exploration的结合&lt;/p&gt;
-&lt;p&gt;FEEDBACK：通过用户对推荐新闻的点击行为得到反馈结果。&lt;/p&gt;
-&lt;p&gt;MINOR UPDATE：在每个时间点过后，根据用户的信息（state）和推荐的新闻（action）及得到的反馈（reward），agent会评估exploitation network Q 和 exploration network Q ̃ 的表现，如果exploitation network Q效果更好，则模型保持不动，如果 exploration network Q ̃ 的表现更好，exploitation network Q的参数将会向exploration network Q ̃变化。&lt;/p&gt;
-&lt;p&gt;MAJOR UPDATE：在一段时间过后，根据DQN的经验池中存放的历史经验，对exploitation network Q 模型参数进行更新。&lt;/p&gt;
-&lt;h3 id=&#34;特征设计&#34;&gt;特征设计&lt;/h3&gt;
-&lt;p&gt;DQN每次的输入有下面四部分的特征：&lt;/p&gt;
-&lt;p&gt;新闻的特征：包括题目，作者，排名，类别等等，共417维
-用户的特征：包括用户在1小时，6小时，24小时，1周，1年内点击过的新闻的特征表示，共413*5=2065维。
-新闻和用户的交互特征：25维。
-上下文特征：32维的上下文信息，如时间，周几，新闻的新鲜程度等。&lt;/p&gt;
-&lt;p&gt;在这四组特征中，用户特征和上下文特征用于表示当前的state，新闻特征和交互特征用于表示当前的一个action。&lt;/p&gt;
-&lt;h3 id=&#34;算法介绍&#34;&gt;算法介绍&lt;/h3&gt;
-&lt;p&gt;这里深度强化学习用的是Dueling-Double-DQN。将用户特征和上下文特征用于表示当前的state，新闻特征和交互特征用语表示当前的一个action，经过模型可以输出当前状态state采取这个action的预测Q值。&lt;/p&gt;
-&lt;p&gt;Q现实值包含两个部分：立即获得的奖励和未来获得奖励的折现：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/050.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/050.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;立即的奖励可能包含两部分，即用户的点击奖励和用户活跃度奖励。由于采取了Double-DQN 的结构，Q现实值的计算变为：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/051.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/051.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;再加上Dueling的考虑，模型的网络结构如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/052.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/052.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&#34;用户活跃度&#34;&gt;用户活跃度&lt;/h3&gt;
-&lt;p&gt;用户活跃度（User Activeness） 是本文提出的新的可以用作推荐结果反馈的指标。用户活跃度可以理解为使用app的频率，好的推荐结果可以增加用户使用该app的频率，因此可以作为一个反馈指标。&lt;/p&gt;
-&lt;p&gt;用户活跃度的图示如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/053.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/053.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;如果用户在一定时间内没有点击行为，活跃度会下降，但一旦有了点击行为，活跃度会上升。&lt;/p&gt;
-&lt;p&gt;在考虑了点击和活跃度之后，之前提到过的立即奖励变为：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/054.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/054.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&#34;探索&#34;&gt;探索&lt;/h3&gt;
-&lt;p&gt;本文的探索采取的是Dueling Bandit Gradient Descent 算法，算法的结构如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/055.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/055.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;在DQN网络的基础上又多出来一个exploration network Q ̃ ，这个网络的参数是由当前的Q网络参数基础上加入一定的噪声产生的，具体来说：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/056.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/056.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;当一个用户请求到来时，由两个网络同时产生top-K的新闻列表，然后将二者产生的新闻进行一定程度的混合，然后得到用户的反馈。如果exploration network Q ̃的效果好的话，那么当前Q网络的参数向着exploration network Q ̃的参数方向进行更新，具体公式如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/057.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/057.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;否则的话，当前Q网络的参数不变。&lt;/p&gt;
-&lt;p&gt;总的来说，使用深度强化学习来进行推荐，同时考虑了用户活跃度和对多样性推荐的探索，可以说是一个很完备的推荐框架了！&lt;/p&gt;
-&lt;h3 id=&#34;数据集&#34;&gt;数据集&lt;/h3&gt;
-&lt;p&gt;使用的数据集是新闻app得到的数据：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/058.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/058.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;数据中存在明显的长尾特点：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/059.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/059.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&#34;评估指标&#34;&gt;评估指标&lt;/h3&gt;
-&lt;p&gt;主要用的评估指标有CTR、top-K准确率，nDCG，三者的计算公式如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/060.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/060.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/061.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/061.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/062.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/062.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;在nDCG中，r是新闻的排序，n是推荐新闻列表的长度。&lt;/p&gt;
-&lt;h3 id=&#34;实验设定&#34;&gt;实验设定&lt;/h3&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/063.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/063.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&#34;对比模型&#34;&gt;对比模型&lt;/h3&gt;
-&lt;p&gt;本文选取了五个基准模型：LR，FM，Wide&amp;amp;Deep，LinUCB，HLinUCB。同时根据组件的不同(U代表用户活跃度，EG代表e-greedy，DBGD代表Dueling Bandit Gradient De- scent ）强化学习模型又分为以下几种：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;DN：没有考虑未来收益的Double-DQN&lt;/li&gt;
-&lt;li&gt;DDQN：考虑未来收益的Double-DQN&lt;/li&gt;
-&lt;li&gt;DDON+U：考虑未来收益，同时考虑用户活跃度的Double-DQN&lt;/li&gt;
-&lt;li&gt;DDQN+U+EG：采用e-greedy作为探索策略的Double-DQN&lt;/li&gt;
-&lt;li&gt;DDQN+U+DBGD：采用DBGD作为探索模型的Double-DQN&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;离线实验&#34;&gt;离线实验&lt;/h3&gt;
-&lt;p&gt;离线实验的结果如下所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/064.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/064.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;本文提出的模型效果明显好于基准模型。&lt;/p&gt;
-&lt;h3 id=&#34;在线实验&#34;&gt;在线实验&lt;/h3&gt;
-&lt;p&gt;在线实验的效果分两部分，准确率和Diversity。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;准确率&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;准确率用CTR来表征，如果CTR高，我们认为模型准确率较好，实验结果如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/065.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/065.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;多样性&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;多样性这里采用的指标是ILS，用来表示推荐列表中item的相似性，如果这个相似性较低，可以认为推荐结果的多样性较好，计算公式如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/066.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/066.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;实验结果如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/067.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/067.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;可以看到DDQN+U+DBGD的多样性明显好于其他模型。&lt;/p&gt;
 </description>
       
     </item>

@@ -7,7 +7,16 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Fri, 09 Apr 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/recommendation-system/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 18 Apr 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/recommendation-system/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>推荐系统之召回和排序技术发展总结</title>
+      <link>https://yshane-ai.github.io/post/40-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%8F%AC%E5%9B%9E%E7%AD%96%E7%95%A5%E6%80%BB%E7%BB%93/</link>
+      <pubDate>Sun, 18 Apr 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/40-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%8F%AC%E5%9B%9E%E7%AD%96%E7%95%A5%E6%80%BB%E7%BB%93/</guid>
+      <description>1 背景 现代移动互联网充斥着各种各样的信息，如购物、新闻，短视频，直播等等，经常使用户迷失在海量的信息中，无法找到真正感兴趣的内容。 因此推荐算</description>
+    </item>
+    
     <item>
       <title>推荐系统之DSSM双塔架构</title>
       <link>https://yshane-ai.github.io/post/39-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-dssm/</link>
