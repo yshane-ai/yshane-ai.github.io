@@ -2363,6 +2363,256 @@ $$&lt;/p&gt;
     </item>
     
     <item>
+      <title>推荐系统之RL在京东推荐的应用</title>
+      <link>https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E4%BA%AC%E4%B8%9Crl/</link>
+      <pubDate>Sun, 28 Feb 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E4%BA%AC%E4%B8%9Crl/</guid>
+      
+        <description>&lt;p&gt;本文来自于paper：《Deep Reinforcement Learning for List-wise Recommendations》&lt;/p&gt;
+&lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
+&lt;p&gt;传统的大多数推荐系统应用存在两个问题：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;无法建模用户兴趣的动态变化&lt;/li&gt;
+&lt;li&gt;最大化立即收益，忽略了长期受益&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;因此，本文将推荐的过程定义为一个序列决策的问题，通过强化学习来进行 List-wise 的推荐，主要有以下几个部分。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;List-wise Recommendations&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;本文提出的推荐是List-wise，这样更能提供给用户多样性的选择。现有的强化学习大多先计算每一个item的Q-value，然后通过排序得到最终的推荐结果，这样就忽略了推荐列表中商品本身的关联。&lt;/p&gt;
+&lt;p&gt;而List-wise的推荐，强化学习算法计算的是一整个推荐列表的Q-value，可以充分考虑列表中物品的相关性，从而提升推荐的性能。&lt;/p&gt;
+&lt;p&gt;Architecture Selection&lt;/p&gt;
+&lt;p&gt;对于深度强化学习的模型，主要有下面两种结构：&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/131.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/131.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;左边的两个是经典的DQN结构，(a)这种结构只需要输入一个state，然后输出是所有动作的Q-value，当action太多时，这种结构明显的就不适用。(b)的输入时state和一个具体的action，然后模型的输出是一个具体的Q-value，但对于这个模型结构来说，时间复杂度非常高。&lt;/p&gt;
+&lt;p&gt;因此本文选择的深度强化学习结构是(c)，即Actor-Critic结构。Actor输入一个具体的state，输出一个action，然后Critic输入这个state和Actor输出的action，得到一个Q-value，Actor根据Critic的反馈来更新自身的策略。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Online Environment Simulator&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在推荐系统上线之前，需要进行线下的训练和评估，训练和评估主要基于用户的历史行为数据，但是，我们只有ground-truth的数据和相应的反馈。因此，对于整个动作空间来说(也就是所有物品的可能组合)，这是非常稀疏的。这会造成两个问题，首先只能拿到部分的state-action对进行训练，无法对所有的情况进行建模(可能造成过拟合)，其次会造成线上线下环境的不一致性。因此，需要一个仿真器来仿真没有出现过的state-action的reward值，用于训练和评估线下模型。&lt;/p&gt;
+&lt;p&gt;仿真器的构建主要基于用户的历史数据，其基本思想是给定一个相似的state和action，不同的用户也会作出相似的feedback。&lt;/p&gt;
+&lt;p&gt;因此，本文的贡献主要有以下三点：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;构建了一个线上环境仿真器，可以在线下对AC网络参数进行训练。&lt;/li&gt;
+&lt;li&gt;构建了基于强化学习的List-wise推荐系统。&lt;/li&gt;
+&lt;li&gt;在真实的电商环境中，本文提出的推荐系统框架的性能得到了证明。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;2-系统框架&#34;&gt;2 系统框架&lt;/h2&gt;
+&lt;h3 id=&#34;21-问题描述&#34;&gt;2.1 问题描述&lt;/h3&gt;
+&lt;p&gt;本文的推荐系统基于强化学习方法，将推荐问题定义为一个马尔可夫决策过程，它的五个元素分别是：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;状态空间&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;状态定义为用户的历史浏览行为，即在推荐之前，用户点击或购买过的最新的N个物品。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/132.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/132.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;动作空间&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;动作定义为要推荐给用户的商品列表。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/133.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/133.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;奖励&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;agent根据当前的state，采取相应的action即推荐K个物品列表给用户之后，根据用户对推荐列表的反馈(忽略、点击或购买)来得到当前state-action的即时奖励reward。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/134.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/134.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;转移概率&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在本文中，状态的转移定义如下定义，当前的state是用户最近浏览的N个物品，action是新推荐给用户的K个商品，如果用户忽略了全部的这些商品，那么下一个时刻的state和当前的state是一样的，如果用户点击了其中的两个物品，那么下一个时刻的state是在当前state的基础上，从前面剔除两个商品同时将点击的这两个物品放在最后得到的。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/135.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/135.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;折扣因子&lt;/strong&gt;&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/136.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/136.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这里还需要强调的一点是，本文中将物品当作一个单词，通过embedding的方式表示每一个物品，因此每一个state和action都是通过word embedding来表示的。&lt;/p&gt;
+&lt;h3 id=&#34;22-线上user-agent交互仿真环境构建&#34;&gt;2.2 线上User-Agent交互仿真环境构建&lt;/h3&gt;
+&lt;p&gt;仿真器主要基于历史数据，因此我们首先需要对历史真实数据的((state,action)-reward)对进行一个存储，这将作为仿真器的历史记忆：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/137.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/137.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;有了历史记忆之后，仿真器就可以输出没有见过的(state，action)对的奖励，该(state，action)定义为pt。首先需要计算pt和历史中状态-动作对的相似性，基于如下的公式：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/138.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/138.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;上式中mi代表了历史记忆中的一条状态-动作对。因此pt获得mi对应的奖励ri的可能性定义如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/139.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/139.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;但是，这种做法计算复杂度太高了，需要计算pt和历史记忆中每条记录的相似性，为了处理这个问题，本文的做法是按照奖励序列对历史记忆进行分组，来建模pt获得某个奖励序列的可能性。&lt;/p&gt;
+&lt;p&gt;奖励序列这里先解释一下，假设我们按一定的顺序推荐了两个商品，用户对每个商品的反馈可能有忽略／点击／下单，对应的奖励分别是0/1/5，那么我们推荐给用户这两个物品的反馈一共有九种可能的情况(0,0),(0,1),(0,5),(1,0),(1,1),(1,5),(5,0),(5,1),(5,5)。这九种情况就是我们刚才所说的奖励序列，定义为：&lt;/p&gt;
+&lt;p&gt;$$
+\mathcal{U} = {\mathcal{U}_1. \ldots, \mathcal{U}_9}
+$$&lt;/p&gt;
+&lt;p&gt;因此，将历史记忆按照奖励序列进行分组，pt所能获得某个奖励序列的概率是：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/140.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/140.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;基于上面的公式，我们只是得到了pt所能获得的奖励序列的概率，就可以进行采样得到具体的奖励序列。得到奖励序列还没完事，实际中我们的奖励都是一个具体的值，而不是一个vector，那么按照如下的公式将奖励序列转化为一个具体的奖励值：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/141.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/141.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;K是推荐列表的长度，可以看到，我们这里任务排在前面的商品，奖励的权重越高。&lt;/p&gt;
+&lt;h3 id=&#34;23-模型结构&#34;&gt;2.3 模型结构&lt;/h3&gt;
+&lt;p&gt;使用强化学习里的AC模型结合刚才提到的仿真器，模型框架如下所示：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/142.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/142.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Actor部分&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;对Actor部分来说，输入是一个具体的state，输出一个K维的向量w，K对应推荐列表的长度：&lt;/p&gt;
+&lt;p&gt;$$
+f_{\theta^\pi}: s_t\to w_t
+$$&lt;/p&gt;
+&lt;p&gt;然后，用w和每个item对应的embedding进行线性相乘，计算每个item的得分，根据得分选择k个最高的物品作为推荐结果：&lt;/p&gt;
+&lt;p&gt;$$
+score_i = w_t^k e_i^T
+$$&lt;/p&gt;
+&lt;p&gt;Actor部分的过程如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/143.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/143.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;推荐结果经过仿真器，计算出奖励序列和奖励值r。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Critic部分&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Critic部分建模的是state-action对应的Q值，需要有Q-eval 和 Q-target来指导模型的训练，Q-eval通过Critic得到，而Q-target值通过下面的式子得到：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/144.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/144.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&#34;3-实验评估&#34;&gt;3 实验评估&lt;/h2&gt;
+&lt;p&gt;论文中提到的实验主要想验证两方面的内容：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;本文提出的框架与现有的推荐算法(如协同过滤，FM等)比，效果如何&lt;/li&gt;
+&lt;li&gt;List-Wise的推荐与item-wise推荐相比，效果是否更突出。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;不过，文章中没有给出具体的实验结果，这部分的效果还不得而知。&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
       <title>推荐系统之RL的应用</title>
       <link>https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-rl/</link>
       <pubDate>Thu, 25 Feb 2021 16:01:23 +0800</pubDate>
@@ -2715,88 +2965,6 @@ $$&lt;/p&gt;
 &lt;/div&gt;
 
 &lt;p&gt;可以看到DDQN+U+DBGD的多样性明显好于其他模型。&lt;/p&gt;
-</description>
-      
-    </item>
-    
-    <item>
-      <title>推荐系统之EE问题和基本的Bandit算法</title>
-      <link>https://yshane-ai.github.io/post/34-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-bandit/</link>
-      <pubDate>Tue, 16 Feb 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/34-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-bandit/</guid>
-      
-        <description>&lt;h3 id=&#34;推荐系统中的ee问题&#34;&gt;推荐系统中的EE问题&lt;/h3&gt;
-&lt;p&gt;Exploration and Exploitation(EE问题，探索与开发)是计算广告和推荐系统里常见的一个问题，为什么会有EE问题？简单来说，是为了平衡推荐系统的准确性和多样性。&lt;/p&gt;
-&lt;p&gt;EE问题中的Exploitation就是：对用户比较确定的兴趣，当然要利用开采迎合，好比说已经挣到的钱，当然要花；而exploration就是：光对着用户已知的兴趣使用，用户很快会腻，所以要不断探索用户新的兴趣才行，这就好比虽然有一点钱可以花了，但是还得继续搬砖挣钱，不然花完了就得喝西北风。&lt;/p&gt;
-&lt;h3 id=&#34;bandit算法&#34;&gt;Bandit算法&lt;/h3&gt;
-&lt;p&gt;Bandit算法是解决EE问题的一种有效算法，我们先来了解一下Bandit算法的起源。
-Bandit算法来源于历史悠久的赌博学，它要解决的问题是这样的：&lt;/p&gt;
-&lt;p&gt;一个赌徒，要去摇老虎机，走进赌场一看，一排老虎机，外表一模一样，但是每个老虎机吐钱的概率可不一样，他不知道每个老虎机吐钱的概率分布是什么，那么每次该选择哪个老虎机可以做到最大化收益呢？这就是多臂赌博机问题（Multi-armed bandit problem, K-armed bandit problem, MAB）。&lt;/p&gt;
-
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/044.jfif&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/044.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;怎么解决这个问题呢？最好的办法是去试一试，不是盲目地试，而是有策略地快速试一试，这些策略就是Bandit算法。&lt;/p&gt;
-&lt;p&gt;Bandit算法如何同推荐系统中的EE问题联系起来呢？假设我们已经经过一些试验，得到了当前每个老虎机的吐钱的概率，如果想要获得最大的收益，我们会一直摇哪个吐钱概率最高的老虎机，这就是Exploitation。但是，当前获得的信息并不是老虎机吐钱的真实概率，可能还有更好的老虎机吐钱概率更高，因此还需要进一步探索，这就是Exploration问题。&lt;/p&gt;
-&lt;p&gt;下面，我们就来看一下一些经典的Bandit算法实现吧，不过我们还需要补充一些基础知识。&lt;/p&gt;
-&lt;h3 id=&#34;基础知识&#34;&gt;基础知识&lt;/h3&gt;
-&lt;h4 id=&#34;累计遗憾&#34;&gt;累计遗憾&lt;/h4&gt;
-&lt;p&gt;Bandit算法需要量化一个核心问题：错误的选择到底有多大的遗憾？能不能遗憾少一些？所以我们便有了衡量Bandit算法的一个指标：累积遗憾：&lt;/p&gt;
-&lt;p&gt;$$
-R_A(T) = E\left[\sum_{t=1}^T r_{t, a_t^*} \right] - E\left[\sum_{t=1}^T r_{t, a_t} \right]
-$$&lt;/p&gt;
-&lt;p&gt;这里 t 表示轮数, r表示回报。公式右边的第一项表示第t轮的期望最大收益，而右边的第二项表示当前选择的arm获取的收益，把每次差距累加起来就是总的遗憾。&lt;/p&gt;
-&lt;p&gt;对应同样的问题，采用不同bandit算法来进行实验相同的次数，那么看哪个算法的总regret增长最慢，那么哪个算法的效果就是比较好的。&lt;/p&gt;
-&lt;h4 id=&#34;beta分布&#34;&gt;Beta分布&lt;/h4&gt;
-&lt;p&gt;有关Beta分布，可以参考帖子：https://www.zhihu.com/question/30269898。这里只做一个简单的介绍。&lt;/p&gt;
-&lt;p&gt;beta分布可以看作一个概率的概率分布。它是对二项分布中成功概率p的概率分布的描述。它的形式如下：&lt;/p&gt;
-&lt;p&gt;$$
-Beta(a,b) = \frac{\theta^(a-1)(1-\theta)^{b-1}}{B(a,b)}\propto \theta^{a-1}(1-\theta)^{b-1}
-$$&lt;/p&gt;
-&lt;p&gt;其中，a和b分别代表在a+b次伯努利试验中成功和失败的次数。我们用下面的图来说明一下Beta分布的含义：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/045.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/045.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;上图中一共有三条线，我们忽略中间的一条线，第一条线中a=81，b=219。也就是说在我们进行了300次伯努利试验中，成功81次，失败219次的情况下，成功概率p的一个分布，可以看到，p的概率在0.27左右概率最大，但我们不能说成功的概率就是0.27，这也就是频率派和贝叶斯派的区别，哈哈。此时，我们又做了300次试验，此时在总共600次伯努利试验中，成功了181次，失败了419次，此时成功概率p的概率分布变味了蓝色的线，在0.3左右概率最大。&lt;/p&gt;
-&lt;h3 id=&#34;朴素bandit算法&#34;&gt;朴素Bandit算法&lt;/h3&gt;
-&lt;p&gt;先随机试若干次，计算每个臂的平均收益，一直选均值最大那个臂。&lt;/p&gt;
-&lt;h3 id=&#34;epsilon-greedy算法&#34;&gt;Epsilon-Greedy算法&lt;/h3&gt;
-&lt;p&gt;选一个(0,1)之间较小的数epsilon，每次以epsilon的概率在所有臂中随机选一个。以1-epsilon的概率选择截止当前，平均收益最大的那个臂。根据选择臂的回报值来对回报期望进行更新。&lt;/p&gt;
-&lt;p&gt;这里epsilon的值可以控制对exploit和explore的偏好程度，每次决策以概率ε去勘探Exploration，1-ε的概率来开发Exploitation，基于选择的item及回报，更新item的回报期望。&lt;/p&gt;
-&lt;p&gt;对于Epsilon-Greedy算法来首，能够应对变化，即如果item的回报发生变化，能及时改变策略，避免卡在次优状态。同时Epsilon的值可以控制对Exploit和Explore的偏好程度。越接近0，越保守，只想花钱不想挣钱。但是策略运行一段时间后，我们已经对各item有了一定程度了解，但没用利用这些信息，仍然不做任何区分地随机Exploration，这是Epsilon-Greedy算法的缺点。&lt;/p&gt;
-&lt;h3 id=&#34;thompson-sampling算法&#34;&gt;Thompson sampling算法&lt;/h3&gt;
-&lt;p&gt;Thompson sampling算法用到了Beta分布，该方法假设每个老虎机都有一个吐钱的概率p，同时该概率p的概率分布符合beta(wins, lose)分布，每个臂都维护一个beta分布的参数，即wins, lose。每次试验后，选中一个臂，摇一下，有收益则该臂的wins增加1，否则该臂的lose增加1。&lt;/p&gt;
-&lt;p&gt;每次选择臂的方式是：用每个臂现有的beta分布产生一个随机数b，选择所有臂产生的随机数中最大的那个臂去摇。&lt;/p&gt;
-&lt;h3 id=&#34;ucb算法&#34;&gt;UCB算法&lt;/h3&gt;
-&lt;p&gt;前面提到了，Epsilon-Greedy算法在探索的时候，所有的老虎机都有同样的概率被选中，这其实没有充分利用历史信息，比如每个老虎机之前探索的次数，每个老虎机之前的探索中吐钱的频率。&lt;/p&gt;
-&lt;p&gt;那我们怎么能够充分利用历史信息呢？首先，根据当前老虎机已经探索的次数，以及吐钱的次数，我们可以计算出当前每个老虎机吐钱的观测概率p&amp;rsquo;。同时，由于观测次数有限，因此观测概率和真实概率p之间总会有一定的差值 ∆ ，即p&amp;rsquo; - ∆ &amp;lt;= p &amp;lt;= p&amp;rsquo; + ∆。&lt;/p&gt;
-&lt;p&gt;基于上面的讨论，我们得到了另一种常用的Bandit算法：UCB(Upper Confidence Bound)算法。该算法在每次推荐时，总是乐观的认为每个老虎机能够得到的收益是p&amp;rsquo; + ∆。&lt;/p&gt;
-&lt;p&gt;好了，接下来的问题就是观测概率和真实概率之间的差值∆如何计算了，我们首先有两个直观的理解：
-1）对于选中的老虎机，多获得一次反馈会使∆变小，当反馈无穷多时，∆趋近于0，最终会小于其他没有被选中的老虎机的∆。
-2）对于没有被选中的老虎机，∆会随着轮数的增大而增加，最终会大于其他被选中的老虎机。&lt;/p&gt;
-&lt;p&gt;因此，当进行了一定的轮数的时候，每个老虎机都有机会得到探索的机会。UCB算法中p&amp;rsquo; + ∆的计算公式如下：&lt;/p&gt;
-&lt;p&gt;$$
-p^\prime + \sqrt(\frac{2lnT}{n})
-$$&lt;/p&gt;
-&lt;p&gt;其中加号前面是第j个老虎机到目前的收益均值，后面的叫做bonus，本质上是均值的标准差，T是目前的试验次数，n是该老虎机被试次数。&lt;/p&gt;
 </description>
       
     </item>

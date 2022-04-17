@@ -45,6 +45,15 @@
     </item>
     
     <item>
+      <title>推荐系统之RL在京东推荐的应用</title>
+      <link>https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E4%BA%AC%E4%B8%9Crl/</link>
+      <pubDate>Sun, 28 Feb 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E4%BA%AC%E4%B8%9Crl/</guid>
+      <description>本文来自于paper：《Deep Reinforcement Learning for List-wise Recommendations》 1 背景 传统的大多数推荐系统应用存在两个问题： 无法建模用户兴趣的动态变</description>
+    </item>
+    
+    <item>
       <title>推荐系统之RL的应用</title>
       <link>https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-rl/</link>
       <pubDate>Thu, 25 Feb 2021 16:01:23 +0800</pubDate>
