@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>CS285 on Yang Xinxin&#39;s Blog</title>
+    <link>https://yshane-ai.github.io/tags/cs285/</link>
+    <description>Recent content in CS285 on Yang Xinxin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>Xinxin Yang</copyright>
+    <lastBuildDate>Tue, 02 Nov 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/tags/cs285/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CS285(12)之Model-Based RL</title>
+      <link>https://yshane-ai.github.io/post/62-cs285-mbrl-2/</link>
+      <pubDate>Tue, 02 Nov 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/62-cs285-mbrl-2/</guid>
+      <description>在上个lecture中讨论了如何学习model并利用它来做planning，并引入了latent model去加速学习。 但是可以留意到在这个流</description>
+    </item>
+    
+    <item>
+      <title>CS285(11)之Model-Based RL</title>
+      <link>https://yshane-ai.github.io/post/61-cs285-mbrl-1/</link>
+      <pubDate>Tue, 26 Oct 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/61-cs285-mbrl-1/</guid>
+      <description>在上节中我们介绍了有model的时候如何进行planning，在这节则是介绍如何学习model并利用它来进行learning。 1 Naive model and Replan 1.1 Naive</description>
+    </item>
+    
+    <item>
+      <title>CS285(10)之Planning</title>
+      <link>https://yshane-ai.github.io/post/60-cs285-planning/</link>
+      <pubDate>Mon, 18 Oct 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/60-cs285-planning/</guid>
+      <description>1 背景 强化学习的目标是如何最大化reward，而在planning问题中目标是如何最小化损失函数（reward函数的负数），也就是以下的带约</description>
+    </item>
+    
+  </channel>
+</rss>

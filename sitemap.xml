@@ -128,6 +128,62 @@
   </url>
   
   <url>
+    <loc>https://yshane-ai.github.io/tags/cs285/</loc>
+    <lastmod>2021-11-02T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/categories/cs285/</loc>
+    <lastmod>2021-11-02T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/62-cs285-mbrl-2/</loc>
+    <lastmod>2021-11-02T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/61-cs285-mbrl-1/</loc>
+    <lastmod>2021-10-26T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/tags/autonomous-driving/</loc>
+    <lastmod>2021-10-18T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/categories/autonomous-driving/</loc>
+    <lastmod>2021-10-18T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/60-cs285-planning/</loc>
+    <lastmod>2021-10-18T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/41-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/</loc>
+    <lastmod>2021-10-18T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
     <loc>https://yshane-ai.github.io/tags/python/</loc>
     <lastmod>2021-10-01T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>

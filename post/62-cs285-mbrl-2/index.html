@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>CS285(12)之Model-Based RL - Yang Xinxin&#39;s Blog</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="Xinxin Yang" />
+  <meta name="description" content="在上个lecture中讨论了如何学习model并利用它来做planning，并引入了latent model去加速学习。 但是可以留意到在这个流" />
+
+  <meta name="keywords" content="RL, ML, " />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.93.2" />
+
+
+<link rel="canonical" href="https://yshane-ai.github.io/post/62-cs285-mbrl-2/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.b3a8813c06e6d785beba22bf8264e174fa2cb3a396b22f9ba24e2c00c18aaf7f.css" integrity="sha256-s6iBPAbm14W&#43;uiK/gmThdPoss6OWsi&#43;bok4sAMGKr38=" media="screen" crossorigin="anonymous">
+
+
+
+
+
+<meta property="og:title" content="CS285(12)之Model-Based RL" />
+<meta property="og:description" content="在上个lecture中讨论了如何学习model并利用它来做planning，并引入了latent model去加速学习。 但是可以留意到在这个流" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/62-cs285-mbrl-2/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-11-02T16:01:23+08:00" />
+<meta property="article:modified_time" content="2021-11-02T16:01:23+08:00" />
+
+<meta itemprop="name" content="CS285(12)之Model-Based RL">
+<meta itemprop="description" content="在上个lecture中讨论了如何学习model并利用它来做planning，并引入了latent model去加速学习。 但是可以留意到在这个流"><meta itemprop="datePublished" content="2021-11-02T16:01:23+08:00" />
+<meta itemprop="dateModified" content="2021-11-02T16:01:23+08:00" />
+<meta itemprop="wordCount" content="5044">
+<meta itemprop="keywords" content="CS285," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="CS285(12)之Model-Based RL"/>
+<meta name="twitter:description" content="在上个lecture中讨论了如何学习model并利用它来做planning，并引入了latent model去加速学习。 但是可以留意到在这个流"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Xinxin</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/">Home</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/post/">Archives</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/tags/">Tags</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/categories/">Categories</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/about/">About</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          <div class="mobile-menu-parent">
+            <span class="mobile-submenu-open"></span>
+            <a href="https://yshane-ai.github.io/">
+              docs
+            </a>
+          </div>
+          <ul class="mobile-submenu-list">
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/7-alpha-go/">Alpha Go</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/60-cs285-planning/">CS285(10)之Planning</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/61-cs285-mbrl-1/">CS285(11)之Model-Based RL</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/62-cs285-mbrl-2/">CS285(12)之Model-Based RL</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/1-curl/">CURL</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/13-ddpg/">DDPG的Pytorch实现</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/11-dqn/">DQN的Pytorch实现</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/5-rl%E6%80%BB%E7%BB%93/">DRL总结：DQN，RainBow，DDPG，PPO和A3C等</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/hrlhindsight/">HRL&amp;Hindsight</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/4-imapla/">IMPALA</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/incentive-mechanism-in-mobile-crowdsensing/">Incentive Mechanism in Mobile Crowdsensing</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/2-social-influence/">Influence</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/maddpg-based-mcs/">MADDPG-Based-MCS</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/21-model-based-rl%E6%A2%B3%E7%90%86/">Model-based RL梳理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/26-off-policy%E6%8A%80%E5%B7%A7%E6%A2%B3%E7%90%86/">Off-policy方法梳理：Retrace和Vtrace</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/">Offline RL梳理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/12-ppo/">PPO的Pytorch实现</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/16-python%E4%B8%ADmap%E5%92%8Creduce%E4%BD%BF%E7%94%A8/">Python中map和reduce函数使用</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/">Python中的断言assert和异常exception处理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/3-pythondict/">Python的字典dict原理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/">Python调试器pdb的使用</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/17-python%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/">Python高阶函数、装饰器和匿名函数总结</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/">Pytorch加速模型训练</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/">Pytorch根据概率生成action</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/25-rl%E5%8D%9A%E5%BC%88%E5%AF%B9%E6%89%8B%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5/">RL博弈对手选择策略</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-deepfm/">推荐系统之DeepFM</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/39-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-dssm/">推荐系统之DSSM双塔架构</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/34-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-bandit/">推荐系统之EE问题和基本的Bandit算法</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/28-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-ffm/">推荐系统之FFM</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm/">推荐系统之FM</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm-mf/">推荐系统之FM与MF傻傻分不清楚</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/32-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-gbdt-lr/">推荐系统之GBDT&#43;LR </a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mf/">推荐系统之MF</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E4%BA%AC%E4%B8%9Crl/">推荐系统之RL在京东推荐的应用</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-rl/">推荐系统之RL的应用</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%86%B7%E5%90%AF%E5%8A%A8%E9%97%AE%E9%A2%98/">推荐系统之冷启动问题</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/40-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%8F%AC%E5%9B%9E%E7%AD%96%E7%95%A5%E6%80%BB%E7%BB%93/">推荐系统之召回和排序技术发展总结</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/30-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%A4%9A%E7%A6%BB%E6%95%A3%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%96%B9%E6%A1%88/">推荐系统之多值离散特征的embedding解决方案</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/33-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E7%A5%9E%E7%BB%8F%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4/">推荐系统之神经协同过滤</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/31-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-auc/">推荐系统之评价指标AUC</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/">推荐系统之谷歌MMOE架构</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/37-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mlr/">推荐系统之阿里MLR算法</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/36-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-din/">推荐系统之阿里深度兴趣网络DIN</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/">游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/">神经网络的初始化和优化</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/41-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/">自动驾驶之Apollo控制算法</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/24-nvidia-gpu%E7%B3%BB%E5%88%97%E4%BB%8B%E7%BB%8D/">英伟达GPU系列介绍</a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      Xinxin
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/">Home</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/post/">Archives</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/tags/">Tags</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/categories/">Categories</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://yshane-ai.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item active">
+        
+          
+          <a class="menu-item-link menu-parent" href="https://yshane-ai.github.io/">docs</a>
+          <ul class="submenu">
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/7-alpha-go/">Alpha Go</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/60-cs285-planning/">CS285(10)之Planning</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/61-cs285-mbrl-1/">CS285(11)之Model-Based RL</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/62-cs285-mbrl-2/">CS285(12)之Model-Based RL</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/1-curl/">CURL</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/13-ddpg/">DDPG的Pytorch实现</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/11-dqn/">DQN的Pytorch实现</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/5-rl%E6%80%BB%E7%BB%93/">DRL总结：DQN，RainBow，DDPG，PPO和A3C等</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/hrlhindsight/">HRL&amp;Hindsight</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/4-imapla/">IMPALA</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/incentive-mechanism-in-mobile-crowdsensing/">Incentive Mechanism in Mobile Crowdsensing</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/2-social-influence/">Influence</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/maddpg-based-mcs/">MADDPG-Based-MCS</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/21-model-based-rl%E6%A2%B3%E7%90%86/">Model-based RL梳理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/26-off-policy%E6%8A%80%E5%B7%A7%E6%A2%B3%E7%90%86/">Off-policy方法梳理：Retrace和Vtrace</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/">Offline RL梳理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/12-ppo/">PPO的Pytorch实现</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/16-python%E4%B8%ADmap%E5%92%8Creduce%E4%BD%BF%E7%94%A8/">Python中map和reduce函数使用</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/">Python中的断言assert和异常exception处理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/3-pythondict/">Python的字典dict原理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/">Python调试器pdb的使用</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/17-python%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/">Python高阶函数、装饰器和匿名函数总结</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/">Pytorch加速模型训练</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/">Pytorch根据概率生成action</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/25-rl%E5%8D%9A%E5%BC%88%E5%AF%B9%E6%89%8B%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5/">RL博弈对手选择策略</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-deepfm/">推荐系统之DeepFM</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/39-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-dssm/">推荐系统之DSSM双塔架构</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/34-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-bandit/">推荐系统之EE问题和基本的Bandit算法</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/28-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-ffm/">推荐系统之FFM</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm/">推荐系统之FM</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm-mf/">推荐系统之FM与MF傻傻分不清楚</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/32-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-gbdt-lr/">推荐系统之GBDT&#43;LR </a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mf/">推荐系统之MF</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E4%BA%AC%E4%B8%9Crl/">推荐系统之RL在京东推荐的应用</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-rl/">推荐系统之RL的应用</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%86%B7%E5%90%AF%E5%8A%A8%E9%97%AE%E9%A2%98/">推荐系统之冷启动问题</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/40-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%8F%AC%E5%9B%9E%E7%AD%96%E7%95%A5%E6%80%BB%E7%BB%93/">推荐系统之召回和排序技术发展总结</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/30-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%A4%9A%E7%A6%BB%E6%95%A3%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%96%B9%E6%A1%88/">推荐系统之多值离散特征的embedding解决方案</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/33-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E7%A5%9E%E7%BB%8F%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4/">推荐系统之神经协同过滤</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/31-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-auc/">推荐系统之评价指标AUC</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/">推荐系统之谷歌MMOE架构</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/37-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mlr/">推荐系统之阿里MLR算法</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/36-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-din/">推荐系统之阿里深度兴趣网络DIN</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/">游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/">神经网络的初始化和优化</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/41-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/">自动驾驶之Apollo控制算法</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/24-nvidia-gpu%E7%B3%BB%E5%88%97%E4%BB%8B%E7%BB%8D/">英伟达GPU系列介绍</a>
+              </li>
+            
+          </ul>
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">CS285(12)之Model-Based RL</h1>
+      
+      <div class="post-meta">
+        <time datetime="2021-11-02" class="post-time">
+          2021-11-02
+        </time>
+        <div class="post-category">
+            <a href="https://yshane-ai.github.io/categories/cs285/"> CS285 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Table of Contents</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-backpropagate-into-the-policy">1 Backpropagate into the policy</a>
+      <ul>
+        <li><a href="#11-backpropagate-into-the-policy">1.1 Backpropagate into the policy</a></li>
+        <li><a href="#12-problems-and-solutions">1.2 Problems and solutions</a></li>
+      </ul>
+    </li>
+    <li><a href="#2-model-free-rl-with-model">2 Model-free RL with model</a>
+      <ul>
+        <li><a href="#21-dyna">2.1 Dyna</a></li>
+        <li><a href="#22-general-dyna-style-model">2.2 General Dyna-style model</a></li>
+      </ul>
+    </li>
+    <li><a href="#3-lqr-flm-fitted-local-models">3 LQR-FLM (Fitted Local Models)</a>
+      <ul>
+        <li><a href="#31-local-models">3.1 Local models</a></li>
+        <li><a href="#32-fit-the-models">3.2 Fit the models</a></li>
+        <li><a href="#33-execute-actions">3.3 Execute actions</a></li>
+        <li><a href="#34-dynamics-not-linear">3.4 Dynamics not linear？</a></li>
+      </ul>
+    </li>
+    <li><a href="#4-combine-local-policies-into-global-policies">4 Combine local policies into global policies</a>
+      <ul>
+        <li><a href="#41-guided-policy-search">4.1 Guided policy search</a></li>
+        <li><a href="#42-distillation">4.2 Distillation</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <p>在上个lecture中讨论了如何学习model并利用它来做planning，并引入了latent model去加速学习。</p>
+
+<link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/070.jpg" />
+    </div>
+    <a href="/image/60-cs285/070.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>但是可以留意到在这个流程中实际并没有显式地学习policy，所以在这个lecture中讨论在model-based的框架下如何直接利用model学习polcy。</p>
+<h2 id="1-backpropagate-into-the-policy">1 Backpropagate into the policy</h2>
+<h3 id="11-backpropagate-into-the-policy">1.1 Backpropagate into the policy</h3>
+<p>从RL的整个框架来看，agent接收到state，根据policy得到action，environment利用dynamic来state和action得到next state。很直观的，如果学习得到了dynamic model，那么就可以直接通过BP来计算得到dynamic关于policy的gradient，从而利用gradient descent进行policy更新：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/071.jpg" />
+    </div>
+    <a href="/image/60-cs285/071.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>从而新的model-based RL的算法流程都可以表达为如下的模式，重点在于第三步的BP：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/072.jpg" />
+    </div>
+    <a href="/image/60-cs285/072.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<h3 id="12-problems-and-solutions">1.2 Problems and solutions</h3>
+<p>这种方法存在的问题主要可以分为两个方面，首先是由于policy是global policy，policy的微小改变的影响是全局的，它不再与time steps相关，参数敏感度比较强，所以会存在和shooting methods相类似的问题，随着误差会不断累积：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/073.jpg" />
+    </div>
+    <a href="/image/60-cs285/073.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>另外则是可能存在gradient vanish以及explode的问题，问题来源类似RNNs，是gradient在多个steps之间累积导致的。而相对而言，RNNs可以利用LSTM的特殊结构进行求解，而这里的dynamics是由environment决定的，这取决于问题本身，无法像RNNs一样解决。</p>
+<p>这个lecture则是主要引入两种方法来缓解这些问题。第一个则是避免derivative操作，从根本上规避vanish以及explode的问题，使用model生成数据，利用model-free方法求解。第二个则是别使用神经网络这样的global policies，仅仅学习简单的local policies，从而规避参数敏感性的问题，例如带learned models的LQR，并可以利用supervised learning将这些合并到global policies中。</p>
+<h2 id="2-model-free-rl-with-model">2 Model-free RL with model</h2>
+<p>这里进入第一种解决方案：利用derivative-free(model-free) RL algorithms，为什么说它会有效，简单举个例子：对比一下上面的方法和policy gradient方法。</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/074.png" />
+    </div>
+    <a href="/image/60-cs285/074.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>在policy gradient中，如果样本足够，它是可以足够稳定的，主要是因为它不像Backprop方法那样需要按照time-steps进行gradient的累乘。其他各种model-free的方法也同样能够规避这个问题。</p>
+<h3 id="21-dyna">2.1 Dyna</h3>
+<p>这里首先介绍Dyna方法，它是利用model加速Q-learning学习的算法，一方面它会与environment进行交互获得真实的数据，另一方面它会根据model去做隐式/显式的数据生成，下图是经典Dyna方法的流程图：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/075.jpg" />
+    </div>
+    <a href="/image/60-cs285/075.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>其中，表现出对model利用的主要是在两个红框处的expectation，在前面Q-learning部分提到，由于model不存在，所以会使用sample进行替代，但是在这里则可以直接利用model得到每个sample的概率，从而提高了算法效率。</p>
+<h3 id="22-general-dyna-style-model">2.2 General Dyna-style model</h3>
+<p>上面介绍了具体的Dyna算法，在这里给出general Dyna-style的model-based方法的流程：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/076.jpg" />
+    </div>
+    <a href="/image/60-cs285/076.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>在上面Dyna中，由于Q-learning需要expectation，所以model正好提供了这个工具，但是很多model-free算法可能用不上expectation，所以这里更加general的方式是利用model来生成sample，用于model-free的学习。</p>
+<p>这个框架在近几年也不断有新的发展，衍生出MBA，MVE，MBPO等算法，它们也是基于类似的流程进行求解：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/077.jpg" />
+    </div>
+    <a href="/image/60-cs285/077.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>将model结合到model-free方法中能够极大加速model-free方法的训练，同时也能够使算法见到更加diverse的states，从而也可以提高算法的上限，但是目前而言总体还是学习model ，这也成为了算法的一个短板。</p>
+<p>另外速度上的提高也与model进行simulation的长度有关，simulation越长，则算法需要的迭代次数越少，但是由于model的准确性，也可能导致算法效果变差。上面两张图中的红色箭头就是对比，第二张图的前进数量更多，在需要时候的确容易更快地靠近黑色箭头处的目标，但是却也容易产生较大的误差。归根结底还是model fitting的准确性问题。</p>
+<h2 id="3-lqr-flm-fitted-local-models">3 LQR-FLM (Fitted Local Models)</h2>
+<p>第二节介绍完利用derivative-free (model-free) RL algorithm解决Backprop gradient方法存在的gradient vanish和explode问题，这节则着重于利用local policies去解决parameter sensitivity的问题。</p>
+<h3 id="31-local-models">3.1 Local models</h3>
+<p>回顾在lecture10关于optimal control中给出的问题，使用control的观点看待rl，将reward替换为cost function，action看作是u，从而得到如下的无约束优化目标：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/078.svg" />
+    </div>
+    <a href="/image/60-cs285/078.svg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>彼时我们引入LQR，对model做了linear假设，cost function做了quadratic假设，以求梯度优化的方式，将信息前后传播，从而求解这个最优化问题。</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/079.jpg" />
+    </div>
+    <a href="/image/60-cs285/079.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>而同样的道理，是否可以将这种方式应用到这里呢？考察一下，此时相对lecture10的差异仅仅在于这时候model是通过学习的方式得到的，而前面LQR中是model是已知的，并且假设是线性的。故而如果能够弥补这个差异，也可以将LQR的方法使用到这里。</p>
+<p>在LQR中，由于假设了model和cost function的形式，它们关于state和action求导比较简单，从而可以比较轻松地进行优化：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/080.jpg" />
+    </div>
+    <a href="/image/60-cs285/080.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>而在这里，由于model f是通过学习得到的，如果假定某个固定形式：例如就是二次形式，自然也可以利用LQR相似的思路求解。但是既然是通过学习得到的，那么为何不简单一些，直接学习model在当前policy下关于c和u的梯度，然后基于这两个梯度得到model：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/081.jpg" />
+    </div>
+    <a href="/image/60-cs285/081.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>在这里，同样我们也假设这些生成的trajectory是局部线性的，也就是说它可以被如下的形式表达：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/082.svg" />
+    </div>
+    <a href="/image/60-cs285/082.svg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>其中</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/083.svg" />
+    </div>
+    <a href="/image/60-cs285/083.svg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>此时如果是stochastic dynamic，则可以使用gaussian的形式表示dynamic(lecture10 4.1.6 Stochastic dynamics):</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/084.svg" />
+    </div>
+    <a href="/image/60-cs285/084.svg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>从而整体的执行流程可以表示为下图的循环：运行policy，采集数据，fit A&amp;B，然后运行LQR提高controller。</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/085.jpg" />
+    </div>
+    <a href="/image/60-cs285/085.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>所以接下来就介绍两种拟合这个model的方法。</p>
+<h3 id="32-fit-the-models">3.2 Fit the models</h3>
+<p>最基本的形式，可以直接利用linear regression拟合与真实值的差异，进行A与B的求解：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/086.png" />
+    </div>
+    <a href="/image/60-cs285/086.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>这种方式的问题就是LR的学习需要的样本是与state的维度相关的，实际应用不太适合。</p>
+<p>基于此，提出的改进是可以首先学习一个global policy，将它作为Bayesian linear regression的prior，由于这个global policy中学习的信息是可以一直存储的，故而能够提高样本利用率，从而更高效地学习。</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/087.jpg" />
+    </div>
+    <a href="/image/60-cs285/087.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<h3 id="33-execute-actions">3.3 Execute actions</h3>
+<p>在上面学习到dynamic之后，如何基于它去执行action呢？前面提到，我们在这里可以引入LQR的流程，如下是iLQR中，基于上一步的各种信息，forward，backward得到K&amp;k，然后给予K&amp;k去得到新的action，从而提高controller的能力：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/088.jpg" />
+    </div>
+    <a href="/image/60-cs285/088.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>那么在采集数据的时候可以怎么做呢？最简单的版本就是基于当前步的u，直接执行它：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/089.png" />
+    </div>
+    <a href="/image/60-cs285/089.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>相比前面提到的LQR中使用的是给定的model，这是model是学习得到的，它存在误差，而由于LQR是open-loop的前向，故而可能导致误差累积，state误差越大，u的误差也就越大。</p>
+<p>故而第二种方法就是利用之前求的的K&amp;k对u进行修正，由于K学习的目的是为了能够使controller稳定在trajectory的线性区域内，所以使用它也就可以帮助单条轨迹变得更加稳定：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/090.png" />
+    </div>
+    <a href="/image/60-cs285/090.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>基于此，进一步提高的方法则是在单条轨迹稳定的基础上变得更多样化：过于单调的数据不利于学习。故而在上面的方法的基础可以在上面添加一些噪声，由lecture10的推导可知，这个噪声对LQR的学习并没有影响：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/091.jpg" />
+    </div>
+    <a href="/image/60-cs285/091.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>上面也就是学习到了model之后如何进行action选择的方法了。</p>
+<h3 id="34-dynamics-not-linear">3.4 Dynamics not linear？</h3>
+<p>前面都是假设model可以被如下的形式局部线性表示：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/092.svg" />
+    </div>
+    <a href="/image/60-cs285/092.svg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>但是如果实际并不是这样的呢？例如下图中，如果实际的dynamic是绿色的形式，而由于我们的local linear假设，所以实际生成的是蓝色的dynamic。这也就使得dynamic的学习效果变得很差，此时如果运行LQR，那么就可能得到类似红色这种偏差特别大的trajectory，从而导致LQR的提高效果特别差。</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/093.jpg" />
+    </div>
+    <a href="/image/60-cs285/093.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>这其实是很熟悉的问题，很容易联想到前面学习的model-free中policy gradient中学习波动大，导致trajectory波动比较大的问题。当时在引入TRPO中，对于前后policy生成trajectory的KL divergence做了约束，从而保证dynamics足够近，故而这里可以使用同样的方式，对相邻两个controller生成trajectory对概率进行约束：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/094.svg" />
+    </div>
+    <a href="/image/60-cs285/094.svg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>它们分别表示LQR前后的controller生成trajectory的概率，其中：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/095.svg" />
+    </div>
+    <a href="/image/60-cs285/095.svg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>相对policy gradient中KL divergence比较难解的问题，由于这里是做了linear assumption，故而这个KL divergence是比较容易求解的。</p>
+<h2 id="4-combine-local-policies-into-global-policies">4 Combine local policies into global policies</h2>
+<p>前面分别提到global policies和local policies的方法，并缓解了前面提到的部分问题。在最后一节则是尝试将它们结合起来，利用local policy去辅助global policy的学习，介绍一些常见方法的主要思想。</p>
+<h3 id="41-guided-policy-search">4.1 Guided policy search</h3>
+<p>首先是Guided policy search，这里的guided就是表示利用local policies去guide global policy的学习，从而加快学习效率。它的核心思想是从不同的initial state学习多个LQR模型，然后基于这些模型生成数据，并利用这些数据去监督学习一个global model，汇总这些LQR模型的效果：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/096.jpg" />
+    </div>
+    <a href="/image/60-cs285/096.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>在伪代码中，第一步是学习local policy，生成数据。第二步则是基于生成的数据去对global policy进行监督学习。第三步则是根据SL模型对每个LQR学习的效果进行对LQR的cost function进行反馈，提高SL与LQR模型的一致性，这样做的目的是避免不同的LQR模型差异过大，导致SL模型学习出现问题，所以强制让LQR模型往SL模型靠拢。</p>
+<p>GPS中引入了LQR，利用model生成了更高质量sample，从而往往可以给model-free方法做一个比较好的初始化，提高agent在学习初期的探索效率。</p>
+<h3 id="42-distillation">4.2 Distillation</h3>
+<p>关于GPS对local model的利用，它的一个很核心的过程就是把多个policy合并成一个policy。Ensemble是一种十分常见的方式，它通过训练多个模型，并将它们的预测结果去平均，从而得到更加robust的结果，这是在许多竞赛中非常常见的方法，它的缺点是需要训练多个模型。那么是否能够只训练一个模型呢？</p>
+<p>Distillation是满足这个要求的一种方法，它将多个模型的预测结果做了softmax作为label去训练一个最终的模型，背后的intuition是softmax相比max能够容纳更多信息（前者是连续值，后者是离散值），从而可以更好的将信息汇总到一个模型中：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/097.png" />
+    </div>
+    <a href="/image/60-cs285/097.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>在RL常见的multi-task设置中，也可以使用类似的方式，在每个task上都训练一个模型，然后distillation得到一个总模型：</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/098.jpg" />
+    </div>
+    <a href="/image/60-cs285/098.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>其中的loss function就是给予监督学习同时学习多个task上的policy的label。</p>
+<p>基于distillation的思路，可以将GPS的思路进一步拓宽，例如可以将一个big task拆分成多个small skill，然后每个skill都学一个local skill policies，进而distillation得到一个global policy，这也就是Divide and Conquer Reinforcement Learning的思想。</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/60-cs285/099.jpg" />
+    </div>
+    <a href="/image/60-cs285/099.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>以上，便是本节的所有内容了。</p>
+
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">Author</span>
+    <span class="item-content">Xinxin Yang</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">LastMod</span>
+    <span class="item-content">
+      2021-11-02
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">License</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://yshane-ai.github.io/tags/cs285/">CS285</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/20-offline-rl%E6%A2%B3%E7%90%86/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">Offline RL梳理</span>
+            <span class="prev-text nav-mobile">Prev</span>
+          </a>
+        
+          <a class="next" href="/post/61-cs285-mbrl-1/">
+            <span class="next-text nav-default">CS285(11)之Model-Based RL</span>
+            <span class="prev-text nav-mobile">Next</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="shaneyang03@gmail.com" rel="me noopener" class="iconfont"
+      title="email"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/yshane-ai" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://www.zhihu.com/people/xin-shao-49-78" rel="me noopener" class="iconfont"
+      title="zhihu"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M351.791182 562.469462l192.945407 0c0-45.367257-21.3871-71.939449-21.3871-71.939449L355.897709 490.530013c3.977591-82.182744 7.541767-187.659007 8.816806-226.835262l159.282726 0c0 0-0.86367-67.402109-18.578124-67.402109s-279.979646 0-279.979646 0 16.850783-88.141456 39.318494-127.053698c0 0-83.60514-4.510734-112.121614 106.962104S81.344656 355.077018 76.80834 367.390461c-4.536316 12.313443 24.62791 5.832845 36.941354 0 12.313443-5.832845 68.050885-25.924439 84.252893-103.69571l86.570681 0c1.165546 49.28652 4.596691 200.335724 3.515057 226.835262L109.86113 490.530013c-25.275663 18.147312-33.701566 71.939449-33.701566 71.939449L279.868105 562.469462c-8.497535 56.255235-23.417339 128.763642-44.275389 167.210279-33.05279 60.921511-50.55235 116.65793-169.802314 212.576513 0 0-19.442818 14.257725 40.829917 9.073656 60.273758-5.185093 117.305683-20.739347 156.840094-99.807147 20.553105-41.107233 41.805128-93.250824 58.386782-146.138358l-0.055259 0.185218 167.855986 193.263655c0 0 22.035876-51.847855 5.832845-108.880803L371.045711 650.610918l-42.1244 31.157627-0.045025 0.151449c11.69946-41.020252 20.11206-81.5749 22.726607-116.858498C351.665315 564.212152 351.72876 563.345412 351.791182 562.469462z"></path>
+  <path d="M584.918753 182.033893l0 668.840094 70.318532 0 28.807093 80.512708 121.875768-80.512708 153.600307 0L959.520453 182.033893 584.918753 182.033893zM887.150192 778.934538l-79.837326 0-99.578949 65.782216-23.537066-65.782216-24.855084 0L659.341766 256.673847l227.807403 0L887.149169 778.934538z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://yshane-ai.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+  
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [["$", "$"]],
+    },
+    displayMath: [
+      ["$$", "$$"],
+      ["\[\[", "\]\]"],
+    ],
+    svg: {
+      fontCache: "global",
+    },
+  };
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+></script>
+
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2021 -
+    2022
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        Xinxin Yang
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.dee43230127a73d039a734510fa896c89c3c7ce0cf0be0c7a7433f8fd69b76dc.js" integrity="sha256-3uQyMBJ6c9A5pzRRD6iWyJw8fODPC&#43;DHp0M/j9abdtw=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/katex.min.css"
+    integrity="sha384-BdGj8xC2eZkQaxoQ8nSLefg4AV4/AwB3Fj+8SUSo7pnKP6Eoy18liIKTPn9oBYNG"
+    crossorigin="anonymous">
+
+  
+  <script defer
+    src="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/katex.min.js"
+    integrity="sha384-JiKN5O8x9Hhs/UE5cT5AAJqieYlOZbGT3CHws/y97o3ty4R7/O5poG9F3JoiOYw1"
+    crossorigin="anonymous"></script>
+
+  
+  <script defer
+    src="https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/contrib/auto-render.min.js"
+    integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI"
+    crossorigin="anonymous" onload="renderMathInElement(document.body);">
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        
+      });
+    });
+  </script>
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

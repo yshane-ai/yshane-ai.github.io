@@ -791,6 +791,1563 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output&lt;/p&gt;
     </item>
     
     <item>
+      <title>CS285(12)之Model-Based RL</title>
+      <link>https://yshane-ai.github.io/post/62-cs285-mbrl-2/</link>
+      <pubDate>Tue, 02 Nov 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/62-cs285-mbrl-2/</guid>
+      
+        <description>&lt;p&gt;在上个lecture中讨论了如何学习model并利用它来做planning，并引入了latent model去加速学习。&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/070.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/070.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;但是可以留意到在这个流程中实际并没有显式地学习policy，所以在这个lecture中讨论在model-based的框架下如何直接利用model学习polcy。&lt;/p&gt;
+&lt;h2 id=&#34;1-backpropagate-into-the-policy&#34;&gt;1 Backpropagate into the policy&lt;/h2&gt;
+&lt;h3 id=&#34;11-backpropagate-into-the-policy&#34;&gt;1.1 Backpropagate into the policy&lt;/h3&gt;
+&lt;p&gt;从RL的整个框架来看，agent接收到state，根据policy得到action，environment利用dynamic来state和action得到next state。很直观的，如果学习得到了dynamic model，那么就可以直接通过BP来计算得到dynamic关于policy的gradient，从而利用gradient descent进行policy更新：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/071.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/071.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;从而新的model-based RL的算法流程都可以表达为如下的模式，重点在于第三步的BP：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/072.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/072.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&#34;12-problems-and-solutions&#34;&gt;1.2 Problems and solutions&lt;/h3&gt;
+&lt;p&gt;这种方法存在的问题主要可以分为两个方面，首先是由于policy是global policy，policy的微小改变的影响是全局的，它不再与time steps相关，参数敏感度比较强，所以会存在和shooting methods相类似的问题，随着误差会不断累积：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/073.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/073.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;另外则是可能存在gradient vanish以及explode的问题，问题来源类似RNNs，是gradient在多个steps之间累积导致的。而相对而言，RNNs可以利用LSTM的特殊结构进行求解，而这里的dynamics是由environment决定的，这取决于问题本身，无法像RNNs一样解决。&lt;/p&gt;
+&lt;p&gt;这个lecture则是主要引入两种方法来缓解这些问题。第一个则是避免derivative操作，从根本上规避vanish以及explode的问题，使用model生成数据，利用model-free方法求解。第二个则是别使用神经网络这样的global policies，仅仅学习简单的local policies，从而规避参数敏感性的问题，例如带learned models的LQR，并可以利用supervised learning将这些合并到global policies中。&lt;/p&gt;
+&lt;h2 id=&#34;2-model-free-rl-with-model&#34;&gt;2 Model-free RL with model&lt;/h2&gt;
+&lt;p&gt;这里进入第一种解决方案：利用derivative-free(model-free) RL algorithms，为什么说它会有效，简单举个例子：对比一下上面的方法和policy gradient方法。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/074.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/074.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在policy gradient中，如果样本足够，它是可以足够稳定的，主要是因为它不像Backprop方法那样需要按照time-steps进行gradient的累乘。其他各种model-free的方法也同样能够规避这个问题。&lt;/p&gt;
+&lt;h3 id=&#34;21-dyna&#34;&gt;2.1 Dyna&lt;/h3&gt;
+&lt;p&gt;这里首先介绍Dyna方法，它是利用model加速Q-learning学习的算法，一方面它会与environment进行交互获得真实的数据，另一方面它会根据model去做隐式/显式的数据生成，下图是经典Dyna方法的流程图：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/075.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/075.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中，表现出对model利用的主要是在两个红框处的expectation，在前面Q-learning部分提到，由于model不存在，所以会使用sample进行替代，但是在这里则可以直接利用model得到每个sample的概率，从而提高了算法效率。&lt;/p&gt;
+&lt;h3 id=&#34;22-general-dyna-style-model&#34;&gt;2.2 General Dyna-style model&lt;/h3&gt;
+&lt;p&gt;上面介绍了具体的Dyna算法，在这里给出general Dyna-style的model-based方法的流程：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/076.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/076.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在上面Dyna中，由于Q-learning需要expectation，所以model正好提供了这个工具，但是很多model-free算法可能用不上expectation，所以这里更加general的方式是利用model来生成sample，用于model-free的学习。&lt;/p&gt;
+&lt;p&gt;这个框架在近几年也不断有新的发展，衍生出MBA，MVE，MBPO等算法，它们也是基于类似的流程进行求解：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/077.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/077.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;将model结合到model-free方法中能够极大加速model-free方法的训练，同时也能够使算法见到更加diverse的states，从而也可以提高算法的上限，但是目前而言总体还是学习model ，这也成为了算法的一个短板。&lt;/p&gt;
+&lt;p&gt;另外速度上的提高也与model进行simulation的长度有关，simulation越长，则算法需要的迭代次数越少，但是由于model的准确性，也可能导致算法效果变差。上面两张图中的红色箭头就是对比，第二张图的前进数量更多，在需要时候的确容易更快地靠近黑色箭头处的目标，但是却也容易产生较大的误差。归根结底还是model fitting的准确性问题。&lt;/p&gt;
+&lt;h2 id=&#34;3-lqr-flm-fitted-local-models&#34;&gt;3 LQR-FLM (Fitted Local Models)&lt;/h2&gt;
+&lt;p&gt;第二节介绍完利用derivative-free (model-free) RL algorithm解决Backprop gradient方法存在的gradient vanish和explode问题，这节则着重于利用local policies去解决parameter sensitivity的问题。&lt;/p&gt;
+&lt;h3 id=&#34;31-local-models&#34;&gt;3.1 Local models&lt;/h3&gt;
+&lt;p&gt;回顾在lecture10关于optimal control中给出的问题，使用control的观点看待rl，将reward替换为cost function，action看作是u，从而得到如下的无约束优化目标：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/078.svg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/078.svg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;彼时我们引入LQR，对model做了linear假设，cost function做了quadratic假设，以求梯度优化的方式，将信息前后传播，从而求解这个最优化问题。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/079.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/079.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;而同样的道理，是否可以将这种方式应用到这里呢？考察一下，此时相对lecture10的差异仅仅在于这时候model是通过学习的方式得到的，而前面LQR中是model是已知的，并且假设是线性的。故而如果能够弥补这个差异，也可以将LQR的方法使用到这里。&lt;/p&gt;
+&lt;p&gt;在LQR中，由于假设了model和cost function的形式，它们关于state和action求导比较简单，从而可以比较轻松地进行优化：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/080.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/080.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;而在这里，由于model f是通过学习得到的，如果假定某个固定形式：例如就是二次形式，自然也可以利用LQR相似的思路求解。但是既然是通过学习得到的，那么为何不简单一些，直接学习model在当前policy下关于c和u的梯度，然后基于这两个梯度得到model：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/081.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/081.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在这里，同样我们也假设这些生成的trajectory是局部线性的，也就是说它可以被如下的形式表达：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/082.svg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/082.svg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/083.svg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/083.svg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;此时如果是stochastic dynamic，则可以使用gaussian的形式表示dynamic(lecture10 4.1.6 Stochastic dynamics):&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/084.svg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/084.svg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;从而整体的执行流程可以表示为下图的循环：运行policy，采集数据，fit A&amp;amp;B，然后运行LQR提高controller。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/085.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/085.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;所以接下来就介绍两种拟合这个model的方法。&lt;/p&gt;
+&lt;h3 id=&#34;32-fit-the-models&#34;&gt;3.2 Fit the models&lt;/h3&gt;
+&lt;p&gt;最基本的形式，可以直接利用linear regression拟合与真实值的差异，进行A与B的求解：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/086.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/086.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这种方式的问题就是LR的学习需要的样本是与state的维度相关的，实际应用不太适合。&lt;/p&gt;
+&lt;p&gt;基于此，提出的改进是可以首先学习一个global policy，将它作为Bayesian linear regression的prior，由于这个global policy中学习的信息是可以一直存储的，故而能够提高样本利用率，从而更高效地学习。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/087.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/087.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&#34;33-execute-actions&#34;&gt;3.3 Execute actions&lt;/h3&gt;
+&lt;p&gt;在上面学习到dynamic之后，如何基于它去执行action呢？前面提到，我们在这里可以引入LQR的流程，如下是iLQR中，基于上一步的各种信息，forward，backward得到K&amp;amp;k，然后给予K&amp;amp;k去得到新的action，从而提高controller的能力：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/088.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/088.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;那么在采集数据的时候可以怎么做呢？最简单的版本就是基于当前步的u，直接执行它：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/089.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/089.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;相比前面提到的LQR中使用的是给定的model，这是model是学习得到的，它存在误差，而由于LQR是open-loop的前向，故而可能导致误差累积，state误差越大，u的误差也就越大。&lt;/p&gt;
+&lt;p&gt;故而第二种方法就是利用之前求的的K&amp;amp;k对u进行修正，由于K学习的目的是为了能够使controller稳定在trajectory的线性区域内，所以使用它也就可以帮助单条轨迹变得更加稳定：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/090.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/090.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;基于此，进一步提高的方法则是在单条轨迹稳定的基础上变得更多样化：过于单调的数据不利于学习。故而在上面的方法的基础可以在上面添加一些噪声，由lecture10的推导可知，这个噪声对LQR的学习并没有影响：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/091.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/091.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;上面也就是学习到了model之后如何进行action选择的方法了。&lt;/p&gt;
+&lt;h3 id=&#34;34-dynamics-not-linear&#34;&gt;3.4 Dynamics not linear？&lt;/h3&gt;
+&lt;p&gt;前面都是假设model可以被如下的形式局部线性表示：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/092.svg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/092.svg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;但是如果实际并不是这样的呢？例如下图中，如果实际的dynamic是绿色的形式，而由于我们的local linear假设，所以实际生成的是蓝色的dynamic。这也就使得dynamic的学习效果变得很差，此时如果运行LQR，那么就可能得到类似红色这种偏差特别大的trajectory，从而导致LQR的提高效果特别差。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/093.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/093.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这其实是很熟悉的问题，很容易联想到前面学习的model-free中policy gradient中学习波动大，导致trajectory波动比较大的问题。当时在引入TRPO中，对于前后policy生成trajectory的KL divergence做了约束，从而保证dynamics足够近，故而这里可以使用同样的方式，对相邻两个controller生成trajectory对概率进行约束：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/094.svg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/094.svg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;它们分别表示LQR前后的controller生成trajectory的概率，其中：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/095.svg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/095.svg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;相对policy gradient中KL divergence比较难解的问题，由于这里是做了linear assumption，故而这个KL divergence是比较容易求解的。&lt;/p&gt;
+&lt;h2 id=&#34;4-combine-local-policies-into-global-policies&#34;&gt;4 Combine local policies into global policies&lt;/h2&gt;
+&lt;p&gt;前面分别提到global policies和local policies的方法，并缓解了前面提到的部分问题。在最后一节则是尝试将它们结合起来，利用local policy去辅助global policy的学习，介绍一些常见方法的主要思想。&lt;/p&gt;
+&lt;h3 id=&#34;41-guided-policy-search&#34;&gt;4.1 Guided policy search&lt;/h3&gt;
+&lt;p&gt;首先是Guided policy search，这里的guided就是表示利用local policies去guide global policy的学习，从而加快学习效率。它的核心思想是从不同的initial state学习多个LQR模型，然后基于这些模型生成数据，并利用这些数据去监督学习一个global model，汇总这些LQR模型的效果：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/096.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/096.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在伪代码中，第一步是学习local policy，生成数据。第二步则是基于生成的数据去对global policy进行监督学习。第三步则是根据SL模型对每个LQR学习的效果进行对LQR的cost function进行反馈，提高SL与LQR模型的一致性，这样做的目的是避免不同的LQR模型差异过大，导致SL模型学习出现问题，所以强制让LQR模型往SL模型靠拢。&lt;/p&gt;
+&lt;p&gt;GPS中引入了LQR，利用model生成了更高质量sample，从而往往可以给model-free方法做一个比较好的初始化，提高agent在学习初期的探索效率。&lt;/p&gt;
+&lt;h3 id=&#34;42-distillation&#34;&gt;4.2 Distillation&lt;/h3&gt;
+&lt;p&gt;关于GPS对local model的利用，它的一个很核心的过程就是把多个policy合并成一个policy。Ensemble是一种十分常见的方式，它通过训练多个模型，并将它们的预测结果去平均，从而得到更加robust的结果，这是在许多竞赛中非常常见的方法，它的缺点是需要训练多个模型。那么是否能够只训练一个模型呢？&lt;/p&gt;
+&lt;p&gt;Distillation是满足这个要求的一种方法，它将多个模型的预测结果做了softmax作为label去训练一个最终的模型，背后的intuition是softmax相比max能够容纳更多信息（前者是连续值，后者是离散值），从而可以更好的将信息汇总到一个模型中：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/097.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/097.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在RL常见的multi-task设置中，也可以使用类似的方式，在每个task上都训练一个模型，然后distillation得到一个总模型：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/098.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/098.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中的loss function就是给予监督学习同时学习多个task上的policy的label。&lt;/p&gt;
+&lt;p&gt;基于distillation的思路，可以将GPS的思路进一步拓宽，例如可以将一个big task拆分成多个small skill，然后每个skill都学一个local skill policies，进而distillation得到一个global policy，这也就是Divide and Conquer Reinforcement Learning的思想。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/099.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/099.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;以上，便是本节的所有内容了。&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>CS285(11)之Model-Based RL</title>
+      <link>https://yshane-ai.github.io/post/61-cs285-mbrl-1/</link>
+      <pubDate>Tue, 26 Oct 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/61-cs285-mbrl-1/</guid>
+      
+        <description>
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/039.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/039.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在上节中我们介绍了有model的时候如何进行planning，在这节则是介绍如何学习model并利用它来进行learning。&lt;/p&gt;
+&lt;h1 id=&#34;1-naive-model-and-replan&#34;&gt;1 Naive model and Replan&lt;/h1&gt;
+&lt;h2 id=&#34;11-naive-model&#34;&gt;1.1 Naive model&lt;/h2&gt;
+&lt;p&gt;首先介绍最直观的思路：首先运行policy，通过与environment交互获得数据，利用它们去拟合模型model，基于模型，利用上个lecture的planning方法选择action，作出决策。具体流程如下图，这里使用L2 loss去进行model的学习。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/040.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/040.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这也是在传统机器人领域做system identification的方法，如果能够有精心设计的dynamics representation以及好的base policy，将大大有助于提高学习速度。&lt;/p&gt;
+&lt;p&gt;而这种简单方法的缺点也跟前面做imitation learning中一样，同样会出现distribution mismatch的问题，具体如下这张图，黄色是真实的reward function，base policy的探索局限在前面一段，这时候获得数据的distribution与实际的distribution的差距则会变得很大，算法会学习越往右边走reward越大，但实际却是前半段上升，后半段下降的：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/041.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/041.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在imitation learning中碰到distribution mismatch问题引入了DAgger算法，通过人工对新的数据进行再标记，从而修正这种问题。在这里同样可以采用这样的思路，前面是数据的label不准确，这里是model不准确，那么就根据实时返回的新数据进行model的更新，保证数据的正确性：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/042.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/042.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;而这还是存在一个问题，这里通常是通过model进行完整个planning的过程，将所有action执行完才进行下次的fitting，根据前面的分类，这是open-loop planning的操作模式，而由于model存在误差，则会导致planning的误差累计，从而使得planning的后段数据质量变差。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/043.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/043.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&#34;12-replan&#34;&gt;1.2 Replan&lt;/h2&gt;
+&lt;p&gt;基于上面的问题，引入replan，每次planning的结果只选择第一个acion执行，然后重新进行planning：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/044.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/044.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这里的重点就在第三步，在第四步执行了首个action后，将数据添加到buffer中，就可以进行下一次的planning。Replan进行得越多，对于model以及单次planning的perfect程度要求就更小。在很多时候，即使只是random sampling都可以达到不错的效果。&lt;/p&gt;
+&lt;h2 id=&#34;2-uncertainty&#34;&gt;2 Uncertainty&lt;/h2&gt;
+&lt;h3 id=&#34;21-intuition&#34;&gt;2.1 Intuition&lt;/h3&gt;
+&lt;p&gt;前面引入了replan版的MBRL算法，看起来似乎是很完美，而在实际试验中会发现它往往效果都比较差，如下图：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/045.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/045.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这是一个在Cheetah环境上跑的结果，前面绿色是纯model-based的结果，它已经陷入了局部最优，而经过distillation之后训练一个model-free的模型，会发现它其实比纯model-free效果要好，说明它其实是有学习的潜力在里面的。但是为什么会stuck在这个点呢？一个解释是，在前面的planning中由于model存在误差，而由于planning的时候都是在最大化reward，这往往会使得模型倾向于乐观估计，这个也类似于DQN的over-estimation的原理，从而许多时候会作出相对错误的决策。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/046.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/046.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;如何求解这个问题？后面的主要方法整体而言是基于这样一个观察：对于同一个点（reward的理论均值一样），variance比较高的prediction的样本期望reward都比较低。例如下图中，假设目标点处在悬崖边上，对于两个predictor来说，理论上做action的mean reward都是一样的，但是对于方差高的predictor，那么它会更有可能掉入悬崖中，获得比较低的reward，从而样本期望reward会比较低。因此在同一个点，max reward是可能一样的，但是mean reward大则代表variance比较小。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/047.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/047.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;故而将uncertainty纳入考虑中，利用mean reward替代max reward更有利于降低variance，既不过于乐观，也不过于悲观。&lt;/p&gt;
+&lt;h2 id=&#34;22-idea&#34;&gt;2.2 Idea&lt;/h2&gt;
+&lt;p&gt;上面一节讨论了引入uncertainty的意义，并确定使用mean reward作为优化的目标。但是基于此，是否能够设计出合理的结构来辅助学习呢？这个也就是这节的主要内容。&lt;/p&gt;
+&lt;h3 id=&#34;221-two-types-of-uncertainty&#34;&gt;2.2.1 Two types of uncertainty&lt;/h3&gt;
+&lt;p&gt;在介绍具体的idea之前，首先介绍两种形式的uncertainty：statistical uncertainty和model uncertainty。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/048.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/048.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;前者通常是描述由于数据的统计指标上的问题导致model的uncertainty，例如如果数据本身noise比较大，对于一个自变量它的因变量variance很大，那么学习到的model对点的prediction就会存在很大的uncertainty。&lt;/p&gt;
+&lt;p&gt;而model uncertainty则是形容model对自己预测的确信程度，它通常从model本身的性质得到的，例如Grussian process就是通过在接触过某个区域的点的数量来得到这个区域的uncertainty。在诸如神经网络之类的模型中通常是没有这一项的。&lt;/p&gt;
+&lt;p&gt;例如在上面的悬崖的例子中，如果使用神经网络来输出，那么它的statistical uncertainty可能会比较小，也就是说它更倾向于乐观估计，选择迈向终点。但是如果在探索次数比较少的情况下，它的model uncertainty其实会是非常大的。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/049.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/049.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&#34;use-output-entropy&#34;&gt;Use output entropy&lt;/h3&gt;
+&lt;p&gt;第一种idea就是通过判断output的entropy，也就是描述output的不确定程度：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/050.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/050.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这个其实就是在描述statistical uncertainty，通过上面的描述也知道，仅仅刻画这种uncertainty是不够的，所以需要找到方法刻画model uncertainty，并将两者结合：&lt;/p&gt;
+&lt;h3 id=&#34;estimate-model-uncertainty&#34;&gt;Estimate model uncertainty&lt;/h3&gt;
+&lt;p&gt;一般情况下，我们做估计其实是为了达到这么一个目的：&lt;/p&gt;
+&lt;p&gt;$$
+\argmax_\theta \log p(\theta|\mathcal{D}) = \argmax_\theta \log p(\mathcal{D}|\theta)
+$$&lt;/p&gt;
+&lt;p&gt;也就是说参数和数据可以相互生成，给定一批数据，一定可以导出某个参数，给出这个参数，则一定可以生成对应的一批数据，也就是数据与它的分布一一对应。从RL的角度来看，可以理解做closed-loop的过程中，通过policy与env交互得到数据，利用这些数据修正policy，这分别就是右左两遍的式子，最终网络收敛，也就是数据与参数都趋于稳定，最终等号也就成立了。&lt;/p&gt;
+&lt;p&gt;在这里，如果希望考量model uncertainty，那么可以将前面一部分摘出来，估计利用数据生成一批parameter（也就是一个新的model）的概率，这也就是model uncertainty。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/052.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/052.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;然后将它与statistical uncertainty结合在一起，得到model在不同的parameter下的expected probability：&lt;/p&gt;
+&lt;p&gt;$$
+\int p(s_{t + 1}|s_t, a_t, \theta) p(\theta|\mathcal{D})d\theta
+$$&lt;/p&gt;
+&lt;p&gt;这也就是将两种uncertainty结合的方法：&lt;/p&gt;
+&lt;h3 id=&#34;23-model&#34;&gt;2.3 Model&lt;/h3&gt;
+&lt;p&gt;接下来就介绍两种实现上面idea的model。&lt;/p&gt;
+&lt;h4 id=&#34;231-bayesian-neural-networks&#34;&gt;2.3.1 Bayesian neural networks&lt;/h4&gt;
+&lt;p&gt;首先就是BNN，在常规的NN中，节点之间相邻的边都是通过weight进行连接的，它是一个数值。而在BNN中则是通过distribution进行相连，每过一条边相当于过一个分布，利用分布的方差，就可以衡量variance：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/053.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/053.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;通常而言，其中做的approximation就是引入某种分布，并利用分布输出的乘积表征model uncertainty，如下图中分布的mean表示的就是expected weight，variance表征的就是关于weight的uncertainty。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/054.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/054.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&#34;232-bootstrap-ensembles&#34;&gt;2.3.2 Bootstrap ensembles&lt;/h4&gt;
+&lt;p&gt;第二种方法则是引入machine learning中常见的ensembles方法：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/055.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/055.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;通过多个model进行加权，从而减少方差，因此model uncertainty就可以描述为多个predict的mean：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/056.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/056.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;而整体刻画也即是output的mean：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/057.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/057.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;它需要注意的是不同的model之间是要独立的，故而数据也是要独立的，在传统方法中通常用sampled with replacement的方式，也就是有放回重采样的方式保证independent。而在神经网络中，由于随机初始化，以及SGD本身的随机性，所以model就以及足够独立的，因此也可以忽略此步。&lt;/p&gt;
+&lt;h4 id=&#34;233-planning-with-uncertainty&#34;&gt;2.3.3 Planning with uncertainty&lt;/h4&gt;
+&lt;p&gt;在上面提到的两类模型中，都是经过N个部分的平均得到最终结果，故而整体而言的目标函数转化成了：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/058.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/058.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;因此整体的流程也就可以描述成如下的形式：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/059.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/059.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;首先从data生成parameter的分布中采样出一组分布，通过model得到transition，相乘得到probability，计算累积reward，经过多次迭代得到平均累积reward。&lt;/p&gt;
+&lt;h2 id=&#34;3-latent-space-models&#34;&gt;3 Latent space models&lt;/h2&gt;
+&lt;p&gt;在前面通过uncertainty的角度来提高算法的表达能力，但是通常就直接假设dynamics的learning是能够做得比较好的，但是在复杂场景中的dynamics学习实际是比较困难的：environment可能是partial observability的，state可能是高维且存在较多冗余的。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/060.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/060.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;所以在这节中则是会考虑如何从结构设计的角度使得model的学习变得更加容易。&lt;/p&gt;
+&lt;h3 id=&#34;31-latent-space-models&#34;&gt;3.1 Latent space models&lt;/h3&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/061.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/061.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在partial observability的环境中，agent从environment中获取到的observation后，如果需要建模model，首先要处理得到的信息，需要学习observation model，也就是如何从observation中得到与decision相关的state，这个部分是一个高维到低维的映射。接着基于这个observation model进一步学习dynamics model，得到关于environment如何产生transition的过程，并同时学习reward model，得到关于reward的信息。&lt;/p&gt;
+&lt;p&gt;在上面的描述中，其实可以看出它的核心步骤是如何做从observation到state的mapping，这个也就是latent space model的名称由来，latent space就是表示state space。从model fitting的目标函数来看，最基本的方式就是对sample得到的transition做maximum likelihood estimation：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/062.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/062.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;而在latent space models中，将原始的dynamics拆分成observation model与dynamics model，所以这里需要MLE的是两者的乘积：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/063.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/063.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这里的expectation是针对这个分布的：$(s_t, s_{t+1})\sim p(s_t, s_{t+1}|o_{1:T}, a_{1:T})$，如何理解这个sample，它其实就相当于是首先从所有的action和observation中学习到一个关于transition的分布，然后利用这个进行sample。&lt;/p&gt;
+&lt;h3 id=&#34;32-mbrl-with-latent-space-models&#34;&gt;3.2 MBRL with latent space models&lt;/h3&gt;
+&lt;h4 id=&#34;321-latent-space-mbrl-with-dynamic&#34;&gt;3.2.1 Latent space MBRL with dynamic&lt;/h4&gt;
+&lt;p&gt;针对上面提到的目标函数来看，它的重点在于如何学习这个分布$(s_t, s_{t+1})\sim p(s_t, s_{t+1}|o_{1:T}, a_{1:T})$，在常规模式中，通常是学习一个approximate posterior $q\psi (s_t|o_{1:t}, a_{1:t})$作为一个encoder。&lt;/p&gt;
+&lt;p&gt;第一个点是学习到这个encoder是怎么用到它的？假设现在有t+1步之前的sample，那么就可以用t步前的sample得到state t，从t-1步前的sample得到state t+1，从而得到同一套的state transition，从而能够近似上面的分布。&lt;/p&gt;
+&lt;p&gt;第二个点是这个posterior的形式，是否需要condition on这么多输入？这个其实也是类似MC与TD的争议，使用越多的输入，信息越多，自然就越准确，但是学习起来就会比较复杂。在本节中处于简单考虑，我们都假设仅仅使用当前的observation作为输入，从而expectation的对象就变成这种形式：$s_t \sim q_\psi(s_t|o_t), s_{t+1}\sim q_\psi(s_{t+1}|o_{t+1})$&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/064.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/064.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;讨论完它的形式以及如何使用它，接下来就讨论如何如何学习它。同样也是为了简化讨论，这里假设observation model是deterministic的，也就是observation与state是一一对应的，因此encoder就可以直接转化为function的形式，在lecture14中会具体讨论stochastic case的情况。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/065.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/065.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;故而目标函数也就转化为，其中的每个部分都是differentiable的，这也就可以直接用BP来训练。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/066.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/066.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中第一部分是通过transition进行约束，第二部分则是通过reconstruction的约束保证映射过程可逆，通常其实可以提高学习的稳定性。&lt;/p&gt;
+&lt;h4 id=&#34;322-latent-space-mbrl-with-reward-model&#34;&gt;3.2.2 Latent space MBRL with reward model&lt;/h4&gt;
+&lt;p&gt;在上节中，利用approximate posterior将MDP做了简化，得到了新的目标函数：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/067.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/067.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在这节中，则是考虑引入reward model相关的信息，其实也就是在目标中加了reward model相关的学习：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/068.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/068.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;将它嵌入前面的model-based RL的流程中，这节其实就是考虑到observation的复杂性，利用latent space的方法，将步骤二的fit model变得更容易学习了：&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>CS285(10)之Planning</title>
+      <link>https://yshane-ai.github.io/post/60-cs285-planning/</link>
+      <pubDate>Mon, 18 Oct 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/60-cs285-planning/</guid>
+      
+        <description>&lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
+&lt;p&gt;强化学习的目标是如何最大化reward，而在planning问题中目标是如何最小化损失函数（reward函数的负数），也就是以下的带约束的优化问题：&lt;/p&gt;
+&lt;p&gt;$$
+\min_{a1, \ldots, a_T}\sum_{t=1}^T c(s_t, a_t) \
+s.t. \quad s_t = f(s_{t-1}, a_{t-1})
+$$&lt;/p&gt;
+&lt;p&gt;这里的约束条件就是dynamics model。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Planning方法分类&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;planning方法的分类如下图所示，第一个分类依据是规划方法是Open-loop还是closed-loop的，第二个依据是方法是否涉及梯度，不涉及梯度的方法中的第三个分类依据是某个问题的动作空间是离散还是连续的， 其最后一个依据就是判断环境是确定的（Deterministic）还是随机的（Stochastic）。在涉及梯度的方法中（又被叫做轨迹优化（Trajectory Optimization）方法），这类方法能继续被分为两类， 一种是shooting method，一种是collocation method，前者只对动作序列进行优化，后者不仅对动作序列进行优化，还对智能体的状态序列进行优化。这两种方法中进一步可以通过环境是确定还是随机的再细分。&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/000.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/000.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这一节主要是关于gradient-based的轨迹优化方法。先假设系统是线性的，得到LQR方法，之后放宽假设，将LQR应用到随机系统和非线性系统中。一般的轨迹规划方法有两种分类方式，第一种是shooting method，第二种是collocation method，前文已说明两种方法最大的不同之处，即前者只对动作序列进行优化，后者不仅对动作序列进行优化，还对智能体的状态序列进行优化。&lt;/p&gt;
+&lt;p&gt;shooting method写成数学表达式如下：&lt;/p&gt;
+&lt;p&gt;$$
+\min_{a1, \ldots, a_T}\sum_{t=1}^T c(s_t, a_t) \
+s.t. \quad s_t = f(s_{t-1}, a_{t-1})
+$$&lt;/p&gt;
+&lt;p&gt;collocation method可以写成以下数学表达式：&lt;/p&gt;
+&lt;p&gt;$$
+\min_{a1, \ldots, a_T, s_1, \ldots, s_T}\sum_{t=1}^T c(s_t, a_t) \
+s.t. \quad s_t = f(s_{t-1}, a_{t-1})
+$$&lt;/p&gt;
+&lt;p&gt;以下是两种方法的优缺点对比：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/001.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/001.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;优点&lt;/strong&gt;：参与优化的argument少&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;缺点&lt;/strong&gt;：由于对states没有控制，选择不同的action之后，轨迹变化的波动较大&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/002.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/002.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;优点&lt;/strong&gt;：由于同时对states，actions进行控制，当选择不同的action之后，轨迹变化的波动较小，只在局部震荡。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;缺点&lt;/strong&gt;：参与优化的argument比较多。&lt;/p&gt;
+&lt;h2 id=&#34;2-lqr-linear-quadratic-regulator&#34;&gt;2 LQR (Linear-Quadratic Regulator)&lt;/h2&gt;
+&lt;h3 id=&#34;21-问题描述&#34;&gt;2.1 问题描述&lt;/h3&gt;
+&lt;p&gt;首先给出LQR的问题描述，其实就是说明LQR中的L和Q的含义，对于如下的优化问题而言：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/004.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/004.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中的linear表示对model的假设，它假设model是locally linear and time-varied的，quadratic则是表示对cost function的二次假设。&lt;/p&gt;
+&lt;h3 id=&#34;22-算法流程&#34;&gt;2.2 算法流程&lt;/h3&gt;
+&lt;p&gt;由于算法的整体推导比较复杂，所以这里首先给出算法的整体流程，方便后续基于这些流程去定位具体的推导过程：第一步：从target state向着initial state进行backward pass，从后向前优化在每个time step优化cost function，在这里也就是基于state得到action，其中K和k是要求的两个matrix，它是与cost function中C和c相关的两个量：&lt;/p&gt;
+&lt;p&gt;$$
+u_{T - 1} = K_{T-1}x_{T-1} + k_{T-1}
+$$&lt;/p&gt;
+&lt;p&gt;第二步：当backward pass到达initial state后，就来打转向forward pass的一个转折了，通过initial state和K，就可以得到新的第一步action：&lt;/p&gt;
+&lt;p&gt;$$
+u_{1} = K_{1}x_{1} + k_{1}
+$$&lt;/p&gt;
+&lt;p&gt;第三步：启动forward pass，通过dynamic和K进行forward，从而得到整个trajectory的x和u：&lt;/p&gt;
+&lt;p&gt;$$
+x_t = f(x_{t-1}, u_{t-1}) \
+u_{t} = K_{t}x_{t} + k_{t}
+$$&lt;/p&gt;
+&lt;p&gt;整体也就是下面这个图可以描述，上面一行进行backward pass，达到initial state，通过红色箭头进入forward pass，接着进行forward pass，得到整个planning的结果。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/010.jpeg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/010.jpeg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;那么问题就来到了如何求解这个K和k上了。&lt;/p&gt;
+&lt;h3 id=&#34;13-反向计算&#34;&gt;1.3 反向计算&lt;/h3&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/004.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/004.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;首先进入backward pass的推导，首先回顾一下前面在time-step t时候的cost function：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/005.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/005.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中包含一个C和c，根据在矩阵乘法中它们与x和u的乘积关系，可以将他们拆分成几个sub-matrics，其中的下标表示它是与前面的x和u matrix中的哪项相乘，右边的图中的小箭头则更加明显：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/007.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/007.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;接着基于前面的Q和V的关系，将cost function当作reward，得到新的Q与V的表达式：也就是当前state下采取某个action的value = reward + next state的value。这里加一个constant是为了严谨，对于后续求解无影响。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/008.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/008.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;所以backward pass也就变成在minimize Q的情况下，得到对应的K和k了：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/009.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/009.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;首先在第T步，由于是target state，所以V的值是零，故而可以忽略：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/011.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/011.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;从而就可以通过对Q对u求gradient并置零的操作得到u：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/012.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/012.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;所以就得到u的表达式：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/012.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/012.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;简化描述：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/013.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/013.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/014.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/014.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;接着继续向推，在第T-1步：首先计算$V_t$值：此时$V_t$是非零的值，故而需要将将它用已知的信息表达出来，在这里由于u与x的关系已知，所以可以将u带入到Q中，从而使Q摆脱对u的依赖，转化为关于x的量，对应的这个Q其实就是在这个u下的V值，用更rl的语言来将，就是说我们已经确定了T步的policy，那么state T的V值就可以用对应的Q值来描述出来（类似lec7中Q-learning的max trick），故而：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/015.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/015.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;展开后，也就可以得到这样的表达式：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/016.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/016.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/017.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/017.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;所以进入第T-1步的求解，前面提到的model f&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/018.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/018.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;代入到V中，再将V代入到Q中，从而得到Q到表达式：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/019.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/019.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/020.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/020.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;再次求导，置零：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/021.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/021.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;从而得到对应的表达式：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/022.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/022.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;其中：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/023.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/023.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;后续重复这个过程，也就是整个backward pass的流程了。&lt;/p&gt;
+&lt;h3 id=&#34;14-前向计算&#34;&gt;1.4 前向计算&lt;/h3&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/024.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/024.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这里将backward pass到forward pass的跳动调整到forward pass，由于已知x，而且在backward pass中得到了对应的K，所以可以知道第一步的action：&lt;/p&gt;
+&lt;p&gt;$$
+u_{1} = K_{1}x_{1} + k_{1}
+$$&lt;/p&gt;
+&lt;p&gt;得到第一步action后，就可以开始做forward pass了，这个过程就比较简单了，根据K得到action：&lt;/p&gt;
+&lt;p&gt;$$
+u_{T} = K_{T}x_{T} + k_{T}
+$$&lt;/p&gt;
+&lt;p&gt;然后根据model得到next state：&lt;/p&gt;
+&lt;p&gt;$$
+x_{t + 1} = f(x_t, u_t)
+$$&lt;/p&gt;
+&lt;p&gt;直到到达target state，然后可以再进行backward pass。&lt;/p&gt;
+&lt;h3 id=&#34;15-lqr-algorithm&#34;&gt;1.5 LQR algorithm&lt;/h3&gt;
+&lt;p&gt;故而LQR的整体流程就可以归纳如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/025.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/025.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&#34;16-stochastic-dynamics&#34;&gt;1.6 Stochastic dynamics&lt;/h3&gt;
+&lt;p&gt;前面的dynamics都是假设是deterministic的：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/026.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/026.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;那么LQR是否可以用在stochastic dynamics上呢？这时候其实只要用高斯分布去model这个dynamics就可以了：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/027.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/027.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;然后将结果带入其中即可，这里的$\sum_t$可以被省略。&lt;/p&gt;
+&lt;h2 id=&#34;2-iterative-linear-quadratic-regulator&#34;&gt;2 Iterative Linear Quadratic Regulator&lt;/h2&gt;
+&lt;h3 id=&#34;21-iterative-linear-quadratic-regulator&#34;&gt;2.1 Iterative Linear Quadratic Regulator&lt;/h3&gt;
+&lt;p&gt;在LQR中，我们做了一个重要的假设：model是locally linear的，这很自然地也就限制了它的表达能力。那么如果将它的假设扩展到non-linear的，是否有方法能够找到合适的方法处理得这种假设呢？这也就是iLQR存在的意义了。在iLQR中，我们首先会初始化一个trajectory，通过LQR去修他进行修正，得到新的trajectory，迭代进行，直到收敛到最优解。&lt;/p&gt;
+&lt;p&gt;在具体介绍iLQR之前，需要简单地回顾一下优化中的Newton&amp;rsquo;s method。在gradient descent利用Taylor expansion的first-order term去approximate函数，并用来找到下一次迭代的点。而在Newton&amp;rsquo;s method中，则是利用同时利用first-order和second-order derivative去达到这个目的：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/028.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/028.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Newton&amp;rsquo;s method做最优化就可以表达为如下的流程：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/029.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/029.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;而iLQR其实就可以理解为利用Newton&amp;rsquo;s method去求解原始的优化问题的过程：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/030.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/030.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;首先需要将dynamic model做first-order approximation，对cost function做second-order approximation，如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/031.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/031.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;进行简单的重排列：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/032.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/032.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;从而得到：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/033.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/033.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这其实就跟前面的LQR的方程特别像了：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/034.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/034.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;除了这时候的$x$和$u$变成了$\delta x$和$\delta u$， 故iLQR其实就转化为常规的LQR流程了：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/035.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/035.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&#34;22-differential-dynamic-programming&#34;&gt;2.2 Differential Dynamic Programming&lt;/h3&gt;
+&lt;p&gt;在前面提到的iLQR中，虽然是对dynamic做了approximation，但是实际并没有将它扩展到second order：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/036.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/036.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;所以它实际上并不算是真正使用了Newton&amp;rsquo;s method，故而在这里将iLQR的dynamic扩展到second-order approximation，然后仍然按照上面的求解方式进行求解：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/037.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/037.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;而在Newton&amp;rsquo;s method中如果first-order derivative做得不够好，则可能造成Overshoot的问题，会导致收敛性能下降，基于这个问题，一个比较简单的解决思路就是使用line search，在当前值与新的值之间按照固定间隔  展开line search（在lec9介绍TRPO）过程中也有类似的操作，在其中找到最小的值作为结果：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/60-cs285/038.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/60-cs285/038.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;以上便是iLQR的整体流程了。&lt;/p&gt;
+&lt;h2 id=&#34;3-reference&#34;&gt;3 Reference&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;http://rail.eecs.berkeley.edu/deeprlcourse/&#34;&gt;CS285: Deep Reinforcement Learning&lt;/a&gt; : 课件&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://jonathan-hui.medium.com/rl-lqr-ilqr-linear-quadratic-regulator-a5de5104c750&#34;&gt;Medium: RL — LQR &amp;amp; iLQR Linear Quadratic Regulator&lt;/a&gt;&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>自动驾驶之Apollo控制算法</title>
+      <link>https://yshane-ai.github.io/post/41-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/</link>
+      <pubDate>Mon, 18 Oct 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/41-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/</guid>
+      
+        <description>&lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
+&lt;p&gt;控制是驱使车辆前行的策略。&lt;/p&gt;
+&lt;p&gt;对于汽车而言，最基本的控制输入为转向、加速和制动。&lt;/p&gt;
+&lt;p&gt;通常，控制器使用一系列路径点来接收轨迹。控制器的任务是使用控制输入让车辆通过这些路径点。&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/41-Driving/001.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/41-Driving/001.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;首先，控制器必须准确，这意味着它应避免偏离目标轨迹。这对于安全来说，尤为重要。即使路面潮湿或者道路比较陡峭，控制器仍需要准确地执行轨迹。&lt;/p&gt;
+&lt;p&gt;其次，控制策略对汽车应该具备可行性。例如，如果你的汽车向北行驶，而你希望它立即向东转。你可以在游戏中做到这一点，但在现实中无法实现。&lt;/p&gt;
+&lt;p&gt;最后，需要考虑的是平稳度。舒适的驾驶非常重要。如果车辆行驶得不规律，那乘客永远不会想再次乘坐它了。要使控制顺利进行，驱动必须是连续的。这意味着你应避免突然转向、加速或制动。&lt;/p&gt;
+&lt;p&gt;总之，我们的目标是使用可行的控制输入，最大限度地降低与目标轨迹的偏差、最大限度地提供乘客的舒适度。&lt;/p&gt;
+&lt;p&gt;有三种可用于实现这些目标的控制策略：比例积分微分控制（或PID）、线性二次调节器（或LQR）、模型预测控制（或MPC）。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;控制流程&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;控制器预计有两种输入：目标轨迹与车辆状态。&lt;/p&gt;
+&lt;p&gt;目标轨迹来自规划模块，在每个轨迹点，规划模块指定一个位置和参考速度。在每个时间戳都对轨迹进行更新。我们还需要了解车辆状态，车辆状态包括：通过本地化模块来计算的车辆位置、从车辆内部传感器获取的数据（如速度、转向和加速度）。我们使用这两个输入来计算目标轨迹与实际行进轨迹之间的偏差。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/41-Driving/002.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/41-Driving/002.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;控制器的输出是控制输入（转向、加速和制动）的值。当偏离目标轨迹时，我们希望采取行动来纠正这种偏差。对于普通汽车，我们使用方向盘控制行驶方向（即转向）、使用油门加速、使用刹车减速（即制动）。这也是无人驾驶汽车所做的。&lt;/p&gt;
+&lt;p&gt;一旦将这三个值传递给车辆，汽车实际上已经开始无人驾驶了。之后将介绍不同的控制算法，如何计算这三个输出-转向、加速和制动。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;PID 控制&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;首先介绍的算法为PID控制，这个控制器的优点在于它非常简单，只需要知道与目标轨迹有多大的偏离。PID的第一组件为P代表“比例”(Proportional)。&lt;/p&gt;
+&lt;p&gt;设想一辆车正试图遵循目标轨迹，P控制器在车辆开始偏离时立即将其拉回目标轨迹。比例控制意味着，车辆偏离越远，控制器越难将其拉回目标轨迹。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/41-Driving/003.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/41-Driving/003.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在实践中P控制器的一个问题在于，它很容易超出参考轨迹。&lt;/p&gt;
+&lt;p&gt;当车辆越来越接近目标轨迹时，我们需要控制器更加稳定。PID控制器中的D项致力于使运动处于稳定状态，D代表“微分”（Derivative）。&lt;/p&gt;
+&lt;p&gt;PD控制器类似于P控制器，它增加了一个阻尼项，可最大限度地减少控制器输出的变化速度。&lt;/p&gt;
+&lt;p&gt;PID控制器中的最后一项I代表积分（Integral），该项负责纠正车辆的任何系统性偏差。例如，转向可能失准，这可能造成恒定的转向偏移。在这种情况下，我们需要稍微向一侧转向以保持直行。为解决这一问题，控制器会对系统的累积误差进行惩罚。我们可以将P、I和D组件结合构成PID控制器。&lt;/p&gt;
+&lt;p&gt;PID控制器很简单，但它在很多情况下的效果很好。对于PID控制器，你只需要知道你的车辆与目标轨迹之间的偏差。但是PID控制器只是一种线性算法，对于非常复杂的系统而言，这是不够的。例如，为控制具有多个关节的四轴飞行器或机器人，我们需要建立机器人的物理模型。对无人驾驶而言，我们需要应用不同的PID控制器来控制转向和加速，这意味着很难将横向和纵向控制结合起来。另一个问题在于PID控制器依赖于实时误差测量，这意味着受到测量延迟限制时可能会失效。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;线性二次调节器&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;线性二次调节器（Linear Quadratic Regulator 或LQR）是基于模型的控制器，它使用车辆的状态来使误差最小化。&lt;/p&gt;
+&lt;p&gt;Apollo使用LQR进行横向控制。横向控制包含四个组件：横向误差、横向误差的变化率、朝向误差和朝向误差的变化率。变化率与导数相同，我们用变量名上面的一个点来代表。我们称这四个组件的集合为X，这个集合X捕获车辆的状态。除了状态之外，该车有三个控制输入：转向、加速和制动。我们将这个控制输入集合称为U。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/41-Driving/004.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/41-Driving/004.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;模型控制预测
+模型预测控制（或MPC）是一种更复杂的控制器，它非常依赖于数学优化，但基本上可以将MPC归结为三个步骤：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;建立车辆模型。&lt;/li&gt;
+&lt;li&gt;使用优化引擎计算有限时间范围内的控制输入。&lt;/li&gt;
+&lt;li&gt;执行第一组控制输入。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;MPC是一个重复过程，它着眼未来，计算一系列控制输入，并优化该序列。但控制器实际上只实现了序列中的第一组控制输入，然后控制器再次重复该循环。为什么我们不执行整个控制输入序列呢？那是因为我们只采用了近似测量与计算。如果实现了整个控制输入序列，实际产生的车辆状态与我们的模型有很大差异，最好在每个时间步不断地重新评估控制输入的最优序列。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/41-Driving/005.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/41-Driving/005.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;最后&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;控制实际上是无人驾驶汽车实现自动移动的方式。在控制中，我们使用转向、加速和制动来运行我们的目标轨迹。我们研究了几种不同类型的控制器。PID控制是一种简单而强大的控制算法，线性二次调节器和模型预测控制是另外两种类型的控制器，它们更复杂，但也更强大、更准确。Apollo支持所有这三种控制器，而你也可以选择最适合自己的控制器！&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
       <title>Pytorch加速模型训练</title>
       <link>https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/</link>
       <pubDate>Fri, 01 Oct 2021 16:01:23 +0800</pubDate>
@@ -1998,809 +3555,6 @@ $$&lt;/p&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-</description>
-      
-    </item>
-    
-    <item>
-      <title>推荐系统之阿里MLR算法</title>
-      <link>https://yshane-ai.github.io/post/37-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mlr/</link>
-      <pubDate>Fri, 19 Mar 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/37-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mlr/</guid>
-      
-        <description>&lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
-&lt;p&gt;业界常用的CTR预估算法的不足如下表所示：&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;方法&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;简介&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;不足&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;逻辑回归&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;使用了Sigmoid函数将函数值映射到0~1区间作为CTR的预估值。LR这种线性模型很容易并行化，处理上亿条训练样本不是问题。&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;线性模型的学习能力有限，需要引入大量的领域知识来人工设计特征以及特征之间的交叉组合来间接补充算法的非线性学习能力，非常消耗人力和机器资源，迁移性不够友好。&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;Kernel方法&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;将低维特征映射到高维特征空间&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;复杂度太高而不易实现&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;树模型&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;如Facebook的GBDT+LR算法，有效地解决了LR模型的特征组合问题&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;是对历史行为的记忆，缺乏推广性，树模型只能学习到历史数据中的特定规则，对于新规则缺乏推广性&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;FM模型&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;自动学习高阶属性的权值，不用通过人工的方式选取特征来做交叉&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;FM模型只能拟合特定的非线性模式，常用的就是二阶FM&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;深度神经网络&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;使用神经网络拟合数据之间的高阶非线性关系，非线性拟合能力足够强&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;适合数据规律的、具备推广性的网络结构业界依然在探索中，尤其是要做到端到端规模化上线，这里面的技术挑战依然很大&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;那么挑战来了，如何设计算法从大规模数据中挖掘出具有推广性的非线性模式？&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;MLR算法&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;2011-2012年期间，阿里妈妈资深专家盖坤创新性地提出了MLR(mixed logistic regression)算法，引领了广告领域CTR预估算法的全新升级。MLR算法创新地提出并实现了直接在原始空间学习特征之间的非线性关系，基于数据自动发掘可推广的模式，相比于人工来说效率和精度均有了大幅提升。&lt;/p&gt;
-&lt;p&gt;MLR可以看做是对LR的一个自然推广，它采用分而治之的思路，用分片线性的模式来拟合高维空间的非线性分类面，其形式化表达如下：&lt;/p&gt;
-
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/107.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/107.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;其中u是聚类参数，决定了空间的划分，w是分类参数，决定空间内的预测。这里面超参数分片数m可以较好地平衡模型的拟合与推广能力。当m=1时MLR就退化为普通的LR，m越大模型的拟合能力越强，但是模型参数规模随m线性增长，相应所需的训练样本也随之增长。因此实际应用中m需要根据实际情况进行选择。例如，在阿里的场景中，m一般选择为12。下图中MLR模型用4个分片可以完美地拟合出数据中的菱形分类面。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/108.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/108.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;在实际中，MLR算法常用的形式如下，使用softmax作为分片函数：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/109.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/109.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;在这种情况下，MLR模型可以看作是一个FOE model：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/110.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/110.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;关于损失函数的设计，阿里采用了 neg-likelihood loss function以及L1，L2正则，形式如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/111.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/111.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;由于加入了正则项，MLR算法变的不再是平滑的凸函数，梯度下降法不再适用，因此模型参数的更新使用LBFGS和OWLQN的结合，具体的优化细节大家可以参考论文(&lt;a href=&#34;https://arxiv.org/pdf/1704.05194.pdf&#34;&gt;https://arxiv.org/pdf/1704.05194.pdf&lt;/a&gt;)。&lt;/p&gt;
-&lt;p&gt;MLR算法适合于工业级的大规模稀疏数据场景问题，如广告CTR预估。背后的优势体现在两个方面：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;端到端的非线性学习：从模型端自动挖掘数据中蕴藏的非线性模式，省去了大量的人工特征设计，这 使得MLR算法可以端到端地完成训练，在不同场景中的迁移和应用非常轻松。&lt;/li&gt;
-&lt;li&gt;稀疏性：MLR在建模时引入了L1和L2,1范数正则，可以使得最终训练出来的模型具有较高的稀疏度， 模型的学习和在线预测性能更好。当然，这也对算法的优化求解带来了巨大的挑战。&lt;/li&gt;
-&lt;/ol&gt;
-</description>
-      
-    </item>
-    
-    <item>
-      <title>推荐系统之阿里深度兴趣网络DIN</title>
-      <link>https://yshane-ai.github.io/post/36-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-din/</link>
-      <pubDate>Sat, 13 Mar 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/36-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-din/</guid>
-      
-        <description>&lt;p&gt;这一篇，我们来简单理解一下阿里提出的一个重要的推荐系统模型-深度兴趣网络(DIN，Deep Interest Network)。该方法由盖坤大神领导的阿里妈妈的精准定向检索及基础算法团队提出，充分利用/挖掘用户历史行为数据中的信息来提高CTR预估的性能。&lt;/p&gt;
-&lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;深度学习在CTR预估领域已经有了广泛的应用，常见的算法比如Wide&amp;amp;Deep，DeepFM等。这些方法一般的思路是：通过Embedding层，将高维离散特征转换为固定长度的连续特征，然后通过多个全联接层，最后通过一个sigmoid函数转化为0-1值，代表点击的概率。即Sparse Features -&amp;gt; Embedding Vector -&amp;gt; MLPs -&amp;gt; Sigmoid -&amp;gt; Output.&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;这种方法的优点在于：通过神经网络可以拟合高阶的非线性关系，同时减少了人工特征的工作量。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;不过，阿里的研究者们通过观察收集到的线上数据，发现了用户行为数据中有两个很重要的特性：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Diversity：用户在浏览电商网站的过程中显示出的兴趣是十分多样性的。&lt;/li&gt;
-&lt;li&gt;Local activation: 由于用户兴趣的多样性，只有部分历史数据会影响到当次推荐的物品是否被点击，而不是所有的历史记录。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这两种特性是密不可分的。&lt;/p&gt;
-&lt;p&gt;举个简单的例子，观察下面的表格：&lt;/p&gt;
-
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/092.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/092.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;Diversity体现在年轻的母亲的历史记录中体现的兴趣十分广泛，涵盖羊毛衫、手提袋、耳环、童装、运动装等等。而爱好游泳的人同样兴趣广泛，历史记录涉及浴装、旅游手册、踏水板、马铃薯、冰激凌、坚果等等。&lt;/p&gt;
-&lt;p&gt;Local activation体现在，当我们给爱好游泳的人推荐goggle(护目镜)时，跟他之前是否购买过薯片、书籍、冰激凌的关系就不大了，而跟他游泳相关的历史记录如游泳帽的关系就比较密切。&lt;/p&gt;
-&lt;p&gt;针对上面提到的用户行为中存在的两种特性，阿里将其运用于自身的推荐系统中，推出了深度兴趣网路DIN，接下来，我们就一起来看一下模型的一些实现细节，然后我们会给出一个简化版的tensorflow实现。&lt;/p&gt;
-&lt;p&gt;针对上面提到的用户行为中存在的两种特性，阿里将其运用于自身的推荐系统中，推出了深度兴趣网路DIN。&lt;/p&gt;
-&lt;h2 id=&#34;2-模型设计&#34;&gt;2 模型设计&lt;/h2&gt;
-&lt;h3 id=&#34;21-整体框架&#34;&gt;2.1 整体框架&lt;/h3&gt;
-&lt;p&gt;我们先来看一下推荐系统的整体框架：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/093.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/093.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;整个流程可以描述为：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;检查用户历史行为数据&lt;/li&gt;
-&lt;li&gt;使用matching module产生候选ads。&lt;/li&gt;
-&lt;li&gt;通过ranking module做point-wise的排序，即得到每个候选ads的点击概率，并根据概率排序得到推荐列表。&lt;/li&gt;
-&lt;li&gt;记录下用户在当前展示广告下的反应(点击与否)，作为label。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&#34;22-特征设计&#34;&gt;2.2 特征设计&lt;/h3&gt;
-&lt;p&gt;本文将所涉及到的特征分为四个部分：用户特征、用户行为特征、广告特征、上下文特征，具体如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/094.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/094.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;其中，用户行为特征是multi-hot的，即多值离散特征。针对这种特征，由于每个涉及到的非0值个数是不一样的，常见的做法就是将id转换成embedding之后，加一层pooling层，比如average-pooling，sum-pooling，max-pooling。DIN中使用的是weighted-sum，其实就是加权的sum-pooling，权重经过一个activation unit计算得到。这里我们后面还会再介绍到。&lt;/p&gt;
-&lt;h3 id=&#34;23-基准模型&#34;&gt;2.3 基准模型&lt;/h3&gt;
-&lt;p&gt;在介绍DIN之前，我们先来看一下一个基准模型，结构如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/095.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/095.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;这里element-wise的意思其实就是元素级别的加减，同时，可不要忽略广播的存在哟。一个元素和一个向量相乘，也可以看作element-wise的，因为这个元素会广播成和向量一样的长度嘛，嘻嘻。&lt;/p&gt;
-&lt;p&gt;可以看到，Base Model首先吧one-hot或multi-hot特征转换为特定长度的embedding，作为模型的输入，然后经过一个DNN的part，得到最终的预估值。特别地，针对multi-hot的特征，做了一次element-wise+的操作，这里其实就是sum-pooling，这样，不管特征中有多少个非0值，经过转换之后的长度都是一样的！&lt;/p&gt;
-&lt;h3 id=&#34;24-deep-interest-network&#34;&gt;2.4 Deep Interest Network&lt;/h3&gt;
-&lt;p&gt;Base Model有一个很大的问题，它对用户的历史行为是同等对待的，没有做任何处理，这显然是不合理的。一个很显然的例子，离现在越近的行为，越能反映你当前的兴趣。因此，对用户历史行为基于Attention机制进行一个加权，阿里提出了深度兴趣网络（Deep Interest Network)，先来看一下模型结构：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/096.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/096.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;Attention机制简单的理解就是，针对不同的广告，用户历史行为与该广告的权重是不同的。假设用户有ABC三个历史行为，对于广告D，那么ABC的权重可能是0.8、0.1、0.1；对于广告E，那么ABC的权重可能是0.3、0.6、0.1。这里的权重，就是Attention机制即上图中的Activation Unit所需要学习的。&lt;/p&gt;
-&lt;p&gt;为什么要引入这一个机制呢？难道仅仅是通过观察历史数据拍脑袋决定的么？当然不是，如果不用Local activation的话，将会出现下面的情况：假设用户的兴趣的Embedding是Vu，候选广告的Embedding是Va，用户兴趣和候选的广告的相关性可以写作F(U,A) = Va * Vu。如果没有Local activation机制的话，那么同一个用户对于不同的广告，Vu都是相同的。举例来说，如果有两个广告A和B，用户兴趣和A，B的相似性都很高，那么在Va和Vb连线上的广告都会有很高的相似性。这样的限制使得模型非常难学习到有效的用户和广告的embedding表示。&lt;/p&gt;
-&lt;p&gt;在加入Activation Unit之后，用户的兴趣表示计算如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/097.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/097.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;其中，Vi表示behavior id i的嵌入向量，比如good_id,shop_id等。Vu是所有behavior ids的加权和，表示的是用户兴趣；Va是候选广告的嵌入向量；wi是候选广告影响着每个behavior id的权重，也就是Local Activation。wi通过Activation Unit计算得出，这一块用函数去拟合，表示为g(Vi,Va)。&lt;/p&gt;
-&lt;h2 id=&#34;3-模型细节&#34;&gt;3 模型细节&lt;/h2&gt;
-&lt;h3 id=&#34;31-评价指标gauc&#34;&gt;3.1 评价指标GAUC&lt;/h3&gt;
-&lt;p&gt;模型使用的评价指标是GAUC，我们先来看一下GAUC的计算公式：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/098.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/098.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;我们首先要肯定的是，AUC是要分用户看的，我们的模型的预测结果，只要能够保证对每个用户来说，他想要的结果排在前面就好了。
-假设有两个用户A和B，每个用户都有10个商品，10个商品中有5个是正样本，我们分别用TA，TB，FA，FB来表示两个用户的正样本和负样本。也就是说，20个商品中有10个是正样本。假设模型预测的结果大小排序依次为TA，FA，TB，FB。如果把两个用户的结果混起来看，AUC并不是很高，因为有5个正样本排在了后面，但是分开看的话，每个用户的正样本都排在了负样本之前，AUC应该是1。显然，分开看更容易体现模型的效果，这样消除了用户本身的差异。&lt;/p&gt;
-&lt;p&gt;但是上文中所说的差异是在用户点击数即样本数相同的情况下说的。还有一种差异是用户的展示次数或者点击数，如果一个用户有1个正样本，10个负样本，另一个用户有5个正样本，50个负样本，这种差异同样需要消除。那么GAUC的计算，不仅将每个用户的AUC分开计算，同时根据用户的展示数或者点击数来对每个用户的AUC进行加权处理。进一步消除了用户偏差对模型的影响。通过实验证明，GAUC确实是一个更加合理的评价指标。&lt;/p&gt;
-&lt;h3 id=&#34;32-dice激活函数&#34;&gt;3.2 Dice激活函数&lt;/h3&gt;
-&lt;p&gt;&lt;strong&gt;从Relu到PRelu&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Relu激活函数形式如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/099.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/099.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;Relu激活函数在值大于0时原样输出，小于0时输出为0。这样的话导致了许多网络节点的更新缓慢。因此又了PRelu，也叫Leaky Relu，形式如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/100.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/100.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;这样，及时值小于0，网络的参数也得以更新，加快了收敛速度。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;从PReLU到Dice&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;尽管对Relu进行了修正得到了PRelu，但是仍然有一个问题，即我们认为分割点都是0，但实际上，分割点应该由数据决定，因此文中提出了Dice激活函数。&lt;/p&gt;
-&lt;p&gt;Dice激活函数的全称是Data Dependent Activation Function，形式如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/101.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/101.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;其中，期望和方差的计算如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/102.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/102.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;可也看到，每一个yi对应了一个概率值pi。pi的计算主要分为两步：将yi进行标准化和进行sigmoid变换。&lt;/p&gt;
-&lt;h3 id=&#34;33-自适应正则-adaptive-regularization&#34;&gt;3.3 自适应正则 Adaptive Regularization&lt;/h3&gt;
-&lt;p&gt;CTR中输入稀疏而且维度高，通常的做法是加入L1、L2、Dropout等防止过拟合。但是论文中尝试后效果都不是很好。用户数据符合长尾定律long-tail law，也就是说很多的feature id只出现了几次，而一小部分feature id出现很多次。这在训练过程中增加了很多噪声，并且加重了过拟合。&lt;/p&gt;
-&lt;p&gt;对于这个问题一个简单的处理办法就是：直接去掉出现次数比较少的feature id。但是这样就人为的丢掉了一些信息，导致模型更加容易过拟合，同时阈值的设定作为一个新的超参数，也是需要大量的实验来选择的。&lt;/p&gt;
-&lt;p&gt;因此，阿里提出了自适应正则的做法，即：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;针对feature id出现的频率，来自适应的调整他们正则化的强度；&lt;/li&gt;
-&lt;li&gt;对于出现频率高的，给与较小的正则化强度；&lt;/li&gt;
-&lt;li&gt;对于出现频率低的，给予较大的正则化强度。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;计算公式如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/103.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/103.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h2 id=&#34;4-效果展示&#34;&gt;4 效果展示&lt;/h2&gt;
-&lt;p&gt;下图是对Local Activation效果的一个展示，可以看到，对于候选的广告是一件衣服的时候，用户历史行为中跟衣服相关的权重较高，而非衣服的部分，权重较低。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/104.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/104.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;下图是对使用不同正则项的结果进行的展示，可以发现，使用自适应正则的情况下，模型的验证集误差和验证集GAUC均是最好的。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/105.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/105.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;下图对比了Base Model和DIN的实验结果，可以看到，DIN模型在加入Dice激活函数以及自适应正则之后，模型的效果有了一定的提升：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/106.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/106.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-</description>
-      
-    </item>
-    
-    <item>
-      <title>Incentive Mechanism in Mobile Crowdsensing</title>
-      <link>https://yshane-ai.github.io/post/incentive-mechanism-in-mobile-crowdsensing/</link>
-      <pubDate>Tue, 02 Mar 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/incentive-mechanism-in-mobile-crowdsensing/</guid>
-      
-        <description>&lt;p&gt;&lt;code&gt;如何有效的招募用户参与到感知任务中是移动群感知（Mobile Crowdsensing）的一个重要研究方向，近年来也有许多的研究团队对其进行了深入探索，本文对这些已有的工作进行梳理。&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://yshane-ai.github.io/post/maddpg-based-mcs/&#34;&gt;激励机制的设计&lt;/a&gt;一直是群感知应用中的一个重要问题。我们希望平台可以尽可能地招募到高质量的用户参与到感知任务当中，从而收集到高质量的感知数据。然而，有许许多多的限制条件约束着用户的招募和任务的部署，例如用户希望通过参与感知任务获得奖励或者回报，平台如何根据用户的行为特点分配这些任务，用户如何平衡多个任务之间的分配问题等等。&lt;/p&gt;
-&lt;p&gt;本文希望通过讨论近些年来提出的若干种群感知奖励机制，来为接下来群感知的发展提供更好的解决思路。由于个人能力有限，很难一次性将所有优秀的研究成果全部展示在这里，因此博主会定期更新本文，有兴趣的研究伙伴可以持续关注。&lt;/p&gt;
-&lt;!-- raw HTML omitted --&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;#spatial-perspective&#34;&gt;Spatial Perspective&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;#trajectory-based&#34;&gt;Trajectory-Based&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#area-based&#34;&gt;Area-Based&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#temporal-perspective&#34;&gt;Temporal Perspective&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE&#34;&gt;参考文献&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;!-- raw HTML omitted --&gt;
-&lt;h2 id=&#34;spatial-perspective&#34;&gt;Spatial Perspective&lt;/h2&gt;
-&lt;p&gt;从空间的角度来讲，群感知任务一般可分为“基于轨迹”和“基于区域”两类。“基于轨迹”的任务一般要求用户到达目标地点才可以执行任务，主要解决的问题包括路径规划和任务分配；“基于区域”的任务则允许在一定区域内的用户都可以参与到任务当中来，主要问题包括用户招募。&lt;/p&gt;
-&lt;h3 id=&#34;trajectory-based&#34;&gt;Trajectory-Based&lt;/h3&gt;
-&lt;p&gt;在&lt;a href=&#34;https://ieeexplore.ieee.org/document/8345281&#34;&gt;Gao, et al. 2018&lt;/a&gt;中，作者考虑一种多用户、单任务的模型，每个用户只有到达任务兴趣点才可以执行任务。但用户的运动具有不确定性，即有多种轨迹方案，因此平台方面需要招募特定的用户，使任务每个兴趣点都有车辆经过的概率大于一个阈值（$$\eta$$）。系统模型如下图所示：&lt;/p&gt;
-
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20210131-Trajectory.png&#34; alt=&#34;系统示意图&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/20210131-Trajectory.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;系统示意图&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;该系统包括如下几个特点：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;用户报价&lt;/strong&gt;：针对每个任务上报自己的可能经过路线以及该路线的报价（bid），其中报价等于感知成本；&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;用户轨迹&lt;/strong&gt;：根据到达目的地的时间选择路线，并非最大化自身感知收益，因此轨迹具有随机性。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;平台观测&lt;/strong&gt;：目标用户的历史运动轨迹。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;平台动作&lt;/strong&gt;：为每个任务选择合适的车辆，为每个车辆指定合理的回报。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;基于以上信息，本文利用一种基于反向拍卖的算法来解决最低感知概率（$$\eta$$）约束下的最小化成本问题。&lt;/p&gt;
-&lt;p&gt;在&lt;a href=&#34;https://ieeexplore.ieee.org/document/8241402&#34;&gt;Wang, et al. 2018&lt;/a&gt;中，作者制定出两套方案来分别满足确定性轨迹和不确定性轨迹的不同场景。与上篇文章满足最小概率即视为完成感知任务的模型不同，本篇文章将感知目标设定为目标地点的长时间不间断感知，如下图所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20210131-Mobility-Aware.png&#34; alt=&#34;系统示意图&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/20210131-Mobility-Aware.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;系统示意图&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;左图中$$u_i$$代表不同的车辆，$$R_i$$代表不同的感知兴趣点，下方的cost代表雇佣该车辆的车本，右图中是两种不同的解决方案，满足三个时刻都有车辆在目标兴趣点执行感知任务。可以观察到，方案2的成本更低。&lt;/p&gt;
-&lt;p&gt;以上两篇文章都具有不改变车辆自身运动计划的前提，&lt;a href=&#34;https://ieeexplore.ieee.org/document/8554148&#34;&gt;Gong, et al. 2019&lt;/a&gt;考虑可以改变车辆的运动轨迹，提出在用户轨迹距离约束下的任务分配和轨迹优化算法，模型如下图所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20210201-Detour.png&#34; alt=&#34;系统示意图&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/20210201-Detour.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;系统示意图&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;其中红色虚线代表用户本来的运动轨迹，紫色实线代表优化后的运动轨迹。&lt;/p&gt;
-&lt;h3 id=&#34;area-based&#34;&gt;Area-Based&lt;/h3&gt;
-&lt;p&gt;与基于轨迹的群感知系统不同，基于区域的群感知系统不要求用户到特定的地点才能执行感知任务，通常这种系统中假设目标用户都在感知区域内，因此只需要设计如何根据用户提供的数据质量而反馈相应奖励的模型即可。在&lt;a href=&#34;https://ieeexplore.ieee.org/document/9147064&#34;&gt;Liu, et al. 2020&lt;/a&gt;中，作者首先提出一种用户价值的衡量标准，分别通过用户的空间价值（即距离目标地点远近），历史数据质量，当前区域的感知用户数量三个方面来为每个用户计算其感知价值,然后通过博弈论为平台和用户双方得到一个较满意的行为策略。本文的实验是建立在一个公开的数据集&lt;a href=&#34;https://crawdad.org/epfl/mobility/20090224/index.html&#34;&gt;CRAWDAD&lt;/a&gt;上，里面记录了美国旧金山市的537辆出租车运动轨迹，系统的其他参数设置如下所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20210202-liu-parameter.png&#34; alt=&#34;实验参数&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/20210202-liu-parameter.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;实验参数&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;其中红色标出的是决定用户价值的三个因素系数。&lt;/p&gt;
-&lt;p&gt;以上模型是建立在小尺度范围内，在大尺度场景下，地区与地区间的感知成本可能会截然不同，如山区和城市，用户的报价也会出现巨大的差异，导致高成本的地区很难与低成本地区竞争，传统的选择算法在这种场景下显得无能为力。因此，&lt;a href=&#34;https://ieeexplore.ieee.org/document/8643950&#34;&gt;Zhang, et al. 2019&lt;/a&gt;将不同区域间的感知成本不平衡现象考虑在内，提出两种优化模型，优化目标分别是&lt;strong&gt;参与感知的用户数量&lt;/strong&gt;和&lt;strong&gt;感知数据质量&lt;/strong&gt;，并将之规划为一个最大化最小值问题，即最大化所有区域中的收益最小值。整体模型如下图所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20210129-hsc.png&#34; alt=&#34;系统示意图&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/20210129-hsc.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;系统示意图&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;在&lt;a href=&#34;https://ieeexplore.ieee.org/document/9173810&#34;&gt;Zhao, et al. 2020&lt;/a&gt;中，作者除了考虑参与感知任务的得到的外在奖励，同时考虑周围车辆网络对自身的内在奖励。简单来讲，就是将车联网构成一个整体，车辆与车辆之间的任务数据信息可以互相分享，从而避免相同的任务被重复执行。针对以上两种奖励，这篇文章为每个车辆构建了一个效用函数：&lt;/p&gt;
-&lt;p&gt;$$
-u_i^k(x_i^k,\mathbf{x}&lt;em&gt;{-i}^k)=f_i^k(x_i^k,\mathbf{x}&lt;/em&gt;{-i}^k)+\phi_i^k(x_i^k,\mathbf{x}_{-i}^k)
-$$&lt;/p&gt;
-&lt;p&gt;其中第一项$$f_i^k(\cdot)$$表示外部奖励函数，与当前时刻任务的预算与参与任务的车辆数量相关，当提高自身贡献质量时，外部的奖励会随之上升，诱导自身感知水平上升；第二项$$\phi_i^k(\cdot)$$表示内部奖励函数，与周围车辆贡献的数据质量相关，当周围车辆贡献质量上升时，自身获得的数据也随之变多，促使自身不需再执行重复的任务，诱导感知水平下降。系统模型如下图所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20210202-social.png&#34; alt=&#34;系统示意图&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/20210202-social.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;系统示意图&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;为解决以上问题，本文利用一种多智能体强化学习算法，为每个车辆构建一个策略网络，将车辆的感知水平作为模型的输出。&lt;/p&gt;
-&lt;h2 id=&#34;temporal-perspective&#34;&gt;Temporal Perspective&lt;/h2&gt;
-&lt;p&gt;相比于任务在空间上的分布特性，时间上的不确定性同样值得关注。&lt;/p&gt;
-&lt;p&gt;在&lt;a href=&#34;https://ieeexplore.ieee.org/document/9072576&#34;&gt;Tao, et al. 2020&lt;/a&gt;中，作者在普通的空间任务分配层面之外，还讨论了任务及用户都具有时间窗的场景，即任务和用户都可能随时到达，随时离开。文章首先提出一种信息提前已知的场景，并利用蚁群算法获得近似最优解。之后拓展到一种动态的场景，即信息不完全已知，利用一种启发式的算法，结合用户的历史轨迹信息推测未来轨迹并分配任务。具体模型如下图所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/20210201-temporal.png&#34; alt=&#34;系统示意图&#34;/&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/20210201-temporal.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-      &lt;figcaption&gt;
-          &lt;p&gt;系统示意图&lt;/p&gt;
-      &lt;/figcaption&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h2 id=&#34;参考文献&#34;&gt;参考文献&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;[1] &lt;a href=&#34;https://ieeexplore.ieee.org/document/8345281&#34;&gt;Gu et al 2020 Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing IEEE Transactions on Industrial Informatics&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;[2] &lt;a href=&#34;https://ieeexplore.ieee.org/document/8345281&#34;&gt;Gao et al 2018 Truthful Incentive Mechanism for Nondeterministic Crowdsensing with Vehicles IEEE Transactions on Mobile Computing&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;[3] &lt;a href=&#34;https://ieeexplore.ieee.org/document/8241402&#34;&gt;Wang et al 2018 Mobility-Aware Participant Recruitment for Vehicle-Based Mobile Crowdsensing IEEE Transactions on Vehicular Technology&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;[4] &lt;a href=&#34;https://ieeexplore.ieee.org/document/8554148&#34;&gt;Gong et al 2019 Location-Based Online Task Assignment and Path Planning for Mobile Crowdsensing IEEE Transactions on Vehicular Technology&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;[5] &lt;a href=&#34;https://ieeexplore.ieee.org/document/9147064&#34;&gt;Liu et al 2020 Incentive-Aware Recruitment of Intelligent Vehicles for Edge-Assisted Mobile IEEE Transactions on Vehicular Technology&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;[6] &lt;a href=&#34;https://ieeexplore.ieee.org/document/8643950&#34;&gt;Zhang et al 2019 Incentive Mechanisms for Mobile Crowdsensing With Heterogeneous Sensing Costs IEEE Transactions on Vehicular Technology&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;[7] &lt;a href=&#34;https://ieeexplore.ieee.org/document/9173810&#34;&gt;Zhao Liu 2020 Social-Aware Incentive Mechanism for Vehicular Crowdsensing by Deep IEEE Transactions on Intelligent Transportation Systems&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;[8] &lt;a href=&#34;https://ieeexplore.ieee.org/document/9072576&#34;&gt;Tao Song 2020 Profit-Oriented Task Allocation for Mobile Crowdsensing with Worker Dynamics IEEE Transactions on Mobile Computing&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-      
-    </item>
-    
-    <item>
-      <title>推荐系统之RL在京东推荐的应用</title>
-      <link>https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E4%BA%AC%E4%B8%9Crl/</link>
-      <pubDate>Sun, 28 Feb 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E4%BA%AC%E4%B8%9Crl/</guid>
-      
-        <description>&lt;p&gt;本文来自于paper：《Deep Reinforcement Learning for List-wise Recommendations》&lt;/p&gt;
-&lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
-&lt;p&gt;传统的大多数推荐系统应用存在两个问题：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;无法建模用户兴趣的动态变化&lt;/li&gt;
-&lt;li&gt;最大化立即收益，忽略了长期受益&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;因此，本文将推荐的过程定义为一个序列决策的问题，通过强化学习来进行 List-wise 的推荐，主要有以下几个部分。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;List-wise Recommendations&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;本文提出的推荐是List-wise，这样更能提供给用户多样性的选择。现有的强化学习大多先计算每一个item的Q-value，然后通过排序得到最终的推荐结果，这样就忽略了推荐列表中商品本身的关联。&lt;/p&gt;
-&lt;p&gt;而List-wise的推荐，强化学习算法计算的是一整个推荐列表的Q-value，可以充分考虑列表中物品的相关性，从而提升推荐的性能。&lt;/p&gt;
-&lt;p&gt;Architecture Selection&lt;/p&gt;
-&lt;p&gt;对于深度强化学习的模型，主要有下面两种结构：&lt;/p&gt;
-
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/131.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/131.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;左边的两个是经典的DQN结构，(a)这种结构只需要输入一个state，然后输出是所有动作的Q-value，当action太多时，这种结构明显的就不适用。(b)的输入时state和一个具体的action，然后模型的输出是一个具体的Q-value，但对于这个模型结构来说，时间复杂度非常高。&lt;/p&gt;
-&lt;p&gt;因此本文选择的深度强化学习结构是(c)，即Actor-Critic结构。Actor输入一个具体的state，输出一个action，然后Critic输入这个state和Actor输出的action，得到一个Q-value，Actor根据Critic的反馈来更新自身的策略。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Online Environment Simulator&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;在推荐系统上线之前，需要进行线下的训练和评估，训练和评估主要基于用户的历史行为数据，但是，我们只有ground-truth的数据和相应的反馈。因此，对于整个动作空间来说(也就是所有物品的可能组合)，这是非常稀疏的。这会造成两个问题，首先只能拿到部分的state-action对进行训练，无法对所有的情况进行建模(可能造成过拟合)，其次会造成线上线下环境的不一致性。因此，需要一个仿真器来仿真没有出现过的state-action的reward值，用于训练和评估线下模型。&lt;/p&gt;
-&lt;p&gt;仿真器的构建主要基于用户的历史数据，其基本思想是给定一个相似的state和action，不同的用户也会作出相似的feedback。&lt;/p&gt;
-&lt;p&gt;因此，本文的贡献主要有以下三点：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;构建了一个线上环境仿真器，可以在线下对AC网络参数进行训练。&lt;/li&gt;
-&lt;li&gt;构建了基于强化学习的List-wise推荐系统。&lt;/li&gt;
-&lt;li&gt;在真实的电商环境中，本文提出的推荐系统框架的性能得到了证明。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&#34;2-系统框架&#34;&gt;2 系统框架&lt;/h2&gt;
-&lt;h3 id=&#34;21-问题描述&#34;&gt;2.1 问题描述&lt;/h3&gt;
-&lt;p&gt;本文的推荐系统基于强化学习方法，将推荐问题定义为一个马尔可夫决策过程，它的五个元素分别是：&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;状态空间&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;状态定义为用户的历史浏览行为，即在推荐之前，用户点击或购买过的最新的N个物品。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/132.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/132.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;动作空间&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;动作定义为要推荐给用户的商品列表。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/133.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/133.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;奖励&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;agent根据当前的state，采取相应的action即推荐K个物品列表给用户之后，根据用户对推荐列表的反馈(忽略、点击或购买)来得到当前state-action的即时奖励reward。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/134.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/134.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;转移概率&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;在本文中，状态的转移定义如下定义，当前的state是用户最近浏览的N个物品，action是新推荐给用户的K个商品，如果用户忽略了全部的这些商品，那么下一个时刻的state和当前的state是一样的，如果用户点击了其中的两个物品，那么下一个时刻的state是在当前state的基础上，从前面剔除两个商品同时将点击的这两个物品放在最后得到的。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/135.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/135.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;折扣因子&lt;/strong&gt;&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/136.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/136.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;这里还需要强调的一点是，本文中将物品当作一个单词，通过embedding的方式表示每一个物品，因此每一个state和action都是通过word embedding来表示的。&lt;/p&gt;
-&lt;h3 id=&#34;22-线上user-agent交互仿真环境构建&#34;&gt;2.2 线上User-Agent交互仿真环境构建&lt;/h3&gt;
-&lt;p&gt;仿真器主要基于历史数据，因此我们首先需要对历史真实数据的((state,action)-reward)对进行一个存储，这将作为仿真器的历史记忆：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/137.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/137.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;有了历史记忆之后，仿真器就可以输出没有见过的(state，action)对的奖励，该(state，action)定义为pt。首先需要计算pt和历史中状态-动作对的相似性，基于如下的公式：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/138.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/138.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;上式中mi代表了历史记忆中的一条状态-动作对。因此pt获得mi对应的奖励ri的可能性定义如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/139.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/139.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;但是，这种做法计算复杂度太高了，需要计算pt和历史记忆中每条记录的相似性，为了处理这个问题，本文的做法是按照奖励序列对历史记忆进行分组，来建模pt获得某个奖励序列的可能性。&lt;/p&gt;
-&lt;p&gt;奖励序列这里先解释一下，假设我们按一定的顺序推荐了两个商品，用户对每个商品的反馈可能有忽略／点击／下单，对应的奖励分别是0/1/5，那么我们推荐给用户这两个物品的反馈一共有九种可能的情况(0,0),(0,1),(0,5),(1,0),(1,1),(1,5),(5,0),(5,1),(5,5)。这九种情况就是我们刚才所说的奖励序列，定义为：&lt;/p&gt;
-&lt;p&gt;$$
-\mathcal{U} = {\mathcal{U}_1. \ldots, \mathcal{U}_9}
-$$&lt;/p&gt;
-&lt;p&gt;因此，将历史记忆按照奖励序列进行分组，pt所能获得某个奖励序列的概率是：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/140.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/140.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;基于上面的公式，我们只是得到了pt所能获得的奖励序列的概率，就可以进行采样得到具体的奖励序列。得到奖励序列还没完事，实际中我们的奖励都是一个具体的值，而不是一个vector，那么按照如下的公式将奖励序列转化为一个具体的奖励值：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/141.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/141.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;K是推荐列表的长度，可以看到，我们这里任务排在前面的商品，奖励的权重越高。&lt;/p&gt;
-&lt;h3 id=&#34;23-模型结构&#34;&gt;2.3 模型结构&lt;/h3&gt;
-&lt;p&gt;使用强化学习里的AC模型结合刚才提到的仿真器，模型框架如下所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/142.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/142.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;Actor部分&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;对Actor部分来说，输入是一个具体的state，输出一个K维的向量w，K对应推荐列表的长度：&lt;/p&gt;
-&lt;p&gt;$$
-f_{\theta^\pi}: s_t\to w_t
-$$&lt;/p&gt;
-&lt;p&gt;然后，用w和每个item对应的embedding进行线性相乘，计算每个item的得分，根据得分选择k个最高的物品作为推荐结果：&lt;/p&gt;
-&lt;p&gt;$$
-score_i = w_t^k e_i^T
-$$&lt;/p&gt;
-&lt;p&gt;Actor部分的过程如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/143.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/143.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;推荐结果经过仿真器，计算出奖励序列和奖励值r。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Critic部分&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Critic部分建模的是state-action对应的Q值，需要有Q-eval 和 Q-target来指导模型的训练，Q-eval通过Critic得到，而Q-target值通过下面的式子得到：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/144.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/144.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h2 id=&#34;3-实验评估&#34;&gt;3 实验评估&lt;/h2&gt;
-&lt;p&gt;论文中提到的实验主要想验证两方面的内容：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;本文提出的框架与现有的推荐算法(如协同过滤，FM等)比，效果如何&lt;/li&gt;
-&lt;li&gt;List-Wise的推荐与item-wise推荐相比，效果是否更突出。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;不过，文章中没有给出具体的实验结果，这部分的效果还不得而知。&lt;/p&gt;
 </description>
       
     </item>

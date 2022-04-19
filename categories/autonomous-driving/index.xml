@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Autonomous Driving on Yang Xinxin&#39;s Blog</title>
+    <link>https://yshane-ai.github.io/categories/autonomous-driving/</link>
+    <description>Recent content in Autonomous Driving on Yang Xinxin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>Xinxin Yang</copyright>
+    <lastBuildDate>Mon, 18 Oct 2021 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/autonomous-driving/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>自动驾驶之Apollo控制算法</title>
+      <link>https://yshane-ai.github.io/post/41-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/</link>
+      <pubDate>Mon, 18 Oct 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/41-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/</guid>
+      <description>1 背景 控制是驱使车辆前行的策略。 对于汽车而言，最基本的控制输入为转向、加速和制动。 通常，控制器使用一系列路径点来接收轨迹。控制器的任务是使用</description>
+    </item>
+    
+  </channel>
+</rss>
