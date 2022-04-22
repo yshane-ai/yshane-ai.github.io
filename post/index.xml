@@ -7,7 +7,25 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Fri, 04 Mar 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 23 Mar 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>详解Transformer: Attention is all you need</title>
+      <link>https://yshane-ai.github.io/post/70-transformer/</link>
+      <pubDate>Wed, 23 Mar 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/70-transformer/</guid>
+      <description>虽然网上已经有很多Transformer的资料，但是自己梳理一下并且动手实现还是非常重要的。 整体架构如下： 模型的输入是英文句子，输出是法语句</description>
+    </item>
+    
+    <item>
+      <title>Q-Learning为什么不需要重要性采样</title>
+      <link>https://yshane-ai.github.io/post/80-q-learning%E9%87%8D%E8%A6%81%E6%80%A7%E9%87%87%E6%A0%B7/</link>
+      <pubDate>Mon, 14 Mar 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/80-q-learning%E9%87%8D%E8%A6%81%E6%80%A7%E9%87%87%E6%A0%B7/</guid>
+      <description>这个问题其实反映了value-based方法与policy-based方法本质的不同。value-based的方法主要是基于bellman e</description>
+    </item>
+    
     <item>
       <title>关于RL实战的一点想法</title>
       <link>https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/</link>
@@ -100,10 +118,10 @@
     
     <item>
       <title>自动驾驶之Apollo控制算法</title>
-      <link>https://yshane-ai.github.io/post/41-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/</link>
+      <link>https://yshane-ai.github.io/post/51-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/</link>
       <pubDate>Mon, 18 Oct 2021 16:01:23 +0800</pubDate>
       
-      <guid>https://yshane-ai.github.io/post/41-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/</guid>
+      <guid>https://yshane-ai.github.io/post/51-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/</guid>
       <description>1 背景 控制是驱使车辆前行的策略。 对于汽车而言，最基本的控制输入为转向、加速和制动。 通常，控制器使用一系列路径点来接收轨迹。控制器的任务是使用</description>
     </item>
     
@@ -153,39 +171,21 @@
     </item>
     
     <item>
+      <title>推荐系统之阿里Item2Vec</title>
+      <link>https://yshane-ai.github.io/post/41-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E9%98%BF%E9%87%8Cembedding%E7%94%9F%E6%88%901/</link>
+      <pubDate>Fri, 23 Apr 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/41-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E9%98%BF%E9%87%8Cembedding%E7%94%9F%E6%88%901/</guid>
+      <description>本文介绍的文章题目为《Learning and Transferring IDs Representation in E-commerce》，下载地址为：https://arxiv.org/abs/1712.0</description>
+    </item>
+    
+    <item>
       <title>推荐系统之召回和排序技术发展总结</title>
       <link>https://yshane-ai.github.io/post/40-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%8F%AC%E5%9B%9E%E7%AD%96%E7%95%A5%E6%80%BB%E7%BB%93/</link>
       <pubDate>Sun, 18 Apr 2021 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/post/40-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%8F%AC%E5%9B%9E%E7%AD%96%E7%95%A5%E6%80%BB%E7%BB%93/</guid>
       <description>1 背景 现代移动互联网充斥着各种各样的信息，如购物、新闻，短视频，直播等等，经常使用户迷失在海量的信息中，无法找到真正感兴趣的内容。 因此推荐算</description>
-    </item>
-    
-    <item>
-      <title>推荐系统之DSSM双塔架构</title>
-      <link>https://yshane-ai.github.io/post/39-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-dssm/</link>
-      <pubDate>Fri, 09 Apr 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/39-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-dssm/</guid>
-      <description>本文主要介绍项目中用于商业兴趣建模的DSSM双塔模型。作为推荐领域中大火的双塔模型，因为效果不错并且对工业界十分友好，所以被各大厂广泛应用于</description>
-    </item>
-    
-    <item>
-      <title>推荐系统之谷歌MMOE架构</title>
-      <link>https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/</link>
-      <pubDate>Tue, 30 Mar 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/</guid>
-      <description>多任务学习最近越来越受欢迎，咱们前面也介绍过几篇阿里多任务学习的模型，不过多任务学习的效果受不同任务之间的相关性影响较大，因此本文基于Mix</description>
-    </item>
-    
-    <item>
-      <title>推荐系统之阿里MLR算法</title>
-      <link>https://yshane-ai.github.io/post/37-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mlr/</link>
-      <pubDate>Fri, 19 Mar 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/37-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mlr/</guid>
-      <description>1 背景 业界常用的CTR预估算法的不足如下表所示： 方法 简介 不足 逻辑回归 使用了Sigmoid函数将函数值映射到0~1区间作为CTR的预估值。LR</description>
     </item>
     
   </channel>

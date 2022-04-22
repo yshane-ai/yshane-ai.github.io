@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Fri, 04 Mar 2022 16:01:23 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 23 Mar 2022 16:01:23 +0800</lastBuildDate>
     
         <atom:link href="https://yshane-ai.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -46,6 +46,536 @@ IEEE Network&lt;/p&gt;
 &lt;!-- raw HTML omitted --&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>详解Transformer: Attention is all you need</title>
+      <link>https://yshane-ai.github.io/post/70-transformer/</link>
+      <pubDate>Wed, 23 Mar 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/70-transformer/</guid>
+      
+        <description>&lt;p&gt;虽然网上已经有很多Transformer的资料，但是自己梳理一下并且动手实现还是非常重要的。&lt;/p&gt;
+&lt;p&gt;整体架构如下：&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/176.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/176.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;模型的输入是英文句子，输出是法语句子。要理解这个模型，需要理解下面5个点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;如何对输入做embedding？&lt;/li&gt;
+&lt;li&gt;如何做位置编码？&lt;/li&gt;
+&lt;li&gt;如何生成Mask？&lt;/li&gt;
+&lt;li&gt;为什么要有多头注意力？&lt;/li&gt;
+&lt;li&gt;前向传播层在哪里用到了？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;embedding&#34;&gt;Embedding&lt;/h2&gt;
+&lt;p&gt;Embedding是NMT领域的常规操作，相比于one-hot编码方式，embedding操作可以在表达相同信息的条件下，尽可能降低输入的维度。&lt;/p&gt;
+&lt;p&gt;Pytorch下的embedding操作如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;Embedder&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, vocab_size, d_model):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    super()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;embed &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Embedding(vocab_size, d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, x):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;embed(x)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;当每个单词输入神经网络，这段代码会执行查表的操作，然后获取当前单词的embedding。产生的向量则会被输入到后面的神经网络中，使用梯度下降的方式进行优化。&lt;/p&gt;
+&lt;h2 id=&#34;positional-encoding&#34;&gt;Positional Encoding&lt;/h2&gt;
+&lt;p&gt;为了让模型理解每个句子，他需要知道了解每个单词的两个特征：这个单词的意思，还有这个单词在句子中的位置。&lt;/p&gt;
+&lt;p&gt;上述中的embedding主要学习每个单词的意思，所以在这里我们需要让神经网络知道单词的位置。&lt;/p&gt;
+&lt;p&gt;$Vasmari et al$采用正余弦编码的方式来获得每个单词的位置，如下图所示：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/177.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/177.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;最后获得一个二维矩阵，其中$Pos$表示在句子中的顺序，$i$表示embedding向量中的位置。因此，在输入句子中的第$Pos$个单词的embedding长度为$d_model$，第$2i$个位置元素是$PE_{(pos, 2i)}，第$2i + 1$个位置元素是$PE_{(pos, 2i + 1)}，计算过程如上式。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/178.png&#34; alt=&#34;Positional encoding矩阵由单词位置计算得出，当与embedding相加时，embedding对应位置会按照positional的数值改变&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/178.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;Positional encoding矩阵由单词位置计算得出，当与embedding相加时，embedding对应位置会按照positional的数值改变&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Positional Encoder的简易实现如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;PositionalEncoder&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, d_model, max_seq_len &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;80&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    super()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;d_model &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; d_model
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# create constant &amp;#39;pe&amp;#39; matrix with values dependant on &lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# pos and i&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    pe &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;zeros(max_seq_len, d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; pos &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(max_seq_len):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, d_model, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            pe[pos, i] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; \
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            math&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;sin(pos &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; (&lt;span style=&#34;color:#ae81ff&#34;&gt;10000&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt; ((&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; i)&lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt;d_model)))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            pe[pos, i &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; \
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            math&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cos(pos &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; (&lt;span style=&#34;color:#ae81ff&#34;&gt;10000&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt; ((&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; (i &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;))&lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt;d_model)))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    pe &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; pe&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;unsqueeze(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;register_buffer(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;pe&amp;#39;&lt;/span&gt;, pe)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, x):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# make embeddings relatively larger&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; x &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; math&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;sqrt(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;#add constant to embedding&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    seq_len &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;size(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; x &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; Variable(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pe[:,:seq_len], \
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    requires_grad&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;False&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cuda()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; x
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;以上代码可以帮助我们实现每个单词的embedding都加上自身的positional encoding，为模型提供更多的结构信息。&lt;/p&gt;
+&lt;p&gt;其中，我们在矩阵相加前的乘法操作是让positional encoding数值变小，从而当我们执行相加操作后不会对原embedding产生过大的影响。&lt;/p&gt;
+&lt;h2 id=&#34;mask&#34;&gt;Mask&lt;/h2&gt;
+&lt;p&gt;Masking在Transformer中扮演着重要的角色，主要是由以下两个原因：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;query和key有些部分是填充的，这些需要用mask屏蔽，一个简单的方法就是赋予一个很小很小的值或者直接变为0值。&lt;/li&gt;
+&lt;li&gt;对于decoder的来说，我们是不能看到未来的信息的，所以对于decoder的输入，我们只能计算它和它之前输入的信息的相似度。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;对input生成mask也非常简单：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;batch &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; next(iter(train_iter))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;input_seq &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; batch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;English&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;transpose(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;input_pad &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; EN_TEXT&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;vocab&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;stoi[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;lt;pad&amp;gt;&amp;#39;&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# creates mask with 0s wherever there is padding in the input&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;input_msk &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (input_seq &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; input_pad)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;unsqueeze(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对于目标输出我们也执行同样的操作，但是多出来一步：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# create mask as before&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;target_seq &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; batch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;French&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;transpose(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;target_pad &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; FR_TEXT&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;vocab&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;stoi[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;lt;pad&amp;gt;&amp;#39;&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;target_msk &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (target_seq &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; target_pad)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;unsqueeze(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;size &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; target_seq&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;size(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#75715e&#34;&gt;# get seq_len for matrix&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;nopeak_mask &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;triu(np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;ones(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, size, size),
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;k&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;astype(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;uint8&amp;#39;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;nopeak_mask &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Variable(torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;from_numpy(nopeak_mask) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;target_msk &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; target_msk &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt; nopeak_mask
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;decoder的输入是翻译后的目标句子（即法语），通过以上操作，可以保证decoder在翻译的时候只可以观测到encoder的输出和当前时刻已经翻译出的单词，而不包括以后和即将翻译的单词。&lt;/p&gt;
+&lt;p&gt;因此我们需要防止decoder的当前输出利用未来的target句子信息，这里我们使用&amp;rsquo;nopeak_mask&amp;rsquo;：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/179.png&#34; alt=&#34;当使用以上mask时，每次预测只会使用target sentence在当前时刻前的部分&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/179.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;当使用以上mask时，每次预测只会使用target sentence在当前时刻前的部分&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在计算注意力得分的时候，当前时刻以后的句子贡献的权重就会被置为零。&lt;/p&gt;
+&lt;h2 id=&#34;multi-headed-attention&#34;&gt;Multi-Headed Attention&lt;/h2&gt;
+&lt;p&gt;当获得融合位置信息（positional encoding）的单词embedding和相应的mask后，我们便可以开始搭建我们的模型：&lt;/p&gt;
+&lt;p&gt;下图是一个多头注意力模块的流程图：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/180.png&#34; alt=&#34;在多头注意力中，每个input呗切分成多个头从而允许网络同时捕捉每个embedding不同部分的信息&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/180.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;在多头注意力中，每个input呗切分成多个头从而允许网络同时捕捉每个embedding不同部分的信息&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;V，K和Q分别代表“key”， “value”和“query”。在encoder模块中，V，K和Q分别是embedding向量的副本，有相同的维度：$Batch_size * seq_len * d_model$。&lt;/p&gt;
+&lt;p&gt;在多头注意力模块，我们吧embedding分成$N$个头，因此他们的维度变成$Batch_size * N * seq_len * (d_model / N)$。&lt;/p&gt;
+&lt;p&gt;下文中我们使用$d_k$来表示$d_{model} / N$，下面是encoder部分的代码：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;MultiHeadAttention&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, heads, d_model, dropout &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0.1&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        super()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;d_model &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; d_model
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;d_k &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; d_model &lt;span style=&#34;color:#f92672&#34;&gt;//&lt;/span&gt; heads
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;h &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; heads
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;q_linear &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(d_model, d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;v_linear &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(d_model, d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;k_linear &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(d_model, d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Dropout(dropout)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;out &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(d_model, d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, q, k, v, mask&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;None&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        bs &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; q&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;size(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# perform linear operation and split into h heads&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        k &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;k_linear(k)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;view(bs, &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;h, self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;d_k)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        q &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;q_linear(q)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;view(bs, &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;h, self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;d_k)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        v &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;v_linear(v)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;view(bs, &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;h, self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;d_k)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# transpose to get dimensions bs * h * sl * d_model&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;       
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        k &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; k&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;transpose(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        q &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; q&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;transpose(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        v &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; v&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;transpose(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;	      &lt;span style=&#34;color:#75715e&#34;&gt;# calculate attention using function we will define next&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        scores &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; attention(q, k, v, self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;d_k, mask, self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# concatenate heads and put through final linear layer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        concat &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; scores&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;transpose(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;contiguous()\
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;view(bs, &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        output &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;out(concat)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; output
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;calculating-attention&#34;&gt;Calculating Attention&lt;/h2&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/181.png&#34; alt=&#34;注意力计算机制&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/181.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;注意力计算机制&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/182.png&#34; alt=&#34;计算流程图&#34;/&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/182.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+      &lt;figcaption&gt;
+          &lt;p&gt;计算流程图&lt;/p&gt;
+      &lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;上图中的每个箭头都表示公式中的一次运算操作。&lt;/p&gt;
+&lt;p&gt;首先我们计算$Q$乘以$K$的转置，然后除以$d_k$的开方做缩放操作。&lt;/p&gt;
+&lt;p&gt;公式中没有体现的一个操作是mask操作，在执行softmax操作之前，我们先使用mask来将那些无关的注意力值置零。除此之外还要在Softmax之后执行dropout操作，最后将注意力的计算结果与$V$进行点乘操作。&lt;/p&gt;
+&lt;p&gt;以下是attention模块的代码：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;attention&lt;/span&gt;(q, k, v, d_k, mask&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;None&lt;/span&gt;, dropout&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;None&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    scores &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;matmul(q, k&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;transpose(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt;  math&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;sqrt(d_k)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;	&lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; mask &lt;span style=&#34;color:#f92672&#34;&gt;is&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;not&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;None&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        mask &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; mask&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;unsqueeze(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        scores &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; scores&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;masked_fill(mask &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1e9&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;	scores &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; F&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;softmax(scores, dim&lt;span style=&#34;color:#f92672&#34;&gt;=-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; dropout &lt;span style=&#34;color:#f92672&#34;&gt;is&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;not&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;None&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        scores &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; dropout(scores)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    output &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;matmul(scores, v)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; output
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;the-feed-forward-network&#34;&gt;The Feed-Forward Network&lt;/h2&gt;
+&lt;p&gt;终于到了最后前向传播模块了，也十分简单，就是两层全连接网络，同时使用了relu和dropout：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;FeedForward&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, d_model, d_ff&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2048&lt;/span&gt;, dropout &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0.1&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        super()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__() 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# We set d_ff as a default to 2048&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;linear_1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(d_model, d_ff)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Dropout(dropout)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;linear_2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(d_ff, d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, x):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout(F&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;relu(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;linear_1(x)))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;linear_2(x)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; x
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;前向传播模块主要用于加深网络，对attention模块的输入在进行特征提取和融合操作。&lt;/p&gt;
+&lt;h2 id=&#34;normalization&#34;&gt;Normalization&lt;/h2&gt;
+&lt;p&gt;在神经网络中Normalization十分常用，主要用来避免输出变化过大，进而加速稳定训练。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/183.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/183.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;我们在每一层的输出部分都使用normalization操作：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;Norm&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, d_model, eps &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1e-6&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        super()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;size &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; d_model
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# create two learnable parameters to calibrate normalisation&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;alpha &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Parameter(torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;ones(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;size))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;bias &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Parameter(torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;zeros(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;size))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;eps &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; eps
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, x):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        norm &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;alpha &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; (x &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;mean(dim&lt;span style=&#34;color:#f92672&#34;&gt;=-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, keepdim&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;True&lt;/span&gt;)) \
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; (x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;std(dim&lt;span style=&#34;color:#f92672&#34;&gt;=-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, keepdim&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;True&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;eps) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;bias
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; norm
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;putting-it-all-together&#34;&gt;Putting it all together&lt;/h2&gt;
+&lt;p&gt;把以上的部分组合在一起，我们来看整体的框架：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/184.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/184.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;最后一个变量&lt;/strong&gt;：我们看到在encoder和decoder旁边都有一个&amp;rsquo;Nx&amp;rsquo;变量。实际上，上图中的encoder和decoder都只是表示一层，而N表示一共有N层encoder和decoder。比如说N=6，那么输入就需要经过6层上图中的encoder，然后再经过6层上图中的decoder。我们在下面的代码中展示如何构建单层encoder和decoder：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# build an encoder layer with one multi-head attention layer and one # feed-forward layer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;EncoderLayer&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, d_model, heads, dropout &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0.1&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        super()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;norm_1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Norm(d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;norm_2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Norm(d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;attn &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; MultiHeadAttention(heads, d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;ff &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; FeedForward(d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout_1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Dropout(dropout)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout_2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Dropout(dropout)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, x, mask):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;norm_1(x)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; x &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout_1(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;attn(x2,x2,x2,mask))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;norm_2(x)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; x &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout_2(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;ff(x2))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; x
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# build a decoder layer with two multi-head attention layers and&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# one feed-forward layer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;DecoderLayer&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, d_model, heads, dropout&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0.1&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        super()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;norm_1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Norm(d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;norm_2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Norm(d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;norm_3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Norm(d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout_1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Dropout(dropout)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout_2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Dropout(dropout)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout_3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Dropout(dropout)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;attn_1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; MultiHeadAttention(heads, d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;attn_2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; MultiHeadAttention(heads, d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;ff &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; FeedForward(d_model)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cuda()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, x, e_outputs, src_mask, trg_mask):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;norm_1(x)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; x &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout_1(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;attn_1(x2, x2, x2, trg_mask))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;norm_2(x)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; x &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout_2(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;attn_2(x2, e_outputs, e_outputs,
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        src_mask))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;norm_3(x)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; x &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout_3(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;ff(x2))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; x
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# We can then build a convenient cloning function that can generate multiple layers:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;get_clones&lt;/span&gt;(module, N):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;ModuleList([copy&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;deepcopy(module) &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(N)])
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我们现在可以构建真正的encoder和decoder了：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;Encoder&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, vocab_size, d_model, N, heads):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        super()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;N &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; N
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;embed &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Embedder(vocab_size, d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pe &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; PositionalEncoder(d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;layers &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; get_clones(EncoderLayer(d_model, heads), N)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;norm &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Norm(d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, src, mask):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;embed(src)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pe(x)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(N):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;layers[i](x, mask)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;norm(x)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;Decoder&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, vocab_size, d_model, N, heads):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        super()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;N &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; N
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;embed &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Embedder(vocab_size, d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pe &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; PositionalEncoder(d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;layers &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; get_clones(DecoderLayer(d_model, heads), N)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;norm &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Norm(d_model)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, trg, e_outputs, src_mask, trg_mask):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;embed(trg)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pe(x)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;N):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;layers[i](x, e_outputs, src_mask, trg_mask)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;norm(x)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;最后，得到Transformer：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;Transformer&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, src_vocab, trg_vocab, d_model, N, heads):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        super()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;encoder &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Encoder(src_vocab, d_model, N, heads)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;decoder &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Decoder(trg_vocab, d_model, N, heads)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;out &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(d_model, trg_vocab)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, src, trg, src_mask, trg_mask):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        e_outputs &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;encoder(src, src_mask)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        d_output &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;decoder(trg, e_outputs, src_mask, trg_mask)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        output &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;out(d_output)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; output
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# we don&amp;#39;t perform softmax on the output as this will be handled &lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# automatically by our loss function&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;训练模型&#34;&gt;训练模型&lt;/h2&gt;
+&lt;p&gt;构建好了模型，剩下的就是训练过程了，我们使用EuroParl数据集来训练。&lt;/p&gt;
+&lt;p&gt;我们首先设置一些超参数：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;d_model &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;512&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;heads &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;N &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;src_vocab &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; len(EN_TEXT&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;vocab)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;trg_vocab &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; len(FR_TEXT&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;vocab)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;model &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Transformer(src_vocab, trg_vocab, d_model, N, heads)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; p &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; model&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;parameters():
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; p&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dim() &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;init&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;xavier_uniform_(p)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# this code is very important! It initialises the parameters with a&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# range of values that stops the signal fading or getting too big.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# See this blog for a mathematical explanation.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;optim &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;optim&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Adam(model&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;parameters(), lr&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0.0001&lt;/span&gt;, betas&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0.9&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0.98&lt;/span&gt;), eps&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1e-9&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;现在我们可以开始训练了：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;train_model&lt;/span&gt;(epochs, print_every&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    model&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;train()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    start &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; time&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;time()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    temp &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; start
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    total_loss &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; epoch &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(epochs):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;       
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i, batch &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; enumerate(train_iter):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            src &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; batch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;English&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;transpose(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            trg &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; batch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;French&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;transpose(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# the French sentence we input has all words except&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# the last, as it is using each word to predict the next&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            trg_input &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; trg[:, :&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# the words we are trying to predict&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            targets &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; trg[:, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;:]&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;contiguous()&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;view(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# create function to make masks using mask code above&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            src_mask, trg_mask &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; create_masks(src, trg_input)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            preds &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; model(src, trg_input, src_mask, trg_mask)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            optim&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;zero_grad()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            loss &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; F&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cross_entropy(preds&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;view(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, preds&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;size(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)),
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            results, ignore_index&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;target_pad)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            loss&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;backward()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            optim&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;step()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            total_loss &lt;span style=&#34;color:#f92672&#34;&gt;+=&lt;/span&gt; loss&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;data[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (i &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; print_every &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                loss_avg &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; total_loss &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; print_every
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;time = &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;%d&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;m, epoch &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;%d&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;, iter = &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;%d&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;, loss = &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;%.3f&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt;ds per &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt;d iters&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34; % ((time.time() - start) // 60,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                epoch &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, i &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, loss_avg, time&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;time() &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; temp,
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                print_every))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                total_loss &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                temp &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; time&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;time()
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/185.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/185.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&#34;测试模型&#34;&gt;测试模型&lt;/h2&gt;
+&lt;p&gt;我们可以使用下面的代码来测试我们的模型效果。&lt;/p&gt;
+&lt;p&gt;我们首先对整个英文句子编码，然后向decoder输入token &amp;lsquo;&lt;!-- raw HTML omitted --&gt;&amp;lsquo;以及encoder的输出，然后decoder开始预测下一个词。然后我们将输出的词append到&amp;rsquo;&lt;!-- raw HTML omitted --&gt;&amp;lsquo;后组成新的向量输入decoder，预测出第二个词。重复以上过程，直到decoder输出&amp;rsquo;&lt;!-- raw HTML omitted --&gt;&amp;lsquo;表示翻译过程结束。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;translate&lt;/span&gt;(model, src, max_len &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;80&lt;/span&gt;, custom_string&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;False&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    model&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;eval()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; custom_sentence &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;True&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            src &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; tokenize_en(src)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            sentence&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            Variable(torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;LongTensor([[EN_TEXT&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;vocab&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;stoi[tok] &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; tok
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; sentence]]))&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cuda()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    src_mask &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (src &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; input_pad)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;unsqueeze(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        e_outputs &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; model&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;encoder(src, src_mask)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        outputs &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;zeros(max_len)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;type_as(src&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;data)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        outputs[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;LongTensor([FR_TEXT&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;vocab&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;stoi[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;lt;sos&amp;gt;&amp;#39;&lt;/span&gt;]])
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, max_len):    
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            trg_mask &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;triu(np&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;ones((&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, i, i),
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            k&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;astype(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;uint8&amp;#39;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            trg_mask&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Variable(torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;from_numpy(trg_mask) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;cuda()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            out &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; model&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;out(model&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;decoder(outputs[:i]&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;unsqueeze(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;),
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            e_outputs, src_mask, trg_mask))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            out &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; F&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;softmax(out, dim&lt;span style=&#34;color:#f92672&#34;&gt;=-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            val, ix &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; out[:, &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;data&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;topk(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            outputs[i] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; ix[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;][&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ix[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;][&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; FR_TEXT&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;vocab&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;stoi[&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;lt;eos&amp;gt;&amp;#39;&lt;/span&gt;]:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#66d9ef&#34;&gt;break&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39; &amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;join(
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        [FR_TEXT&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;vocab&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;itos[ix] &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; ix &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; outputs[:i]]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        )
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;完整的代码放在了我的&lt;a href=&#34;https://github.com/yshane-ai/yangxx_ML/tree/main/Basic/Transformer&#34;&gt;Github&lt;/a&gt;，你也可以按照以上流程，自己动手实现一个Transformer，快动手试试吧！&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>Q-Learning为什么不需要重要性采样</title>
+      <link>https://yshane-ai.github.io/post/80-q-learning%E9%87%8D%E8%A6%81%E6%80%A7%E9%87%87%E6%A0%B7/</link>
+      <pubDate>Mon, 14 Mar 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/80-q-learning%E9%87%8D%E8%A6%81%E6%80%A7%E9%87%87%E6%A0%B7/</guid>
+      
+        <description>&lt;p&gt;这个问题其实反映了value-based方法与policy-based方法本质的不同。value-based的方法主要是基于bellman equation进行更新。所以Q-learning不像policy gradient那样直接（policy gradient直接做gradient ascent，也就直接优化了目标)，Q-learning得通过使用bellman equation不断地迭代，使得当前的Q慢慢收敛到optimal Q。&lt;/p&gt;
+&lt;p&gt;而在policy gradient一类方法中，为了将on-policy转换到off-policy，让一个theta&amp;rsquo;去take action，另一个theta去学theta&amp;rsquo;获得的experience，并且用importance sampling使得theta&amp;rsquo;的采样结果能被theta拿来用。&lt;/p&gt;
+&lt;p&gt;关键的地方来了。&lt;strong&gt;q-learning在迭代的时候，由于用的是bellman equation（如下图所示），而bellman equation中的expectation是over state transition而不是over policy&lt;/strong&gt;，根本就没有用到两个不同的policy分布（state transition是不变的啊），因此也就和importance sampling没有什么关系了。&lt;/p&gt;
+&lt;p&gt;$$
+Q(s,a) = R(s,a) + \gamma E_{s^\prime\sim T(\cdot| s, a)}\max_{a^\prime} Q(s^\prime, a^\prime)
+$$&lt;/p&gt;
+&lt;p&gt;就是这么个道理。再intuition地总结一下，这是因为value-based和policy-based的方法的本源不同：&lt;strong&gt;前者依赖于经典的bellman equation，后者则依赖于用policy gradient直接进行gradient ascent。&lt;/strong&gt;(前者是deepmind那群人，后者则是openai那群人）&lt;/p&gt;
 </description>
       
     </item>
@@ -2243,10 +2773,10 @@ $$&lt;/p&gt;
     
     <item>
       <title>自动驾驶之Apollo控制算法</title>
-      <link>https://yshane-ai.github.io/post/41-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/</link>
+      <link>https://yshane-ai.github.io/post/51-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/</link>
       <pubDate>Mon, 18 Oct 2021 16:01:23 +0800</pubDate>
       
-      <guid>https://yshane-ai.github.io/post/41-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/</guid>
+      <guid>https://yshane-ai.github.io/post/51-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/</guid>
       
         <description>&lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
 &lt;p&gt;控制是驱使车辆前行的策略。&lt;/p&gt;
@@ -3004,554 +3534,363 @@ $$&lt;/p&gt;
     </item>
     
     <item>
-      <title>推荐系统之召回和排序技术发展总结</title>
-      <link>https://yshane-ai.github.io/post/40-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%8F%AC%E5%9B%9E%E7%AD%96%E7%95%A5%E6%80%BB%E7%BB%93/</link>
-      <pubDate>Sun, 18 Apr 2021 16:01:23 +0800</pubDate>
+      <title>推荐系统之阿里Item2Vec</title>
+      <link>https://yshane-ai.github.io/post/41-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E9%98%BF%E9%87%8Cembedding%E7%94%9F%E6%88%901/</link>
+      <pubDate>Fri, 23 Apr 2021 16:01:23 +0800</pubDate>
       
-      <guid>https://yshane-ai.github.io/post/40-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%8F%AC%E5%9B%9E%E7%AD%96%E7%95%A5%E6%80%BB%E7%BB%93/</guid>
+      <guid>https://yshane-ai.github.io/post/41-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E9%98%BF%E9%87%8Cembedding%E7%94%9F%E6%88%901/</guid>
       
-        <description>&lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
-&lt;p&gt;现代移动互联网充斥着各种各样的信息，如购物、新闻，短视频，直播等等，经常使用户迷失在海量的信息中，无法找到真正感兴趣的内容。&lt;/p&gt;
-&lt;p&gt;因此推荐算法应运而生，应用于各大领域：“吃”有美团、饿了么等；“穿”有淘宝等；“住”有蛋壳、自如等；“行”有汽车之家等；“娱乐”有抖音、快手等；“旅行”有携程、去哪儿等。&lt;/p&gt;
-&lt;p&gt;当你打开App，就会有各种的推荐场景映入眼帘，例如：猜你喜欢、为你推荐等。推荐主要是根据用户的历史行为、相似用户、及相似物品等信息，进一步分析用户的消费点进而触达用户。&lt;/p&gt;
-&lt;p&gt;在工业推荐系统中，推荐系统包含两个步骤：召回和排序。&lt;/p&gt;
-&lt;p&gt;（1）召回环节：主要根据用户部分特征，从海量的物品库里，快速找回一小部分用户潜在感兴趣的物品。此环节要求速度快。&lt;/p&gt;
-&lt;p&gt;（2）排序环节：排序环节可以融入较多特征，使用复杂的模型，精准地做个性化推荐。此环节要求精度高。&lt;/p&gt;
-&lt;p&gt;下图展示了推荐系统的整体架构。&lt;/p&gt;
-
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/145.jfif&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/145.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h2 id=&#34;2-召回算法&#34;&gt;2 召回算法&lt;/h2&gt;
-&lt;p&gt;召回环节是推荐系统中很关键的一个环节，但是大多数召回环节偏向策略型导向，技术含量不高。召回环节一般采用多路召回，随便想到一个策略就可以当做一路召回。下图展示了召回环节的多路召回策略。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/146.jfif&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/146.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;召回内容可分为非个性化召回和个性化召回。例如：热门召回、高点击或高转化召回、新物料召回等召回方式是非个性化召回；用户的兴趣标签或物品的标签、及协同过滤等召回方式是个性化的召回。接下来主要介绍一下有点技术含量的个性化召回。&lt;/p&gt;
-&lt;h3 id=&#34;21-基于内容的协同过滤&#34;&gt;2.1 基于内容的协同过滤&lt;/h3&gt;
-&lt;p&gt;以电影推荐为例，我们知道用户对于历史观看过的电影的评分，将原始数据格式转化为评分矩阵，如下图所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/147.jfif&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/147.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;用户只看过少部分电影，我们想要知道对于未看过的电影，用户可能对其的喜爱程度（打分）是多高。建模的过程就是填充空白项的过程，这样就得到了所有用户对所有电影的评分（喜好程度），然后就可进行个性化推荐。这种协同过滤方法基于场景一般采用UserCF或者ItemCF。&lt;/p&gt;
-&lt;p&gt;UserCF基于用户的相似度进行推荐，特点是具有较强的社交特性，用户能够快速得知与自己兴趣相似的人最近喜欢的是什么。例如用户A和用户B的兴趣类似，如果用户A对周星驰的电影《功夫》比较感兴趣，则系统更倾向于向用户B推荐该电影。&lt;/p&gt;
-&lt;p&gt;ItemCF 更适用于兴趣变化比较稳定的应用，用户在一段时间内更倾向于寻找一类物品，这时利用物品相似度为其推荐相关物品是契合用户动机的。例如X电影和Y电影为相关程度较高的搞笑类电影，如果用户A对X电影比较感兴趣，则系统更倾向于向用户A推荐Y电影。&lt;/p&gt;
-&lt;h3 id=&#34;22-基于模型的协同过滤&#34;&gt;2.2 基于模型的协同过滤&lt;/h3&gt;
-&lt;p&gt;基于模型的协同过滤算法是目前最主流的协同过滤类型，所包含算法非常之多，如矩阵分解、聚类算法、深度模型、图神经网络、知识图谱等。&lt;/p&gt;
-&lt;p&gt;该方式最终将用户和物品的信息通过Embedding的形式来表征，即生成User Embedding和Item Embedding供线上召回环节实时使用。Embedding向量的生成方式一般分为两类：&lt;/p&gt;
-&lt;h4 id=&#34;221-基于矩阵分解生成隐向量&#34;&gt;2.2.1 基于矩阵分解生成隐向量&lt;/h4&gt;
-&lt;p&gt;矩阵分解属于标准的MF（Matrix Factorization）方法，通过评分矩阵分解出代表用户的隐向量矩阵和代表物品的隐向量矩阵。矩阵分解过程如下图所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/148.jfif&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/148.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;其中：R矩阵表示打分矩阵，X矩阵表示用户信息，Y矩阵表示物品信息；m表示用户个数，n表示物品个数，k表示表征用户或物品的向量长度。&lt;/p&gt;
-&lt;p&gt;通过矩阵分解，将得到用户的Embedding（X）和物品的Embedding（Y），该Embedding使得的乘积是R矩阵的近似表示。上述例子可以得到用户的Embedding表示为[1, 0.1]，物品的Embedding表示为[0.9, -0.2]。&lt;/p&gt;
-&lt;h3 id=&#34;222--基于深度学习生成隐向量&#34;&gt;2.2.2  基于深度学习生成隐向量&lt;/h3&gt;
-&lt;p&gt;随着深度学习的兴起，有学者提出了新的模型：即借鉴深度学习中的方法，使用深度神经网络（DNN）从数据中自动学习用户/物品隐向量的交互函数，在增强效果的同时也可以引入一定的泛化能力。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/149.jfif&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/149.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;上图展示了一个抽象的深度召回模型的离线和在线的通用架构，核心思想是：将用户特征和物品特征分离，各自通过某个具体的模型，分别表征出用户Embedding以及物品Embedding。在线上，可以根据用户兴趣Embedding，采用类似ANN或Faiss等高效检索工具，快速找出和用户兴趣匹配的物品。理论上任何有监督“双塔结构”模型（见下图），都可以用来做这个召回模型，比如DSSM，YouTubeNet等。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/150.jfif&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/150.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;其中：User特征可以是画像特征、统计特征、多类型行为序列特征等；Item特征可以是画像特征、统计特征、文本特征、图片特征等。&lt;/p&gt;
-&lt;p&gt;下面介绍2个经典的深度召回模型。&lt;/p&gt;
-&lt;p&gt;（1）DSSM模型&lt;/p&gt;
-&lt;p&gt;DSSM模型是由微软提出的应用于文本相似度匹配场景下的一个算法，后来经过改良后应用于推荐场景下的召回环节。DSSM模型结构如图7所示。可以看出DSSM模型是个标准的“双塔”结构的模型。Q表示Query，即用户端的信息；D表示Document，即候选物品集端的信息。Query 和 Document 的语义相似性可以用这两个语义Embedding向量的 cos 距离来表示：&lt;/p&gt;
-&lt;p&gt;然后通过Softmax 函数可以把Query 与正样本 Doc 的语义相似性转化为一个后验概率：&lt;/p&gt;
-&lt;p&gt;然而应用于推荐召回时，这里不再使用Softmax模型（即公式2），而是对每对预测一个cos值（即只应用公式1）。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/151.jfif&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/151.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;（2）YouTubeNet模型&lt;/p&gt;
-&lt;p&gt;YouTubeNet模型是推荐系统领域中最为经典的论文之一“Deep Neural Networks for YouTube Recommendations”，这篇视频推荐模型框架基本上奠定了后面推荐系统的主要步骤。主要框架如下图所示：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/152.jfif&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/152.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;特征：用户观看过视频的Embedding向量、用户搜索词的Embedding向量、用户画像特征、context上下文特征等。&lt;/p&gt;
-&lt;p&gt;训练模型：三层ReLU神经网络之后接Softmax层，去预测用户下一个感兴趣的视频，输出是在所有候选视频集合上的概率分布。训练完成之后，最后一层Relu的输出作为User Embedding，Softmax的权重可当做当前预测Item的Embedding表示。&lt;/p&gt;
-&lt;p&gt;线上预测：通过UserId找到相应的User Embedding，然后使用NN方法（比如Faiss）找到相似度最高的topN条候选结果返回。&lt;/p&gt;
-&lt;h2 id=&#34;3-排序算法介绍&#34;&gt;3 排序算法介绍&lt;/h2&gt;
-&lt;p&gt;排序环节是推荐系统最关键，也是最具有技术含量的部分，目前大多数推荐技术其实都聚焦在这块。排序环节主要包含两部分：特征工程和模型。&lt;/p&gt;
-&lt;h3 id=&#34;31-特征工程&#34;&gt;3.1 特征工程&lt;/h3&gt;
-&lt;p&gt;特征是模型的核心内容，在排序模型中所采用的特征比召回模型的特征更细致化。在工业界不会轻易地展示出具体的特征，即不传之秘。但是主要包含以下几个方面：&lt;/p&gt;
-&lt;p&gt;（1）用户端特征：画像特征，偏好特征，统计特征，行为序列特征等；&lt;/p&gt;
-&lt;p&gt;（2）物品端特征：画像特征，统计特征，文本特征，图像特征等；&lt;/p&gt;
-&lt;p&gt;（3）上下文特征：时间，地点，天气，网络，设备，召回源等；&lt;/p&gt;
-&lt;h3 id=&#34;32-点击预估模型&#34;&gt;3.2 点击预估模型&lt;/h3&gt;
-&lt;h4 id=&#34;321-机器学习点击预估模型&#34;&gt;3.2.1 机器学习点击预估模型&lt;/h4&gt;
-&lt;p&gt;在深度学习之前，早期的排序模型采用的是传统的机器学习模型，如LR、FM、GBDT+LR等。&lt;/p&gt;
-&lt;p&gt;（1）LR一般代指逻辑回归模型，是广义线性模型，一般用于解决二分类问题。优点就是模型简单，训练速度快，消耗资源少；缺点也很明显，缺少非线性的特征交叉，泛化性较低。&lt;/p&gt;
-&lt;p&gt;（2）为了将特征交叉考虑进去，FM模型被广泛使用。FM模型在LR模型的基础上增加了自动二阶特征交叉的部分。不同于只有用户、物品Id两类特征的CF模型（即MF模型），FM可以添加任意多的特征。隐向量的引入也使得模型可以泛化到未曾出现过的特征组合中，兼顾了模型的记忆性和泛化性。&lt;/p&gt;
-&lt;p&gt;（3）为了寻找不同特征之间的组合，FaceBook公司率先提出用GBDT进行特征组合，自上而下每条路径代表一种高阶特征交叉，然后叶子节点编号作为LR的输入。但是这种方法的缺点是可能导致过拟合高维稀疏数据，GBDT不能将数据batch输入，无法并行，因此速度慢、泛化性差。&lt;/p&gt;
-&lt;p&gt;3.2.2 深度学习点击预估模型&lt;/p&gt;
-&lt;p&gt;目前大部分科技公司都在应用深度学习模型进行Feed流推荐，下图是推荐系统领域的一位大牛 @王喆 总结的深度学习CTR模型最全演化图谱。该演进图详细了描述在技术层面的改进点。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/153.jfif&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/153.jfif&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;主要是以多层感知机为核心，通过改变神经网络的结构，构建特点各异的深度学习推荐模型。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;（1）改变神经网络的复杂结构&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;从最简单的单层神经网络模型AutoRec（自编码器推荐）到经典的深度神经网络结构Deep Crossing（深度特征交叉），其主要在于增加了模型的层级和结构复杂度。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;（2）改变特征的交叉方式&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;这类模型的主要改变在于丰富了深度学习网络中特征交叉的方式。例如改变了用户向量和物品向量互操作方式的NeuralCF（Neural Collaborative Filtering，神经网络协同过滤），定义了多种特征向量交叉操作的PNN（Product-based Neural Network, 即操作神经网络）模型。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;（3）模型组合&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;这类模型主要是指Wide &amp;amp; Deep 模型及其后续变种的 Deep &amp;amp; Cross、DeepFM等，其思路主要是通过组合两种或多种不同特点、优势互补的深度学习网络，提升模型的预测能力；&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;（4）FM算法的深度模型演进&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;传统的推荐算法FM在深度学习时代有了更广阔的发展势头，其中包括NFM（Neural Factorization Machine, 神经网络因子分解机）、FNN（Factorization-machine supported Neural Network,基于因子分解机支持的神经网络）、AFM（Attention Neural Factorization Machine,注意力因子分解机）等，它们对FM的改进方向各不相同。例如：NFM组要使用神经网络提升FM二阶部分的特征交叉能力，AFM是引入了注意力机制的FM模型，FNN利用FM的结果进行网络的初始化。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;（5）注意力机制和推荐模型的结合&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;此类模型主要是将“注意力机制（Attention）”应用于深度学习模型中，主要包括结合FM和注意力机制的AFM模型、引入注意力机制的CTR预估模型DIN（Deep Interest Network，深度兴趣模型）。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;（6）序列模型与推荐模型的结合&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;这类模型主要特点是使用序列模型模拟用户行为或用户兴趣的演变趋势，代表作有阿里算法团队的DIEN（Deep Interest Evolution Network,深度兴趣进化网络）及DSIN（Deep Session Interest Network，深度会话兴趣网络）。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;（7）强化学习与推荐算法模型的结合&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;这类算法是将强化学习的思想应用于推荐系统领域，强调模型的在线学习和实时更新，代表作模型为DRN（Deep Reinforcement Learning Network,深度强化学习网络）。&lt;/p&gt;
-&lt;p&gt;除了模型的创新改进，在“多任务学习”和“多模态融合”角度也能增加模型的表达能力。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;（8）多任务模型&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;在优化推荐效果的时候，很多时候不仅仅需要关注 CTR 指标，同时还需要优化例如 CVR ( 转化率 )、视频播放时长、用户停留时长、用户翻页深度、关注率、点赞率这些指标。那么能不能使用一个模型来同时优化两个或多个任务呢？这就属于多任务学习（Multi-Task Learning）。业界比较有名的是：&lt;/p&gt;
-&lt;p&gt;（a）阿里算法团队提出的ESMM（Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate），有效解决了真实场景中CVR预估面临的数据稀疏以及样本选择偏差这两个关键问题。&lt;/p&gt;
-&lt;p&gt;（b）谷歌算法团队提出的YouTube多目标排序系统（Recommending What Video to Watch Next: A Multitask Ranking System）。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;（9）多模态信息融合&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;所谓模态，指的是不同类型的或者模态形式的信息存在形式，即异构数据，比如文本、图片、视频、音频、互动行为、社交关系等。让模型能够接受不同模态类型的信息，并做知识和信息互补，更全面理解实体或者行为。这不仅仅是推荐领域的技术趋势，也是人工智能领域都面临的重大发展方向，所以这个方向特别值得重视。&lt;/p&gt;
-</description>
-      
-    </item>
-    
-    <item>
-      <title>推荐系统之DSSM双塔架构</title>
-      <link>https://yshane-ai.github.io/post/39-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-dssm/</link>
-      <pubDate>Fri, 09 Apr 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/39-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-dssm/</guid>
-      
-        <description>&lt;p&gt;本文主要介绍项目中用于商业兴趣建模的DSSM双塔模型。作为推荐领域中大火的双塔模型，因为效果不错并且对工业界十分友好，所以被各大厂广泛应用于推荐系统中。&lt;/p&gt;
-&lt;p&gt;通过构建user和item两个独立的子网络，将训练好的两个“塔”中的user embedding 和item embedding各自缓存到内存数据库中。线上预测的时候只需要在内存中计算相似度运算即可。DSSM双塔模型是推荐领域不中不得不会的重要模型。&lt;/p&gt;
+        <description>&lt;p&gt;本文介绍的文章题目为《Learning and Transferring IDs Representation in E-commerce》，下载地址为：&lt;a href=&#34;https://arxiv.org/abs/1712.08289&#34;&gt;https://arxiv.org/abs/1712.08289&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;本文介绍了一种ID类特征的表示方法。该方法基于item2vec方式，同时考虑了不同ID类特征之间的连接结构，在盒马鲜生app上取得了不错的应用效果，我们来一探究竟。&lt;/p&gt;
 &lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
-&lt;p&gt;拿Youtube视频推荐系统举例，一般推荐系统中有两个流程。&lt;/p&gt;
-&lt;p&gt;第一步是召回模型，主要是进行初筛操作，从海量视频资源池中初步选择一部分用户可能感兴趣的视频数据子集，从数量上看可能是从千万级别筛选出百级别。&lt;/p&gt;
-&lt;p&gt;第二步是精排模型，主要作用是对上面找到的百级别的视频子集进一步精筛，从数量上看可能是从百级别筛选出几十级别。然后根据得分高低排序，生成一个排序列表作为用户的候选播放列表从而完成视频推荐任务。&lt;/p&gt;
-&lt;p&gt;广告推荐领域中使用的DSSM双塔模型是从广告维度为广告主推荐一定数量的人群，从数量上看是从百亿级别人群中找出百万级人群用于投放广告，所以是召回模型。&lt;/p&gt;
-&lt;h2 id=&#34;2-dssm基础知识&#34;&gt;2 DSSM基础知识&lt;/h2&gt;
-&lt;h3 id=&#34;21-dssm原理&#34;&gt;2.1 DSSM原理&lt;/h3&gt;
-&lt;p&gt;DSSM(Deep Structured Semantic Models)也叫深度语义匹配模型，最早是微软发表的一篇应用于NLP领域中计算语义相似度任务的文章。&lt;/p&gt;
-&lt;p&gt;DSSM深度语义匹配模型原理很简单：获取搜索引擎中的用户搜索query和doc的海量曝光和点击日志数据，训练阶段分别用复杂的深度学习网络构建query侧特征的query embedding和doc侧特征的doc embedding，线上infer时通过计算两个语义向量的cos距离来表示语义相似度，最终获得语义相似模型。这个模型既可以获得语句的低维语义向量表达sentence embedding，还可以预测两句话的语义相似度。&lt;/p&gt;
-&lt;h3 id=&#34;22-dssm深度语义匹配模型整体结构&#34;&gt;2.2 DSSM深度语义匹配模型整体结构&lt;/h3&gt;
-&lt;p&gt;DSSM模型总的来说可以分成三层结构，分别是输入层、表示层和匹配层。结构如下图所示：&lt;/p&gt;
+&lt;p&gt;在推荐系统特别是电商领域的推荐中，ID类特征是至关重要的的特征。传统的处理方式一般是one-hot编码。但是这种处理方式存在两个主要的弊端：&lt;/p&gt;
+&lt;p&gt;1）高维稀疏问题：对于高维稀疏问题，若有N个物品，那么用户交互过的物品的可能情况共2^N种情况，为了使我们的模型更加具有可信度，所需要的样本数量是随着N的增加呈指数级增加的。
+2）它无法反映ID之间的关系：对于同质信息来说，比如不同的物品，假设是iphone5和iphone6，以及iphone5和华为，在转换成one-hot编码后，距离是一样的，但是实际上，iphone5和iphone6的距离应该更近。对于异质信息，如物品ID和商铺ID，它们的距离甚至无法衡量，但实际上，一家卖苹果手机的商铺和苹果手机之间，距离应该更近。&lt;/p&gt;
+&lt;p&gt;对于上述问题，出现了word2vec以及item2vec的解决方案，将ID类特征转换为一个低维的embedding向量，这种方式在电商领域的推荐中取得了不错的效果。&lt;/p&gt;
+&lt;p&gt;本文提出的方式，基于item2vec，同时还考虑了不同ID类特征之间的连接结构，通过这些连接，在ItemID序列中的信息可以传播到其它类型的ID特征，并且可以同时学习这些ID特征的表示，框架如下图所示：&lt;/p&gt;
 
 &lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/123.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/154.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/123.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/154.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;h4 id=&#34;输入层&#34;&gt;输入层&lt;/h4&gt;
-&lt;p&gt;输入层主要的作用就是把文本映射到低维向量空间转化成向量提供给深度学习网络。NLP领域里中英文有比较大的差异，在输入层处理方式不同。&lt;/p&gt;
-&lt;p&gt;(1) 英文场景&lt;/p&gt;
-&lt;p&gt;英文的输入层通过Word Hashing方式处理，该方法基于字母的n-gram，主要作用是减少输入向量的维度。举例说明，假如现在有个词boy，开始和结束字符分别用#表示，那么输入就是(#boy#)。将词转化为字母n-gram的形式，如果设置n为3，那么就能得到(#bo,boy,oy#)三组数据，将这三组数据用n-gram的向量来表示。&lt;/p&gt;
-&lt;p&gt;使用Word Hashing方法存在的问题是可能造成冲突。因为两个不同的词可能有相同的n-gram向量表示。下图是在不同的英语词典中分别使用2-gram和3-gram进行Word Hashing时的向量空间以及词语碰撞统计：&lt;/p&gt;
+&lt;p&gt;上面的学习方式在盒马app中有以下几方面的应用：&lt;/p&gt;
+&lt;p&gt;1）Measuring the similarity between items：建模物品之间的相似度
+2）Transferring from seen items to unseen items：将已知物品的向量迁移到位置物品上
+3）Transferring across different domains：将不同领域的向量进行迁移
+4）Transferring across different tasks.：从不同的应用场景中进行迁移。&lt;/p&gt;
+&lt;p&gt;上面的几个应用我们在后文中会详细介绍。接下来，我们首先来介绍一下本文如何对ID类特征进行处理。&lt;/p&gt;
+&lt;h2 id=&#34;2-学习id的表征方式&#34;&gt;2 学习ID的表征方式&lt;/h2&gt;
+&lt;h3 id=&#34;21-skip-gram-on-users-interactive-sequences&#34;&gt;2.1 Skip-gram on User’s Interactive Sequences&lt;/h3&gt;
+&lt;p&gt;在电商领域，我们可以通过用户的隐式反馈，整理得到用户的一个交互序列。如果把每一个交互序列认为是一篇文档，那么我们可以通过Skip-Gram的方法来学习每一个item的向量。Skip-Gram的方法是最大化下面的对数概率：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/124.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/155.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/124.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/155.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;p&gt;可以看出在50W词的词典中如果使用2-gram，也就是两个字母的粒度来切分词，向量空间压缩到1600维，产生冲突的词有1192个(这里的冲突是指两个词的向量表示完全相同，因为单词储量实在有限，本来想找几个例子说明下，结果没找到)。如果使用3-gram向量空间压缩到3W维，产生冲突的词只有22个。综合下来论文中使用3-gram切分词。&lt;/p&gt;
-&lt;p&gt;(2) 中文场景&lt;/p&gt;
-&lt;p&gt;中文输入层和英文有很大差别，首先要面临的是分词问题。如果要分词推荐jieba或者北大pkuseg，不过现在很多模型已经不进行分词了，比如BERT中文的预训练模型就直接使用单字作为最小粒度了。&lt;/p&gt;
-&lt;h4 id=&#34;表示层&#34;&gt;表示层&lt;/h4&gt;
-&lt;p&gt;DSSM模型表示层使用的是BOW(bag of words)词袋模型，没有考虑词序的信息。不考虑词序其实存在明显的问题，因为一句话可能词相同，但是语义则相差十万八千里，比如“我爱女朋友”和“女朋友爱我”可能差距蛮大的(这个小伙伴们自己体会)。&lt;/p&gt;
-&lt;p&gt;下图是DSSM表示层的结构：&lt;/p&gt;
+&lt;p&gt;其中，C是我们的上下文长度，假设长度是2，那么下图中梨的上下文就是前后的两个item：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/125.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/156.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/125.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/156.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;p&gt;最下面的Term Vector到Word Hashing将词映射到3W维的向量空间中。然后分别经过两层300维度的隐藏层，最后统一输出128维度的向量。&lt;/p&gt;
-&lt;h4 id=&#34;匹配层&#34;&gt;匹配层&lt;/h4&gt;
-&lt;p&gt;现在我们把query和doc统一转换成了两个128维的语义向量，接下来如何计算它们的语义相似度呢？通过cos函数计算这两个向量的余弦相似度就可以了，公式如下：&lt;/p&gt;
+&lt;p&gt;有关Skip-Gram模型的相关知识，可以参考：&lt;a href=&#34;https://www.cnblogs.com/peghoty/p/3857839.html&#34;&gt;https://www.cnblogs.com/peghoty/p/3857839.html&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;在基本的Skip-Gram模型中，概率计算方式定义为如下的softmax方程：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/126.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/157.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/126.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/157.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;h3 id=&#34;23-dssm模型的优缺点&#34;&gt;2.3 DSSM模型的优缺点&lt;/h3&gt;
-&lt;p&gt;先说说DSSM模型的优点：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;解决了LSA、LDA、Autoencoder等方法存在的字典爆炸问题，从而降低了计算复杂度。因为英文中词的数量要远远高于字母n-gram的数量；&lt;/li&gt;
-&lt;li&gt;中文方面使用字作为最细切分粒度，可以复用每个字表达的语义，减少分词的依赖，从而提高模型的泛化能力；&lt;/li&gt;
-&lt;li&gt;字母的n-gram可以更好的处理新词，具有较强的鲁棒性；&lt;/li&gt;
-&lt;li&gt;使用有监督的方法，优化语义embedding的映射问题；&lt;/li&gt;
-&lt;li&gt;省去了人工特征工程；&lt;/li&gt;
-&lt;li&gt;采用有监督训练，精度较高。传统的输入层使用embedding的方式(比如Word2vec的词向量)或者主题模型的方式(比如LDA的主题向量)做词映射，再把各个词的向量拼接或者累加起来。由&lt;/li&gt;
-&lt;li&gt;Word2vec和LDA都是无监督训练，会给模型引入误差。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;再说说DSSM模型的缺点：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Word Hashing可能造成词语冲突；&lt;/li&gt;
-&lt;li&gt;采用词袋模型，损失了上下文语序信息。这也是后面会有CNN-DSSM、LSTM-DSSM等DSSM模型变种的原因；&lt;/li&gt;
-&lt;li&gt;搜索引擎的排序由多种因素决定，用户点击时doc排名越靠前越容易被点击，仅用点击来判断正负样本，产生的噪声较大，模型难以收敛；&lt;/li&gt;
-&lt;li&gt;效果不可控。因为是端到端模型，好处是省去了人工特征工程，但是也带来了端到端模型效果不可控的问题。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;3-推荐领域中的dssm双塔模型&#34;&gt;3 推荐领域中的DSSM双塔模型&lt;/h2&gt;
-&lt;h3 id=&#34;31-从nlp领域跨界到推荐领域的dssm&#34;&gt;3.1 从NLP领域跨界到推荐领域的DSSM&lt;/h3&gt;
-&lt;p&gt;DSSM深度语义匹配模型最早是应用于NLP领域中计算语义相似度任务。因为语义匹配本身是一种排序问题，和推荐场景不谋而合，所以DSSM模型被自然的引入到推荐领域中。DSSM模型分别使用相对独立的两个复杂网络构建用户相关特征的user embedding和item相关特征的item embedding，所以称为双塔模型。&lt;/p&gt;
-&lt;h3 id=&#34;32-朴素的dssm双塔模型2015&#34;&gt;3.2 朴素的DSSM双塔模型，2015&lt;/h3&gt;
-&lt;p&gt;双塔模型最大的特点是user和item是独立的两个子网络，对工业界十分友好。将两个塔各自缓存，线上预测的时候只需要在内存中进行相似度运算即可。下面是2015年朴素的DSSM双塔模型结构：&lt;/p&gt;
+&lt;p&gt;其中，每个物品都有两套向量表示，分别是目标向量表示和上下文向量表示。D表示item的总数量。&lt;/p&gt;
+&lt;h3 id=&#34;22-log-uniform-negative-sampling&#34;&gt;2.2 Log-uniform Negative-sampling&lt;/h3&gt;
+&lt;p&gt;当item的总数量十分巨大时，求解Skip-Gram的方法通常是负采样的方式，此时概率计算如下：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/127.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/158.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/127.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/158.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;h3 id=&#34;33-百度的双塔模型&#34;&gt;3.3 百度的双塔模型&lt;/h3&gt;
+&lt;p&gt;这里使用的负采样方式是Log-uniform Negative-sampling。简单介绍一下其流程：首先将D个物品按照其出现的频率进行降序排序，那么排名越靠前的物品，其出现的频率越高。采样基于Zipfian分布，每个物品采样到的概率如下：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/128.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/159.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/128.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/159.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;p&gt;百度的双塔模型分别使用复杂的网络对用户相关的特征和广告相关的特征进行embedding，分别形成两个独立的塔，在最后的交叉层之前用户特征和广告特征之间没有任何交互。这种方案就是训练时引入更多的特征完成复杂网络离线训练，然后将得到的user embedding和item embedding存入redis这一类内存数据库中。线上预测时使用LR、浅层NN等轻量级模型或者更方便的相似距离计算方式。这也是业界很多大厂采用的推荐系统的构造方式。&lt;/p&gt;
-&lt;h3 id=&#34;34-谷歌的双塔模型2019&#34;&gt;3.4 谷歌的双塔模型，2019&lt;/h3&gt;
-&lt;p&gt;2019年谷歌推出自己的双塔模型，文章的核心思想是：在大规模的推荐系统中，利用双塔模型对user-item对的交互关系进行建模，从而学习【用户，上下文】向量和【item】向量的关联。针对大规模流数据，提出in-batch softmax损失函数与流数据频率估计方法更好的适应item的多种数据分布。&lt;/p&gt;
-&lt;p&gt;利用双塔模型构建Youtube视频推荐系统，对于用户侧的塔根据用户观看视频特征构建user embedding，对于视频侧的塔根据视频特征构建video emebdding。两个塔分别是相互独立的网络。&lt;/p&gt;
+&lt;p&gt;由于分母都是一样的，分子依次为log(2/1),log(3/2)&amp;hellip;log(D+1/D)，是顺次减小的，同时求和为1。那么排名越靠前即出现频率越高的商品，被采样到的概率是越大的。&lt;/p&gt;
+&lt;p&gt;那么，该分布的累积分布函数为：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/129.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/160.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/129.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/160.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;h1 id=&#34;4-实战广告推荐的双塔模型&#34;&gt;4 实战广告推荐的双塔模型&lt;/h1&gt;
-&lt;h2 id=&#34;41-广告推荐业务场景&#34;&gt;4.1 广告推荐业务场景&lt;/h2&gt;
-&lt;p&gt;讲了上面一大堆，就是为了这一节构建咱们广告推荐的DSSM双塔模型。对应到咱们的广告业务就是构建DSSM双塔模型，用户侧输入用户对广告的历史行为特征(包括点击、下载、付费等)从而得到固定长度的user embedding，同理广告侧输入广告特征得到相同长度的ad embedding，分别存入redis内存数据库中。&lt;/p&gt;
-&lt;p&gt;线上infer时给定一个广告ad，然后分别和全量用户求相似度，找到“距离最近”的user子集，对这部分人群投放广告从而完成广告推荐任务。&lt;/p&gt;
-&lt;h2 id=&#34;42-广告推荐的dssm双塔模型结构&#34;&gt;4.2 广告推荐的DSSM双塔模型结构&lt;/h2&gt;
-&lt;p&gt;模型整体结构如下图所示，也分成三层：输入层、表示层和匹配层。&lt;/p&gt;
+&lt;p&gt;这样，当随机产生一个(0,1]之间的随机数r时，可以通过下面的转换快速得到对应的index：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/130.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/161.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/130.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/161.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-</description>
-      
-    </item>
-    
-    <item>
-      <title>推荐系统之谷歌MMOE架构</title>
-      <link>https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/</link>
-      <pubDate>Tue, 30 Mar 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/</guid>
-      
-        <description>&lt;p&gt;多任务学习最近越来越受欢迎，咱们前面也介绍过几篇阿里多任务学习的模型，不过多任务学习的效果受不同任务之间的相关性影响较大，因此本文基于Mixture-of-Experts (MoE)模型，提出了一种显式建模任务相关性的模型Multi-gate Mixture-of-Experts (MMoE) ，一起来学习一下。&lt;/p&gt;
-&lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
-&lt;p&gt;近年来，深度神经网络的应用越来越广，如推荐系统。推荐系统通常需要同时优化多个目标，如电影推荐中不仅需要预测用户是否会购买，还需要预测用户对于电影的评分，在比如电商领域同时需要预测物品的点击率CTR和转化率CVR。因此，多任务学习模型成为研究领域的一大热点。&lt;/p&gt;
-&lt;p&gt;许多多任务学习模型取得了不错的效果，但是实践中多任务学习模型并不总比单任务模型效果更突出。这主要是因为不同任务之间的相关性低（如数据的分布不同等等）导致的。&lt;/p&gt;
-&lt;p&gt;是不是真的如上述所说，任务之间的相关性会影响多任务学习的效果呢，咱们先在第二节中做一个实验。&lt;/p&gt;
-&lt;h2 id=&#34;2-任务相关性试验&#34;&gt;2 任务相关性试验&lt;/h2&gt;
-&lt;h3 id=&#34;21-一般的多任务学习模型框架&#34;&gt;2.1 一般的多任务学习模型框架&lt;/h3&gt;
-&lt;p&gt;一般的多任务学习模型框架如下：&lt;/p&gt;
-
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/112.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/112.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;对于不同的任务，底层的参数和网络结构是共享的，然后上层经过不同的神经网络得到对应任务的输出。 假设底层输出是$f(x)$，那么第k个任务的输出$y_k$为：&lt;/p&gt;
-&lt;p&gt;$$
-y_k = h^k (f(x))
-$$&lt;/p&gt;
-&lt;p&gt;其中$h^k$是第$k$个任务上层神经网络的参数。&lt;/p&gt;
-&lt;h3 id=&#34;22-任务相关性实验&#34;&gt;2.2 任务相关性实验&lt;/h3&gt;
-&lt;p&gt;接下来，我们通过一个实验来探讨任务相关性和多任务学习效果的关系。&lt;/p&gt;
-&lt;p&gt;假设模型中包含两个回归任务，而数据通过采样生成，并且规定输入相同，输出label不同。那么任务的相关性就使用label之间的皮尔逊相关系数来表示，相关系数越大，表示任务之间越相关，数据生成的过程如下：&lt;/p&gt;
+&lt;h3 id=&#34;23-ids-and-their-structural-connections&#34;&gt;2.3 IDs and Their Structural Connections&lt;/h3&gt;
+&lt;p&gt;实际应用中，有许多组不同的ID，但是可以归结为两组：&lt;/p&gt;
+&lt;p&gt;1）物品ID及其属性ID：物品item ID是电商领域的核心，每一个物品有对应的属性ID，比如产品product ID，店铺store ID，品牌brand ID，品类category ID等。举个简单的例子，xxx店卖的哈登篮球鞋是一个物品item ID，其对应的产品是哈登篮球鞋，对应一个product ID，另一家店卖的同款哈登篮球鞋是另一个item ID。xxx店对应的是一个store ID，addias是哈登篮球鞋对应的品牌brand ID，而篮球鞋是其对应的category ID。品类ID可能有分一级品类、二级品类和三级品类。&lt;/p&gt;
+&lt;p&gt;2）用户ID：用户身份可以通过ID进行识别，这里的ID可以有多种形式，如cookie、uuid、用户昵称等等。&lt;/p&gt;
+&lt;h3 id=&#34;24-jointly-embedding-attribute-ids&#34;&gt;2.4 Jointly Embedding Attribute IDs&lt;/h3&gt;
+&lt;p&gt;如何将上面所说的属性ID加入到物品ID的表示上来呢？结构如下：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/113.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/162.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/113.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/162.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;p&gt;首先，生成了两个垂直的单位向量u1和u2，并根据两个单位向量生成了模型的系数w1和w2，如上图中的第二步。w1和w2之间的cosine距离即为p，大伙可以根据cosine的计算公式得到。&lt;/p&gt;
-&lt;p&gt;随后基于正态分布的到输入数据x，而y根据下面的两个式子的到：&lt;/p&gt;
+&lt;p&gt;这里，定义item i的ID组IDs(item i)如下：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/114.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/163.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/114.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/163.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;p&gt;注意，这里x和y之间并非线性的关系，因为模型的第二步是多个sin函数，因此label之间的皮尔逊相关系数和参数w1和w2之间的cosine距离并不相等，但是呈现出一个正相关的关系，如下图：&lt;/p&gt;
+&lt;p&gt;这里，id1(item i)代表物品本身，id2(item i)代表产品ID，id3(item i)代表店铺ID等等。那么，Skip-gram的概率计算变为如下的方式：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/115.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/164.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/115.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/164.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;p&gt;因此，本文中使用参数的cosine距离来近似表示任务之间的相关性。&lt;/p&gt;
-&lt;h3 id=&#34;23-实验结果&#34;&gt;2.3 实验结果&lt;/h3&gt;
-&lt;p&gt;基于上述数据生成过程以及任务相关性的表示方法，分别测试任务相关性在0.5、0.9和1时的多任务学习模型的效果，如下图：&lt;/p&gt;
+&lt;p&gt;这里，每一种ID的向量长度可以是不同的，也就是说不通的ID类映射到不同的语义空间中。而权重的定义方式如下：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/116.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/165.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/116.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/165.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;p&gt;可以看到的是，随着任务相关性的提升，模型的loss越小，效果越好，从而印证了前面的猜想。&lt;/p&gt;
-&lt;h2 id=&#34;3-mmoe模型&#34;&gt;3 MMoE模型&lt;/h2&gt;
-&lt;h3 id=&#34;31-moe模型&#34;&gt;3.1 MoE模型&lt;/h3&gt;
-&lt;p&gt;先来看一下Mixture-of-Experts (MoE)模型（文中后面称作 One-gate Mixture-of-Experts (OMoE)），如下图所示：&lt;/p&gt;
+&lt;p&gt;比如，$w_{i1}$=1,因为item$_i$是唯一的，而如果item$&lt;em&gt;i$对应的产品有10种item的话，那么$w&lt;/em&gt;{i2}=1/10$。&lt;/p&gt;
+&lt;p&gt;除了上面计算的item之间的共现概率外，我们还希望，属性ID和itemID之间也要满足一定的关系，简单理解就是希望itemID和其对应的属性ID关系越近越好，于是定义：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/117.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/166.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/117.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/166.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;p&gt;可以看到，相较于一般的多任务学习框架，共享的底层分为了多个expert，同时设置了一个Gate，使不同的数据可以多样化的使用共享层。此时共享层的输出可以表示为：&lt;/p&gt;
-&lt;p&gt;$$
-y = \sum_{i = 1}^n g_i(x)f_i(x)
-$$&lt;/p&gt;
-&lt;p&gt;其中$f_i$代表第$i$个expert的输出，$g_i$代表第$i$个expert对应的权重，是基于输入数据得到的，计算公式为$g(x) = softmax(W_g x)$。&lt;/p&gt;
-&lt;h3 id=&#34;32-mmoe模型&#34;&gt;3.2 MMoE模型&lt;/h3&gt;
-&lt;p&gt;相较于MoE模型，Multi-gate Mixture-of-Experts (MMoE)模型为每一个task设置了一个gate，使不同的任务和不同的数据可以多样化的使用共享层，模型结构如下：&lt;/p&gt;
+&lt;p&gt;其中Mk将item ID对应的向量转换成跟每个属性ID对应向量长度一样的向量。&lt;/p&gt;
+&lt;p&gt;结合两部分的对数概率，加入正则项，则我们期望最大化的式子变为：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/118.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/167.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/118.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/167.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;p&gt;此时每个任务的共享层的输出不同，第k个任务的共享层输出计算公式如下：&lt;/p&gt;
-&lt;p&gt;$$
-f^k(x) = \sum_{i = 1}^n g_i^k(x)f_i(x) \
-$$&lt;/p&gt;
-&lt;p&gt;$$
-g^k(x) = softmax(W_{gk} x)
-$$&lt;/p&gt;
-&lt;p&gt;随后每个任务对应的共享层输出，经过多层全连接神经网络得到每个任务的输出：&lt;/p&gt;
-&lt;p&gt;$$
-y_k = h^k(f^k(x))
-$$&lt;/p&gt;
-&lt;p&gt;从直观上考虑，如果两个任务并不十分相关，那么经过Gate之后，二者得到的权重系数会差别比较大，从而可以利用部分expert网络输出的信息，近似于多个单任务学习模型。如果两个任务紧密相关，那么经过Gate得到的权重分布应该相差不多，类似于一般的多任务学习框架。&lt;/p&gt;
-&lt;h2 id=&#34;4-实验结果&#34;&gt;4 实验结果&lt;/h2&gt;
-&lt;p&gt;先回顾上面介绍的三种多任务学习的架构：&lt;/p&gt;
+&lt;h3 id=&#34;25-embedding-user-ids&#34;&gt;2.5 Embedding User IDs&lt;/h3&gt;
+&lt;p&gt;用户ID的Embedding通常通过其交互过的item表示，比如通过一个RNN模型或者简单的取平均的方式，这里我们将用户最近交互过的T个物品对应向量的平均值，来代表用户的Embedding：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/119.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/168.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/119.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/168.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;p&gt;实验分为三部分：人工合成数据集（即本文第二部分所介绍的人工生成的数据集）、UCI census-income dataset和Large-scale Content Recommendation。&lt;/p&gt;
-&lt;h3 id=&#34;41-人工合成数据集-实验结果&#34;&gt;4.1 人工合成数据集-实验结果&lt;/h3&gt;
+&lt;p&gt;这里提到的是用平均值法代表用户的Embedding，后文还提到了一种加权法，主要根据用户的不同行为对T个物品进行加权，比如，购买过的物品要比只点击不购买的物品获得更高的权重。&lt;/p&gt;
+&lt;h3 id=&#34;26-model-learning&#34;&gt;2.6 Model Learning&lt;/h3&gt;
+&lt;p&gt;模型的训练具体参数如下：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/120.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/169.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/120.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/169.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;h3 id=&#34;42-uci-census-income-dataset-实验结果&#34;&gt;4.2 UCI census-income dataset-实验结果&lt;/h3&gt;
-&lt;p&gt;这块文中介绍了几种多任务学习的模式，这里就不过多介绍了。&lt;/p&gt;
+&lt;h2 id=&#34;3-应用&#34;&gt;3 应用&lt;/h2&gt;
+&lt;p&gt;本节我们来介绍一下上述方法的四种应用。在应用中，上述的框架我们将其定义为一种ITEM2VEC的方法。下文中ITEM2VEC便指代本文提出的新方法。&lt;/p&gt;
+&lt;h3 id=&#34;31-measuring-items-similarity&#34;&gt;3.1 Measuring Items Similarity&lt;/h3&gt;
+&lt;p&gt;在电商领域中，一种简单却有效的方式就是推荐给用户其喜欢的相似物品。通常使用cosine相似度来计算物品之间的相似度。那么应用上面的框架，基于得到的物品向量，便可以计算其相似度，进而推荐相似度最高的N个物品。&lt;/p&gt;
+&lt;p&gt;我们将其与协同过滤方法进行了对比，结果如下：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/121.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/170.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/121.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/170.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;h3 id=&#34;43-large-scale-content-recommendation-实验结果&#34;&gt;4.3 Large-scale Content Recommendation-实验结果&lt;/h3&gt;
+&lt;p&gt;可以看到，点击率超过了协同过滤模型。&lt;/p&gt;
+&lt;h3 id=&#34;transferring-from-seen-items-to-unseen-items&#34;&gt;Transferring from Seen Items to Unseen Items&lt;/h3&gt;
+&lt;p&gt;对于新的物品，无法得到其向量表示，这导致了许多推荐系统无法对新物品进行处理。但本文提出的方法可以在一定程度上解决冷启动问题。在模型训练时，我们添加了约束，即希望itemID和其对应的属性ID关系越近越好，如下式：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
     &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/122.webp&#34; /&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/171.webp&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/122.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/171.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;我们期望上面的式子越接近于1越好，因此：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/172.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/172.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;那么对于新的物品，其对应的属性ID我们往往是知道的，基于其属性ID对应的向量，我们便可以近似计算新物品的向量。上面最后一个地方可以好好理解一下，为什么可以表示成近似？&lt;/p&gt;
+&lt;p&gt;我的思考如下(不一定正确，望指正）：如果我们把括号里面的向量表示成另一个向量e的话，当两个向量长度固定的时候，什么时候内积取得最大值？是二者同向且共线的时候，那么ei1和e应该是线性关系，即使e是真实的ei1的n倍的话，在计算该物品与其他物品的相似度的时候，是不会产生影响的，因此ei1可近似用e来代替。&lt;/p&gt;
+&lt;p&gt;实验结果也表明，这种代替方式是十分有效的。下面的表格展示了实验结果：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/173.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/173.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&#34;33-transferring-across-different-domains&#34;&gt;3.3 Transferring across Different Domains&lt;/h3&gt;
+&lt;p&gt;第三个应用主要是针对用户冷启动，在盒马平台上，相对于淘宝平台用户数量还是少很多的。那么对于盒马平台上的新用户，我们如何进行推荐呢？过程如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/174.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/174.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这里，用Us表示淘宝的用户，Ut表示盒马的用户，Ui表示既是淘宝又是盒马的用户，那么进行推荐的过程如下：&lt;/p&gt;
+&lt;p&gt;1）计算淘宝用户Us之间的相似度，相似度的计算基于用户最近在淘宝交互过的T个商品的向量。可以是简单的平均，可以是加权平均。权重取决于人工的设定，比如购买是5，点击是1；
+2）基于计算的用户相似度，对Ui中的用户进行k-均值聚类，这里聚成1000个类别；
+3）对于每个类别，选择N个最受欢迎的盒马上的物品，作为候选集；
+4）对于盒马上的一个新用户，如果它在淘宝上有交互记录，那么就取得他在淘宝上对应的用户向量，并计算该向量所属的类别；
+5）基于得到的类别，将经过筛选和排序后的该类别的候选集中物品中推荐给用户。&lt;/p&gt;
+&lt;p&gt;我们对比了三种不同策略的PPM(Pay-Per-Impression)值，三种策略为：&lt;/p&gt;
+&lt;p&gt;1）推荐给新用户最热门的物品，该组为Base
+2）基于简单平均的方式计算用户向量
+3）基于加权平均的方式计算用户向量&lt;/p&gt;
+&lt;p&gt;实验结果表明，采用简单平均的方式，PPM提升71.4%，采用加权平均的方式，PPM提升141.8%。&lt;/p&gt;
+&lt;h3 id=&#34;34-transferring-across-different-tasks&#34;&gt;3.4 Transferring across Different Tasks&lt;/h3&gt;
+&lt;p&gt;这里，我们主要对每个店铺第二天每个30分钟的配送需求进行预测，这里有三种不同的输入：&lt;/p&gt;
+&lt;p&gt;1）仅使用过去7天每三十分钟的店铺配送量作为输入
+2）使用使用过去7天每三十分钟的店铺配送量作为输入 + 店铺ID的one-hot encoding
+3）使用使用过去7天每三十分钟的店铺配送量作为输入 + 店铺ID对应的向量。&lt;/p&gt;
+&lt;p&gt;输入经过全联接神经网络得到配送需求的预测值，并通过RMAE指标来计算误差，结果如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/175.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/175.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&#34;4-总结&#34;&gt;4 总结&lt;/h2&gt;
+&lt;p&gt;本文介绍了一种处理ID类特征的方式，该方式基于Skip-Gram方法，并考虑了多种不同ID类特征之间的联系。本文介绍了该方法的详细过程，以及在盒马app上的具体应用，具有一定的参考价值。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/176.webp&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/176.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 

@@ -7,31 +7,31 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Fri, 04 Mar 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 23 Mar 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Game AI</title>
-      <link>https://yshane-ai.github.io/categories/game-ai/</link>
-      <pubDate>Fri, 04 Mar 2022 16:01:23 +0800</pubDate>
+      <title>ML</title>
+      <link>https://yshane-ai.github.io/categories/ml/</link>
+      <pubDate>Wed, 23 Mar 2022 16:01:23 +0800</pubDate>
       
-      <guid>https://yshane-ai.github.io/categories/game-ai/</guid>
+      <guid>https://yshane-ai.github.io/categories/ml/</guid>
       <description></description>
     </item>
     
     <item>
       <title>RL</title>
       <link>https://yshane-ai.github.io/categories/rl/</link>
-      <pubDate>Fri, 04 Mar 2022 16:01:23 +0800</pubDate>
+      <pubDate>Mon, 14 Mar 2022 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/categories/rl/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>ML</title>
-      <link>https://yshane-ai.github.io/categories/ml/</link>
-      <pubDate>Thu, 13 Jan 2022 16:01:23 +0800</pubDate>
+      <title>Game AI</title>
+      <link>https://yshane-ai.github.io/categories/game-ai/</link>
+      <pubDate>Fri, 04 Mar 2022 16:01:23 +0800</pubDate>
       
-      <guid>https://yshane-ai.github.io/categories/ml/</guid>
+      <guid>https://yshane-ai.github.io/categories/game-ai/</guid>
       <description></description>
     </item>
     
@@ -74,7 +74,7 @@
     <item>
       <title>Recommendation System</title>
       <link>https://yshane-ai.github.io/categories/recommendation-system/</link>
-      <pubDate>Sun, 18 Apr 2021 16:01:23 +0800</pubDate>
+      <pubDate>Fri, 23 Apr 2021 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/categories/recommendation-system/</guid>
       <description></description>

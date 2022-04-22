@@ -7,7 +7,16 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Fri, 04 Mar 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/rl/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 14 Mar 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/rl/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Q-Learning为什么不需要重要性采样</title>
+      <link>https://yshane-ai.github.io/post/80-q-learning%E9%87%8D%E8%A6%81%E6%80%A7%E9%87%87%E6%A0%B7/</link>
+      <pubDate>Mon, 14 Mar 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/80-q-learning%E9%87%8D%E8%A6%81%E6%80%A7%E9%87%87%E6%A0%B7/</guid>
+      <description>这个问题其实反映了value-based方法与policy-based方法本质的不同。value-based的方法主要是基于bellman e</description>
+    </item>
+    
     <item>
       <title>关于RL实战的一点想法</title>
       <link>https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/</link>
