@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>详解Transformer: Attention is all you need - Yang Xinxin&#39;s Blog</title>
+  <title>Transformer详解与Pytorch实践 - Yang Xinxin&#39;s Blog</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="虽然网上已经有很多Transformer的资料，但是自己梳理一下并且动手实现还是非常重要的。 整体架构如下： 模型的输入是英文句子，输出是法语句" />
+  <meta name="description" content="Transformer最早应用于机器翻译领域，但是现在已经席卷了整个CV、NLP和搜广推领域，虽然网上已经有很多Transformer的资料" />
 
   <meta name="keywords" content="RL, ML, " />
 
@@ -59,20 +59,20 @@
 
 
 
-<meta property="og:title" content="详解Transformer: Attention is all you need" />
-<meta property="og:description" content="虽然网上已经有很多Transformer的资料，但是自己梳理一下并且动手实现还是非常重要的。 整体架构如下： 模型的输入是英文句子，输出是法语句" />
+<meta property="og:title" content="Transformer详解与Pytorch实践" />
+<meta property="og:description" content="Transformer最早应用于机器翻译领域，但是现在已经席卷了整个CV、NLP和搜广推领域，虽然网上已经有很多Transformer的资料" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://yshane-ai.github.io/post/70-transformer/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2022-03-23T16:01:23+08:00" />
 <meta property="article:modified_time" content="2022-03-23T16:01:23+08:00" />
 
-<meta itemprop="name" content="详解Transformer: Attention is all you need">
-<meta itemprop="description" content="虽然网上已经有很多Transformer的资料，但是自己梳理一下并且动手实现还是非常重要的。 整体架构如下： 模型的输入是英文句子，输出是法语句"><meta itemprop="datePublished" content="2022-03-23T16:01:23+08:00" />
+<meta itemprop="name" content="Transformer详解与Pytorch实践">
+<meta itemprop="description" content="Transformer最早应用于机器翻译领域，但是现在已经席卷了整个CV、NLP和搜广推领域，虽然网上已经有很多Transformer的资料"><meta itemprop="datePublished" content="2022-03-23T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2022-03-23T16:01:23+08:00" />
-<meta itemprop="wordCount" content="3653">
+<meta itemprop="wordCount" content="3736">
 <meta itemprop="keywords" content="ML," /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="详解Transformer: Attention is all you need"/>
-<meta name="twitter:description" content="虽然网上已经有很多Transformer的资料，但是自己梳理一下并且动手实现还是非常重要的。 整体架构如下： 模型的输入是英文句子，输出是法语句"/>
+<meta name="twitter:title" content="Transformer详解与Pytorch实践"/>
+<meta name="twitter:description" content="Transformer最早应用于机器翻译领域，但是现在已经席卷了整个CV、NLP和搜广推领域，虽然网上已经有很多Transformer的资料"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -251,6 +251,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -344,10 +348,6 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/24-nvidia-gpu%E7%B3%BB%E5%88%97%E4%BB%8B%E7%BB%8D/">英伟达GPU系列介绍</a>
-              </li>
-            
-              <li>
-                <a href="https://yshane-ai.github.io/post/70-transformer/">详解Transformer: Attention is all you need</a>
               </li>
             
           </ul>
@@ -603,6 +603,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -698,10 +702,6 @@
                 <a href="https://yshane-ai.github.io/post/24-nvidia-gpu%E7%B3%BB%E5%88%97%E4%BB%8B%E7%BB%8D/">英伟达GPU系列介绍</a>
               </li>
             
-              <li>
-                <a href="https://yshane-ai.github.io/post/70-transformer/">详解Transformer: Attention is all you need</a>
-              </li>
-            
           </ul>
 
         
@@ -725,7 +725,7 @@
           <article class="post bg-white">
     
     <header class="post-header">
-      <h1 class="post-title">详解Transformer: Attention is all you need</h1>
+      <h1 class="post-title">Transformer详解与Pytorch实践</h1>
       
       <div class="post-meta">
         <time datetime="2022-03-23" class="post-time">
@@ -752,16 +752,20 @@
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#embedding">Embedding</a></li>
-    <li><a href="#positional-encoding">Positional Encoding</a></li>
-    <li><a href="#mask">Mask</a></li>
-    <li><a href="#multi-headed-attention">Multi-Headed Attention</a></li>
-    <li><a href="#calculating-attention">Calculating Attention</a></li>
-    <li><a href="#the-feed-forward-network">The Feed-Forward Network</a></li>
-    <li><a href="#normalization">Normalization</a></li>
-    <li><a href="#putting-it-all-together">Putting it all together</a></li>
-    <li><a href="#训练模型">训练模型</a></li>
-    <li><a href="#测试模型">测试模型</a></li>
+    <li><a href="#1-模型介绍">1 模型介绍</a>
+      <ul>
+        <li><a href="#11-embedding">1.1 Embedding</a></li>
+        <li><a href="#12-positional-encoding">1.2 Positional Encoding</a></li>
+        <li><a href="#13-mask">1.3 Mask</a></li>
+        <li><a href="#14-multi-headed-attention">1.4 Multi-Headed Attention</a></li>
+        <li><a href="#15-calculating-attention">1.5 Calculating Attention</a></li>
+        <li><a href="#16-the-feed-forward-network">1.6 The Feed-Forward Network</a></li>
+        <li><a href="#17-normalization">1.7 Normalization</a></li>
+        <li><a href="#18-putting-it-all-together">1.8 Putting it all together</a></li>
+      </ul>
+    </li>
+    <li><a href="#2-训练模型">2 训练模型</a></li>
+    <li><a href="#3-测试模型">3 测试模型</a></li>
   </ul>
 </nav>
   </div>
@@ -769,10 +773,23 @@
 
     
     <div class="post-content">
-      <p>虽然网上已经有很多Transformer的资料，但是自己梳理一下并且动手实现还是非常重要的。</p>
+      
+<link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/176-0.jpeg" />
+    </div>
+    <a href="/image/23-Recommendation/176-0.jpeg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>Transformer最早应用于机器翻译领域，但是现在已经席卷了整个CV、NLP和搜广推领域，虽然网上已经有很多Transformer的资料，但是自己梳理一下并且动手实现还是非常重要的。</p>
+<h2 id="1-模型介绍">1 模型介绍</h2>
 <p>整体架构如下：</p>
 
-<link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
+
 <div class="box">
 <figure  itemprop="associatedMedia"
   itemscope itemtype="http://schema.org/ImageObject" >
@@ -791,8 +808,8 @@
 <li>为什么要有多头注意力？</li>
 <li>前向传播层在哪里用到了？</li>
 </ul>
-<h2 id="embedding">Embedding</h2>
-<p>Embedding是NMT领域的常规操作，相比于one-hot编码方式，embedding操作可以在表达相同信息的条件下，尽可能降低输入的维度。</p>
+<h3 id="11-embedding">1.1 Embedding</h3>
+<p>Embedding是NMT（Neural Machine Translation）领域的常规操作，相比于one-hot编码方式，embedding操作可以在表达相同信息的条件下，尽可能降低输入的维度。</p>
 <p>Pytorch下的embedding操作如下：</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Embedder</span>(nn<span style="color:#f92672">.</span>Module):
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">def</span> __init__(self, vocab_size, d_model):
@@ -801,10 +818,10 @@
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>embed(x)
 </span></span></code></pre></div><p>当每个单词输入神经网络，这段代码会执行查表的操作，然后获取当前单词的embedding。产生的向量则会被输入到后面的神经网络中，使用梯度下降的方式进行优化。</p>
-<h2 id="positional-encoding">Positional Encoding</h2>
+<h3 id="12-positional-encoding">1.2 Positional Encoding</h3>
 <p>为了让模型理解每个句子，他需要知道了解每个单词的两个特征：这个单词的意思，还有这个单词在句子中的位置。</p>
 <p>上述中的embedding主要学习每个单词的意思，所以在这里我们需要让神经网络知道单词的位置。</p>
-<p>$Vasmari et al$采用正余弦编码的方式来获得每个单词的位置，如下图所示：</p>
+<p>Vasmari et al采用正余弦编码的方式来获得每个单词的位置，如下图所示：</p>
 
 
 <div class="box">
@@ -817,7 +834,19 @@
   </figure>
 </div>
 
-<p>最后获得一个二维矩阵，其中$Pos$表示在句子中的顺序，$i$表示embedding向量中的位置。因此，在输入句子中的第$Pos$个单词的embedding长度为$d_model$，第$2i$个位置元素是$PE_{(pos, 2i)}，第$2i + 1$个位置元素是$PE_{(pos, 2i + 1)}，计算过程如上式。</p>
+
+
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/23-Recommendation/177-1.png" />
+    </div>
+    <a href="/image/23-Recommendation/177-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>最后获得一个二维矩阵，其中$Pos$表示在句子中的顺序，$i$表示embedding向量中的位置。因此，在输入句子中的第$Pos$个单词的embedding长度为$d_model$，第$2i$个位置元素是$PE_{(pos, 2i)}$，第$2i + 1$个位置元素是$PE_{(pos, 2i + 1)}$，计算过程如上式。</p>
 
 
 <div class="box">
@@ -862,7 +891,7 @@
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> x
 </span></span></code></pre></div><p>以上代码可以帮助我们实现每个单词的embedding都加上自身的positional encoding，为模型提供更多的结构信息。</p>
 <p>其中，我们在矩阵相加前的乘法操作是让positional encoding数值变小，从而当我们执行相加操作后不会对原embedding产生过大的影响。</p>
-<h2 id="mask">Mask</h2>
+<h3 id="13-mask">1.3 Mask</h3>
 <p>Masking在Transformer中扮演着重要的角色，主要是由以下两个原因：</p>
 <ul>
 <li>query和key有些部分是填充的，这些需要用mask屏蔽，一个简单的方法就是赋予一个很小很小的值或者直接变为0值。</li>
@@ -905,7 +934,7 @@
 </div>
 
 <p>在计算注意力得分的时候，当前时刻以后的句子贡献的权重就会被置为零。</p>
-<h2 id="multi-headed-attention">Multi-Headed Attention</h2>
+<h3 id="14-multi-headed-attention">1.4 Multi-Headed Attention</h3>
 <p>当获得融合位置信息（positional encoding）的单词embedding和相应的mask后，我们便可以开始搭建我们的模型：</p>
 <p>下图是一个多头注意力模块的流程图：</p>
 
@@ -966,7 +995,7 @@
 </span></span><span style="display:flex;"><span>        output <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>out(concat)
 </span></span><span style="display:flex;"><span>    
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> output
-</span></span></code></pre></div><h2 id="calculating-attention">Calculating Attention</h2>
+</span></span></code></pre></div><h3 id="15-calculating-attention">1.5 Calculating Attention</h3>
 
 
 <div class="box">
@@ -1015,7 +1044,7 @@
 </span></span><span style="display:flex;"><span>        
 </span></span><span style="display:flex;"><span>    output <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>matmul(scores, v)
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> output
-</span></span></code></pre></div><h2 id="the-feed-forward-network">The Feed-Forward Network</h2>
+</span></span></code></pre></div><h3 id="16-the-feed-forward-network">1.6 The Feed-Forward Network</h3>
 <p>终于到了最后前向传播模块了，也十分简单，就是两层全连接网络，同时使用了relu和dropout：</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">FeedForward</span>(nn<span style="color:#f92672">.</span>Module):
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, d_model, d_ff<span style="color:#f92672">=</span><span style="color:#ae81ff">2048</span>, dropout <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.1</span>):
@@ -1029,7 +1058,7 @@
 </span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>linear_2(x)
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
 </span></span></code></pre></div><p>前向传播模块主要用于加深网络，对attention模块的输入在进行特征提取和融合操作。</p>
-<h2 id="normalization">Normalization</h2>
+<h3 id="17-normalization">1.7 Normalization</h3>
 <p>在神经网络中Normalization十分常用，主要用来避免输出变化过大，进而加速稳定训练。</p>
 
 
@@ -1057,7 +1086,7 @@
 </span></span><span style="display:flex;"><span>        norm <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>alpha <span style="color:#f92672">*</span> (x <span style="color:#f92672">-</span> x<span style="color:#f92672">.</span>mean(dim<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>, keepdim<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)) \
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">/</span> (x<span style="color:#f92672">.</span>std(dim<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>, keepdim<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>) <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>eps) <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>bias
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> norm
-</span></span></code></pre></div><h2 id="putting-it-all-together">Putting it all together</h2>
+</span></span></code></pre></div><h3 id="18-putting-it-all-together">1.8 Putting it all together</h3>
 <p>把以上的部分组合在一起，我们来看整体的框架：</p>
 
 
@@ -1162,7 +1191,7 @@
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> output
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># we don&#39;t perform softmax on the output as this will be handled </span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># automatically by our loss function</span>
-</span></span></code></pre></div><h2 id="训练模型">训练模型</h2>
+</span></span></code></pre></div><h2 id="2-训练模型">2 训练模型</h2>
 <p>构建好了模型，剩下的就是训练过程了，我们使用EuroParl数据集来训练。</p>
 <p>我们首先设置一些超参数：</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>d_model <span style="color:#f92672">=</span> <span style="color:#ae81ff">512</span>
@@ -1236,7 +1265,7 @@
   </figure>
 </div>
 
-<h2 id="测试模型">测试模型</h2>
+<h2 id="3-测试模型">3 测试模型</h2>
 <p>我们可以使用下面的代码来测试我们的模型效果。</p>
 <p>我们首先对整个英文句子编码，然后向decoder输入token &lsquo;<!-- raw HTML omitted -->&lsquo;以及encoder的输出，然后decoder开始预测下一个词。然后我们将输出的词append到&rsquo;<!-- raw HTML omitted -->&lsquo;后组成新的向量输入decoder，预测出第二个词。重复以上过程，直到decoder输出&rsquo;<!-- raw HTML omitted -->&lsquo;表示翻译过程结束。</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">translate</span>(model, src, max_len <span style="color:#f92672">=</span> <span style="color:#ae81ff">80</span>, custom_string<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>):

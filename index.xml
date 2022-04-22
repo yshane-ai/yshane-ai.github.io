@@ -51,16 +51,29 @@ IEEE Network&lt;/p&gt;
     </item>
     
     <item>
-      <title>详解Transformer: Attention is all you need</title>
+      <title>Transformer详解与Pytorch实践</title>
       <link>https://yshane-ai.github.io/post/70-transformer/</link>
       <pubDate>Wed, 23 Mar 2022 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/post/70-transformer/</guid>
       
-        <description>&lt;p&gt;虽然网上已经有很多Transformer的资料，但是自己梳理一下并且动手实现还是非常重要的。&lt;/p&gt;
+        <description>
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/176-0.jpeg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/176-0.jpeg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Transformer最早应用于机器翻译领域，但是现在已经席卷了整个CV、NLP和搜广推领域，虽然网上已经有很多Transformer的资料，但是自己梳理一下并且动手实现还是非常重要的。&lt;/p&gt;
+&lt;h2 id=&#34;1-模型介绍&#34;&gt;1 模型介绍&lt;/h2&gt;
 &lt;p&gt;整体架构如下：&lt;/p&gt;
 
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+
 &lt;div class=&#34;box&#34;&gt;
 &lt;figure  itemprop=&#34;associatedMedia&#34;
   itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
@@ -79,8 +92,8 @@ IEEE Network&lt;/p&gt;
 &lt;li&gt;为什么要有多头注意力？&lt;/li&gt;
 &lt;li&gt;前向传播层在哪里用到了？&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;embedding&#34;&gt;Embedding&lt;/h2&gt;
-&lt;p&gt;Embedding是NMT领域的常规操作，相比于one-hot编码方式，embedding操作可以在表达相同信息的条件下，尽可能降低输入的维度。&lt;/p&gt;
+&lt;h3 id=&#34;11-embedding&#34;&gt;1.1 Embedding&lt;/h3&gt;
+&lt;p&gt;Embedding是NMT（Neural Machine Translation）领域的常规操作，相比于one-hot编码方式，embedding操作可以在表达相同信息的条件下，尽可能降低输入的维度。&lt;/p&gt;
 &lt;p&gt;Pytorch下的embedding操作如下：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;Embedder&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, vocab_size, d_model):
@@ -89,10 +102,10 @@ IEEE Network&lt;/p&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, x):
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;embed(x)
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;当每个单词输入神经网络，这段代码会执行查表的操作，然后获取当前单词的embedding。产生的向量则会被输入到后面的神经网络中，使用梯度下降的方式进行优化。&lt;/p&gt;
-&lt;h2 id=&#34;positional-encoding&#34;&gt;Positional Encoding&lt;/h2&gt;
+&lt;h3 id=&#34;12-positional-encoding&#34;&gt;1.2 Positional Encoding&lt;/h3&gt;
 &lt;p&gt;为了让模型理解每个句子，他需要知道了解每个单词的两个特征：这个单词的意思，还有这个单词在句子中的位置。&lt;/p&gt;
 &lt;p&gt;上述中的embedding主要学习每个单词的意思，所以在这里我们需要让神经网络知道单词的位置。&lt;/p&gt;
-&lt;p&gt;$Vasmari et al$采用正余弦编码的方式来获得每个单词的位置，如下图所示：&lt;/p&gt;
+&lt;p&gt;Vasmari et al采用正余弦编码的方式来获得每个单词的位置，如下图所示：&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
@@ -105,7 +118,19 @@ IEEE Network&lt;/p&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;p&gt;最后获得一个二维矩阵，其中$Pos$表示在句子中的顺序，$i$表示embedding向量中的位置。因此，在输入句子中的第$Pos$个单词的embedding长度为$d_model$，第$2i$个位置元素是$PE_{(pos, 2i)}，第$2i + 1$个位置元素是$PE_{(pos, 2i + 1)}，计算过程如上式。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/177-1.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/177-1.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;最后获得一个二维矩阵，其中$Pos$表示在句子中的顺序，$i$表示embedding向量中的位置。因此，在输入句子中的第$Pos$个单词的embedding长度为$d_model$，第$2i$个位置元素是$PE_{(pos, 2i)}$，第$2i + 1$个位置元素是$PE_{(pos, 2i + 1)}$，计算过程如上式。&lt;/p&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
@@ -150,7 +175,7 @@ IEEE Network&lt;/p&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; x
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;以上代码可以帮助我们实现每个单词的embedding都加上自身的positional encoding，为模型提供更多的结构信息。&lt;/p&gt;
 &lt;p&gt;其中，我们在矩阵相加前的乘法操作是让positional encoding数值变小，从而当我们执行相加操作后不会对原embedding产生过大的影响。&lt;/p&gt;
-&lt;h2 id=&#34;mask&#34;&gt;Mask&lt;/h2&gt;
+&lt;h3 id=&#34;13-mask&#34;&gt;1.3 Mask&lt;/h3&gt;
 &lt;p&gt;Masking在Transformer中扮演着重要的角色，主要是由以下两个原因：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;query和key有些部分是填充的，这些需要用mask屏蔽，一个简单的方法就是赋予一个很小很小的值或者直接变为0值。&lt;/li&gt;
@@ -193,7 +218,7 @@ IEEE Network&lt;/p&gt;
 &lt;/div&gt;
 
 &lt;p&gt;在计算注意力得分的时候，当前时刻以后的句子贡献的权重就会被置为零。&lt;/p&gt;
-&lt;h2 id=&#34;multi-headed-attention&#34;&gt;Multi-Headed Attention&lt;/h2&gt;
+&lt;h3 id=&#34;14-multi-headed-attention&#34;&gt;1.4 Multi-Headed Attention&lt;/h3&gt;
 &lt;p&gt;当获得融合位置信息（positional encoding）的单词embedding和相应的mask后，我们便可以开始搭建我们的模型：&lt;/p&gt;
 &lt;p&gt;下图是一个多头注意力模块的流程图：&lt;/p&gt;
 
@@ -254,7 +279,7 @@ IEEE Network&lt;/p&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        output &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;out(concat)
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; output
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;calculating-attention&#34;&gt;Calculating Attention&lt;/h2&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;15-calculating-attention&#34;&gt;1.5 Calculating Attention&lt;/h3&gt;
 
 
 &lt;div class=&#34;box&#34;&gt;
@@ -303,7 +328,7 @@ IEEE Network&lt;/p&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    output &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;matmul(scores, v)
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; output
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;the-feed-forward-network&#34;&gt;The Feed-Forward Network&lt;/h2&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;16-the-feed-forward-network&#34;&gt;1.6 The Feed-Forward Network&lt;/h3&gt;
 &lt;p&gt;终于到了最后前向传播模块了，也十分简单，就是两层全连接网络，同时使用了relu和dropout：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;FeedForward&lt;/span&gt;(nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, d_model, d_ff&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2048&lt;/span&gt;, dropout &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0.1&lt;/span&gt;):
@@ -317,7 +342,7 @@ IEEE Network&lt;/p&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;linear_2(x)
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; x
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;前向传播模块主要用于加深网络，对attention模块的输入在进行特征提取和融合操作。&lt;/p&gt;
-&lt;h2 id=&#34;normalization&#34;&gt;Normalization&lt;/h2&gt;
+&lt;h3 id=&#34;17-normalization&#34;&gt;1.7 Normalization&lt;/h3&gt;
 &lt;p&gt;在神经网络中Normalization十分常用，主要用来避免输出变化过大，进而加速稳定训练。&lt;/p&gt;
 
 
@@ -345,7 +370,7 @@ IEEE Network&lt;/p&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        norm &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;alpha &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; (x &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;mean(dim&lt;span style=&#34;color:#f92672&#34;&gt;=-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, keepdim&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;True&lt;/span&gt;)) \
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; (x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;std(dim&lt;span style=&#34;color:#f92672&#34;&gt;=-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, keepdim&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;True&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;eps) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;bias
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; norm
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;putting-it-all-together&#34;&gt;Putting it all together&lt;/h2&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;18-putting-it-all-together&#34;&gt;1.8 Putting it all together&lt;/h3&gt;
 &lt;p&gt;把以上的部分组合在一起，我们来看整体的框架：&lt;/p&gt;
 
 
@@ -450,7 +475,7 @@ IEEE Network&lt;/p&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; output
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# we don&amp;#39;t perform softmax on the output as this will be handled &lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# automatically by our loss function&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;训练模型&#34;&gt;训练模型&lt;/h2&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;2-训练模型&#34;&gt;2 训练模型&lt;/h2&gt;
 &lt;p&gt;构建好了模型，剩下的就是训练过程了，我们使用EuroParl数据集来训练。&lt;/p&gt;
 &lt;p&gt;我们首先设置一些超参数：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;d_model &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;512&lt;/span&gt;
@@ -524,7 +549,7 @@ IEEE Network&lt;/p&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
 
-&lt;h2 id=&#34;测试模型&#34;&gt;测试模型&lt;/h2&gt;
+&lt;h2 id=&#34;3-测试模型&#34;&gt;3 测试模型&lt;/h2&gt;
 &lt;p&gt;我们可以使用下面的代码来测试我们的模型效果。&lt;/p&gt;
 &lt;p&gt;我们首先对整个英文句子编码，然后向decoder输入token &amp;lsquo;&lt;!-- raw HTML omitted --&gt;&amp;lsquo;以及encoder的输出，然后decoder开始预测下一个词。然后我们将输出的词append到&amp;rsquo;&lt;!-- raw HTML omitted --&gt;&amp;lsquo;后组成新的向量输入decoder，预测出第二个词。重复以上过程，直到decoder输出&amp;rsquo;&lt;!-- raw HTML omitted --&gt;&amp;lsquo;表示翻译过程结束。&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;translate&lt;/span&gt;(model, src, max_len &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;80&lt;/span&gt;, custom_string&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;False&lt;/span&gt;):

@@ -9,12 +9,12 @@
     <copyright>Xinxin Yang</copyright>
     <lastBuildDate>Wed, 23 Mar 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/tags/ml/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>详解Transformer: Attention is all you need</title>
+      <title>Transformer详解与Pytorch实践</title>
       <link>https://yshane-ai.github.io/post/70-transformer/</link>
       <pubDate>Wed, 23 Mar 2022 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/post/70-transformer/</guid>
-      <description>虽然网上已经有很多Transformer的资料，但是自己梳理一下并且动手实现还是非常重要的。 整体架构如下： 模型的输入是英文句子，输出是法语句</description>
+      <description>Transformer最早应用于机器翻译领域，但是现在已经席卷了整个CV、NLP和搜广推领域，虽然网上已经有很多Transformer的资料</description>
     </item>
     
     <item>
