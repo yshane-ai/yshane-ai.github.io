@@ -69,7 +69,7 @@
 <meta itemprop="name" content="游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟">
 <meta itemprop="description" content="发展 首先简要介绍下游戏AI虐人的时间线。 作为流行多年的主流游戏，MOBA类（Dota2，王者荣耀）和RTS游戏（Starcraft2）由于其"><meta itemprop="datePublished" content="2022-01-04T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2022-01-04T16:01:23+08:00" />
-<meta itemprop="wordCount" content="4704">
+<meta itemprop="wordCount" content="4692">
 <meta itemprop="keywords" content="RL,Game AI," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟"/>
 <meta name="twitter:description" content="发展 首先简要介绍下游戏AI虐人的时间线。 作为流行多年的主流游戏，MOBA类（Dota2，王者荣耀）和RTS游戏（Starcraft2）由于其"/>
@@ -259,6 +259,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/71-gcn/">图卷积神经网络GCN详解与Pytorch实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-deepfm/">推荐系统之DeepFM</a>
               </li>
             
@@ -340,6 +344,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/">神经网络的初始化和优化</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/8-%E8%85%BE%E8%AE%AF%E6%B8%B8%E6%88%8Fai%E5%B7%A5%E4%BD%9C%E6%A2%B3%E7%90%86/">腾讯游戏AI工作梳理：觉悟</a>
               </li>
             
               <li>
@@ -611,6 +619,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/71-gcn/">图卷积神经网络GCN详解与Pytorch实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-deepfm/">推荐系统之DeepFM</a>
               </li>
             
@@ -692,6 +704,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/">神经网络的初始化和优化</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/8-%E8%85%BE%E8%AE%AF%E6%B8%B8%E6%88%8Fai%E5%B7%A5%E4%BD%9C%E6%A2%B3%E7%90%86/">腾讯游戏AI工作梳理：觉悟</a>
               </li>
             
               <li>
@@ -813,8 +829,8 @@
 <p>这几个AI在网络结构、算法选择和模型表示上有着相当程度的一致性。这些一致性也可以被认为是解决复杂游戏挑战性的一个标准答案，例如使用LSTM结构、多头输入/输出来应对游戏复杂的时序依赖和动作设计，使用动作掩膜(action mask)来缩小动作空间，状态表示也大同小异。</p>
 <p>下面具体来看看它们的技术实现细节。</p>
 <h3 id="网络结构">网络结构</h3>
-<p>AlphaStar和TStarBot-X：CNN，ResNet，自回归网络，LSTM，Transformer，Pointer Network，MultiInput-Output
-OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output</p>
+<p><strong>AlphaStar和TStarBot-X</strong>：CNN，ResNet，自回归网络，LSTM，Transformer，Pointer Network，MultiInput-Output</p>
+<p><strong>OpenAI Five和绝悟</strong>：LSTM，CNN，MultiInput-Output</p>
 <p>下图是OpenAI Five网络结构的简化版和绝悟的网络结构，图像输入和向量输入分别送入卷积神经网络和全连接层中处理后拼接到一起，接入LSTM，然后经过动作掩膜，输出最终动作。</p>
 
 
@@ -884,8 +900,8 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output</p>
 <p>除此之外还包括三个部分：</p>
 <ol>
 <li>零和奖励系统（zero-sum reward)：由于游戏本身就是一个零和系统，即只有一个队伍获胜，对一方有利的必然对另一方有害。通过给每个英雄的reward减去敌方平均reward的方式来实现零和</li>
-<li>时间权重：对于Dota2而言，英雄到后期的伤害会比游戏前期高很多，意味着游戏后期总的reward会更高（正向和负向的都是），因此学习过程中会导致忽视前期而只注意后期。为了解决这一问题，除了胜负外的所有reward都会乘以一个时间因子：$$\rho_i \leftarrow \rho_i \times 0.6^(T/10mins)$$，使得后期的reward和前期有类似的尺度</li>
-<li>team spirit：由于这个游戏是个团队合作游戏，可能某个智能体在采取坏的动作的同时也受益于其队友的好的行为，用team spirit来衡量单个英雄受团队reward影响的程度。假设每个英雄独立的reward是$$\rho_i$$，那么该英雄最终的reward为$$r_i = (1-\tau)\rho_i + \tau \overline\rho$$，$$\overline\rho$$是该队伍所有英雄的reward均值，$$\tau$$是team spirit，如果$$\tau = 0$$，那么每个英雄只会对自己的动作计算奖励；如果$$\tau = 1$$，那么五个英雄得到的奖励都完全相同，都等于队伍的奖励均值。实验说明前期使用小的team spirit有利于英雄学习独立战斗和微操，后期使用更大的team spirit则能进一步提高团战表现</li>
+<li>时间权重：对于Dota2而言，英雄到后期的伤害会比游戏前期高很多，意味着游戏后期总的reward会更高（正向和负向的都是），因此学习过程中会导致忽视前期而只注意后期。为了解决这一问题，除了胜负外的所有reward都会乘以一个时间因子：$\rho_i \leftarrow \rho_i \times 0.6^{(T/10mins)}$，使得后期的reward和前期有类似的尺度</li>
+<li>team spirit：由于这个游戏是个团队合作游戏，可能某个智能体在采取坏的动作的同时也受益于其队友的好的行为，用team spirit来衡量单个英雄受团队reward影响的程度。假设每个英雄独立的reward是$\rho_i$，那么该英雄最终的reward为$r_i = (1-\tau)\rho_i + \tau \overline\rho$，$\overline\rho$是该队伍所有英雄的reward均值，$\tau$是team spirit，如果$\tau = 0$，那么每个英雄只会对自己的动作计算奖励；如果$\tau = 1$，那么五个英雄得到的奖励都完全相同，都等于队伍的奖励均值。实验说明前期使用小的team spirit有利于英雄学习独立战斗和微操，后期使用更大的team spirit则能进一步提高团战表现</li>
 </ol>
 <p>绝悟1v1和5v5的reward设计如下图：于OpenAI Five类似也用了零和奖励，通过减去敌方平均reward的方式实现。</p>
 <h2 id="对手池">对手池</h2>
@@ -985,7 +1001,7 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output</p>
       
       <nav class="post-nav">
         
-          <a class="prev" href="/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/">
+          <a class="prev" href="/post/8-%E8%85%BE%E8%AE%AF%E6%B8%B8%E6%88%8Fai%E5%B7%A5%E4%BD%9C%E6%A2%B3%E7%90%86/">
             
             <i class="iconfont">
               <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
@@ -995,7 +1011,7 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output</p>
 </svg>
 
             </i>
-            <span class="prev-text nav-default">神经网络的初始化和优化</span>
+            <span class="prev-text nav-default">腾讯游戏AI工作梳理：觉悟</span>
             <span class="prev-text nav-mobile">Prev</span>
           </a>
         

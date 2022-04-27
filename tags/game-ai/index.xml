@@ -18,6 +18,15 @@
     </item>
     
     <item>
+      <title>腾讯游戏AI工作梳理：觉悟</title>
+      <link>https://yshane-ai.github.io/post/8-%E8%85%BE%E8%AE%AF%E6%B8%B8%E6%88%8Fai%E5%B7%A5%E4%BD%9C%E6%A2%B3%E7%90%86/</link>
+      <pubDate>Fri, 07 Jan 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/8-%E8%85%BE%E8%AE%AF%E6%B8%B8%E6%88%8Fai%E5%B7%A5%E4%BD%9C%E6%A2%B3%E7%90%86/</guid>
+      <description>Ye et al_2020_Mastering Complex Control in MOBA Games with Deep Reinforcement Learning 这片工作是叶德珩博士牵头发表于AAAI2020的工作。 在算法方面文章阐述的创新点有以下几点： 使用target atte</description>
+    </item>
+    
+    <item>
       <title>游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟</title>
       <link>https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/</link>
       <pubDate>Tue, 04 Jan 2022 16:01:23 +0800</pubDate>

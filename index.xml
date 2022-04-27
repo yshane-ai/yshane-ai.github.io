@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Wed, 23 Mar 2022 16:01:23 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 27 Mar 2022 16:01:23 +0800</lastBuildDate>
     
         <atom:link href="https://yshane-ai.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -46,6 +46,269 @@ IEEE Network&lt;/p&gt;
 &lt;!-- raw HTML omitted --&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>图卷积神经网络GCN详解与Pytorch实践</title>
+      <link>https://yshane-ai.github.io/post/71-gcn/</link>
+      <pubDate>Sun, 27 Mar 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/71-gcn/</guid>
+      
+        <description>&lt;p&gt;机器学习领域中一个非常重要的分支就是图神经网络，图可以用来构建非常复杂的关系，比如现实世界中的的社交关系，推荐系统中的商品关系以及交通网络中的路口连接关系等，学会使用图神经网络是研究机器学习的不可获取能力之一。&lt;/p&gt;
+&lt;p&gt;本篇文章从非常朴素的方面来介绍图神经网络，并使用pytorch实现一个小的demo模型。&lt;/p&gt;
+&lt;h2 id=&#34;概述&#34;&gt;概述&lt;/h2&gt;
+&lt;p&gt;在研究图神经网络之前需要先回答一个问题：什么是图？图由两个重要的要素构成：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;节点：具有一些特征属性的实体；&lt;/li&gt;
+&lt;li&gt;边：表示两个节点间的关联关系；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;以社交网络为例，对一个人影响最大的是其本身，其次通过这个人的亲密朋友，然后再是其朋友的朋友，以此类推。这就是图神经网络的基本思想，我们通过汇聚当前节点的直接相邻节点、次相邻节点并以此类推节点的信息到当前节点，可以得到目标节点在周围节点影响下的一个状态表达。&lt;/p&gt;
+&lt;p&gt;下图表示一个较小的社交网络图，每个节点代表一个人，节点相连代表两个人是朋友关系。&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/81-GCN/001.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/81-GCN/001.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;我们研究个体A，首先我们观察连接距离为0的朋友信息，即其本人的一些特征信息：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/81-GCN/002.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/81-GCN/002.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;显然依靠这些信息并不能非常了解这个人，那我们再来观察与之相邻距离为1的朋友信息：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/81-GCN/003.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/81-GCN/003.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;我们可以通过其朋友的信息获得对个体A的进一步了解。我们再来观察连接距离为2的朋友信息：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/81-GCN/004.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/81-GCN/004.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;是不是越来越像神经网络了，每个节点汇聚上一层节点的信息作为输入，然后自己的输出再被当做下一层节点的输入。这里我们把汇聚的信息称为&lt;strong&gt;embeddings&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;我们来深入分析一下这里进行的一些计算：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/81-GCN/005.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/81-GCN/005.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;我们定义在第0层的节点的embedding是其本身的特征，而第$k$层的节点的embedding由第$k-1$层的节点embedding的求和平均然后适用激活函数非线性化得到。&lt;/p&gt;
+&lt;p&gt;这里注意两个点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;这里注意每个邻接节点的重要性都是一样的，即上式中的weights是相同的；&lt;/li&gt;
+&lt;li&gt;每次计算节点$v$的embedding时，我们需要保留其本身的特征信息，因此每个节点在更新embedding时都有一条自连接的边；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;目前我们得到了最朴素的图神经网络，他的更新方式稍微有些繁琐，我们引入它的一个改进版本：图卷积神经网络（Graph Convolution Network，GCN），主要有两点不同：&lt;/p&gt;
+&lt;!-- raw HTML omitted --&gt;
+&lt;ul&gt;
+&lt;li&gt;每一层只有一组权重，即相邻节点的权重$W$和自身节点的权重$B$合为了一体；&lt;/li&gt;
+&lt;li&gt;特征融合只发生在相邻节点之间；&lt;/li&gt;
+&lt;/ul&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/81-GCN/006.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/81-GCN/006.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&#34;简易实现&#34;&gt;简易实现&lt;/h2&gt;
+&lt;p&gt;首先我们需要先定义一个GCN层：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; torch
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; torch_geometric.nn &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; MessagePassing
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; torch_geometric.utils &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; add_self_loops, degree
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;GCNConv&lt;/span&gt;(MessagePassing):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, in_channels, out_channels):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        super(GCNConv, self)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__(aggr&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;add&amp;#39;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;lin &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Linear(in_channels, out_channels)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, x, edge_index):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# Step 1: Add self-loops&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        edge_index, _ &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; add_self_loops(edge_index, num_nodes&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;size(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# Step 2: Multiply with weights&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;lin(x)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# Step 3: Calculate the normalization&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        row, col &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; edge_index
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        deg &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; degree(row, x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;size(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;), dtype&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dtype)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        deg_inv_sqrt &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; deg&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pow(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0.5&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        norm &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; deg_inv_sqrt[row] &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; deg_inv_sqrt[col]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# Step 4: Propagate the embeddings to the next layer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;propagate(edge_index, size&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;(x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;size(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;), x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;size(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)), x&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;x,
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                              norm&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;norm)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;message&lt;/span&gt;(self, x_j, norm):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# Normalize node features.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; norm&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;view(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; x_j
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里我们逐行进行分析：&lt;/p&gt;
+&lt;p&gt;在step 1，我们需要对每个节点自身和其相邻节点做特征融合，使用了Pytorch本身的一个库函数就可以实现：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;edge_index, _ &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; add_self_loops(edge_index, num_nodes&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;size(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# add_self_loops方法使用&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# x = torch.tensor([[-1], [0], [1]], dtype=torch.float)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# edge_index = torch.tensor([[0, 1, 1, 2],&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#                            [1, 0, 2, 1]], dtype=torch.long)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# print(&amp;#34;original edge_index &amp;#34;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# print(edge_index)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# edge_index, _ = add_self_loops(edge_index, num_nodes=x.size(0))&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# print(&amp;#34;new edge_index&amp;#34;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# print(edge_index)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# original edge_index &lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# tensor([[0, 1, 1, 2],&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#         [1, 0, 2, 1]])&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# new edge_index&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# tensor([[0, 1, 1, 2, 0, 1, 2],&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#         [1, 0, 2, 1, 0, 1, 2]])&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;接下来需要做embedding和权重w之间的乘积：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;lin(x)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;最后利用每个节点的度计算embedding的归一化系数：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# 获得每条边的起始节点和目标节点&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;row, col &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; edge_index
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# 获得每个节点的度&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;deg &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; degree(row, x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;size(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;), dtype&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;x&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dtype)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# 根据节点的度计算归一化系数，维度等于节点的维度&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;deg_inv_sqrt &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; deg&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pow(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0.5&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# 计算每条边的权重&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;norm &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; deg_inv_sqrt[row] &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; deg_inv_sqrt[col]
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里需要解释一下，为什么对节点计算开方是归一化操作。&lt;/p&gt;
+&lt;p&gt;融合邻居节点特征的最朴素方法是直接对邻居节点进行求和得到：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/81-GCN/007.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/81-GCN/007.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;因为不同节点的边的数量不一样，有的节点边数量特别多，有的则很少，这就导致多边节点在特征融合后的特征值远远大于少边节点，所以需要在节点更新前对邻居传来的信息进行归一化操作，即为$\tilde D^{-1}\tilde A$，所以聚合后变为：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/81-GCN/008.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/81-GCN/008.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;然而上述的归一化只考虑了聚合节点$i$的度，并没有考虑邻居节点$j$的度，这样会导致节点的总特征和在融合后会增加，和现实能量守恒的观点冲突。更好的操作是计算每个节点在融合信息的同时，也向外发射信息，变越多的节点，每条边发送出去的消息量就越小，所以现在的聚合方程如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/81-GCN/009.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/81-GCN/009.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;做完以上工作，我们现在可以开始搭建一个图神经网络了。代码如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; torch
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; torch.nn.functional &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; F
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;Net&lt;/span&gt;(torch&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;nn&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;Module):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; __init__(self, dataset):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        super(Net, self)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;__init__()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;conv1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; GCNConv(dataset&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;num_node_features, &lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;conv2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; GCNConv(&lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt;, dataset&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;num_classes)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;forward&lt;/span&gt;(self, data):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x, edge_index &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; data&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;x, data&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;edge_index
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;conv1(x, edge_index)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; F&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;relu(x)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; F&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;dropout(x, training&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;training)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;conv2(x, edge_index)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; F&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;log_softmax(x, dim&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;现在让我们来测试一下搭建的模型效果吧。但是我们的模型比较小，使用的数据集最好也不要太大，一个比较好的选择是使用2000年左右的Cora数据集，目标是对来自7个不同领域的机器学习论文进行分类，每篇论文的特征包括单词的统计量，两篇论文相连是指他们之间有引用关系。下图展示了数据集的一个分布状态。&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/81-GCN/010.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/81-GCN/010.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;通过训练若干个epochs后可以达到训练集100%和测试集80%的效果，如下图所示：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/81-GCN/011.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/81-GCN/011.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;完整的代码放在了我的&lt;a href=&#34;https://github.com/yshane-ai/yangxx_ML/tree/main/Basic/Transformer&#34;&gt;Github&lt;/a&gt;，你也可以按照以上流程，自己动手实现一个GCN模型，快动手试试吧！&lt;/p&gt;
 </description>
       
     </item>
@@ -797,6 +1060,63 @@ $$&lt;/p&gt;
     </item>
     
     <item>
+      <title>腾讯游戏AI工作梳理：觉悟</title>
+      <link>https://yshane-ai.github.io/post/8-%E8%85%BE%E8%AE%AF%E6%B8%B8%E6%88%8Fai%E5%B7%A5%E4%BD%9C%E6%A2%B3%E7%90%86/</link>
+      <pubDate>Fri, 07 Jan 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/8-%E8%85%BE%E8%AE%AF%E6%B8%B8%E6%88%8Fai%E5%B7%A5%E4%BD%9C%E6%A2%B3%E7%90%86/</guid>
+      
+        <description>&lt;h3 id=&#34;ye-et-al_2020_mastering-complex-control-in-moba-games-with-deep-reinforcement-learning&#34;&gt;Ye et al_2020_Mastering Complex Control in MOBA Games with Deep Reinforcement Learning&lt;/h3&gt;
+&lt;p&gt;这片工作是&lt;a href=&#34;https://yedeheng.weebly.com/&#34;&gt;叶德珩博士&lt;/a&gt;牵头发表于AAAI2020的工作。&lt;/p&gt;
+&lt;p&gt;在算法方面文章阐述的创新点有以下几点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;使用target attention机制来帮助英雄选择目标；&lt;/li&gt;
+&lt;li&gt;使用LSTM缓解游戏场景中遇到的部分可观测问题；&lt;/li&gt;
+&lt;li&gt;对动作进行解耦，实现一个多目标的PPO算法；&lt;/li&gt;
+&lt;li&gt;最后，对PPO进行改进，使用了dual-clip来稳定训练&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;算法结构如下：&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/08-AlphaStar/08-001.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/08-AlphaStar/08-001.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&#34;ye-et-al_2020_towards-playing-full-moba-games-with-deep-reinforcement-learning&#34;&gt;Ye et al_2020_Towards Playing Full MOBA Games with Deep Reinforcement Learning&lt;/h3&gt;
+&lt;p&gt;这片工作是&lt;a href=&#34;https://yedeheng.weebly.com/&#34;&gt;叶德珩博士&lt;/a&gt;牵头发表于NeurIPS2020的工作。这篇工作采用了与上篇文章中一样的技巧：target attention，LSTM，action mask；&lt;/p&gt;
+&lt;p&gt;在算法方面文章阐述的创新点有以下几点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;采用了课程自博弈学习（curriculum self-play）；&lt;/li&gt;
+&lt;li&gt;使用了off-policy来应对离线训练中遇到的训练不稳定问题；&lt;/li&gt;
+&lt;li&gt;采用了策略蒸馏技术；&lt;/li&gt;
+&lt;li&gt;使用了多头值估计（multi-head value estimation）来分别捕捉不同的奖励带来的奖励，并且利用全局的信息作为输入来加速训练；&lt;/li&gt;
+&lt;li&gt;使用了蒙特卡洛树搜索（Monte-Carlo tree search）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;算法流程如下：&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34;&gt;
+&lt;figure  itemprop=&#34;associatedMedia&#34;
+  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/08-AlphaStar/08-001.jpg&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://yshane-ai.github.io/image/08-AlphaStar/08-001.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&#34;heading&#34;&gt;&lt;/h3&gt;
+</description>
+      
+    </item>
+    
+    <item>
       <title>游戏AI策略解读：OpenAI Five, Alpha Star和腾讯绝悟</title>
       <link>https://yshane-ai.github.io/post/8-%E5%89%8D%E6%B2%BF%E6%B8%B8%E6%88%8Fai%E8%A7%A3%E8%AF%BB/</link>
       <pubDate>Tue, 04 Jan 2022 16:01:23 +0800</pubDate>
@@ -838,8 +1158,8 @@ $$&lt;/p&gt;
 &lt;p&gt;这几个AI在网络结构、算法选择和模型表示上有着相当程度的一致性。这些一致性也可以被认为是解决复杂游戏挑战性的一个标准答案，例如使用LSTM结构、多头输入/输出来应对游戏复杂的时序依赖和动作设计，使用动作掩膜(action mask)来缩小动作空间，状态表示也大同小异。&lt;/p&gt;
 &lt;p&gt;下面具体来看看它们的技术实现细节。&lt;/p&gt;
 &lt;h3 id=&#34;网络结构&#34;&gt;网络结构&lt;/h3&gt;
-&lt;p&gt;AlphaStar和TStarBot-X：CNN，ResNet，自回归网络，LSTM，Transformer，Pointer Network，MultiInput-Output
-OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;AlphaStar和TStarBot-X&lt;/strong&gt;：CNN，ResNet，自回归网络，LSTM，Transformer，Pointer Network，MultiInput-Output&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;OpenAI Five和绝悟&lt;/strong&gt;：LSTM，CNN，MultiInput-Output&lt;/p&gt;
 &lt;p&gt;下图是OpenAI Five网络结构的简化版和绝悟的网络结构，图像输入和向量输入分别送入卷积神经网络和全连接层中处理后拼接到一起，接入LSTM，然后经过动作掩膜，输出最终动作。&lt;/p&gt;
 
 
@@ -909,8 +1229,8 @@ OpenAI Five和绝悟：LSTM，CNN，MultiInput-Output&lt;/p&gt;
 &lt;p&gt;除此之外还包括三个部分：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;零和奖励系统（zero-sum reward)：由于游戏本身就是一个零和系统，即只有一个队伍获胜，对一方有利的必然对另一方有害。通过给每个英雄的reward减去敌方平均reward的方式来实现零和&lt;/li&gt;
-&lt;li&gt;时间权重：对于Dota2而言，英雄到后期的伤害会比游戏前期高很多，意味着游戏后期总的reward会更高（正向和负向的都是），因此学习过程中会导致忽视前期而只注意后期。为了解决这一问题，除了胜负外的所有reward都会乘以一个时间因子：$$\rho_i \leftarrow \rho_i \times 0.6^(T/10mins)$$，使得后期的reward和前期有类似的尺度&lt;/li&gt;
-&lt;li&gt;team spirit：由于这个游戏是个团队合作游戏，可能某个智能体在采取坏的动作的同时也受益于其队友的好的行为，用team spirit来衡量单个英雄受团队reward影响的程度。假设每个英雄独立的reward是$$\rho_i$$，那么该英雄最终的reward为$$r_i = (1-\tau)\rho_i + \tau \overline\rho$$，$$\overline\rho$$是该队伍所有英雄的reward均值，$$\tau$$是team spirit，如果$$\tau = 0$$，那么每个英雄只会对自己的动作计算奖励；如果$$\tau = 1$$，那么五个英雄得到的奖励都完全相同，都等于队伍的奖励均值。实验说明前期使用小的team spirit有利于英雄学习独立战斗和微操，后期使用更大的team spirit则能进一步提高团战表现&lt;/li&gt;
+&lt;li&gt;时间权重：对于Dota2而言，英雄到后期的伤害会比游戏前期高很多，意味着游戏后期总的reward会更高（正向和负向的都是），因此学习过程中会导致忽视前期而只注意后期。为了解决这一问题，除了胜负外的所有reward都会乘以一个时间因子：$\rho_i \leftarrow \rho_i \times 0.6^{(T/10mins)}$，使得后期的reward和前期有类似的尺度&lt;/li&gt;
+&lt;li&gt;team spirit：由于这个游戏是个团队合作游戏，可能某个智能体在采取坏的动作的同时也受益于其队友的好的行为，用team spirit来衡量单个英雄受团队reward影响的程度。假设每个英雄独立的reward是$\rho_i$，那么该英雄最终的reward为$r_i = (1-\tau)\rho_i + \tau \overline\rho$，$\overline\rho$是该队伍所有英雄的reward均值，$\tau$是team spirit，如果$\tau = 0$，那么每个英雄只会对自己的动作计算奖励；如果$\tau = 1$，那么五个英雄得到的奖励都完全相同，都等于队伍的奖励均值。实验说明前期使用小的team spirit有利于英雄学习独立战斗和微操，后期使用更大的team spirit则能进一步提高团战表现&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;绝悟1v1和5v5的reward设计如下图：于OpenAI Five类似也用了零和奖励，通过减去敌方平均reward的方式实现。&lt;/p&gt;
 &lt;h2 id=&#34;对手池&#34;&gt;对手池&lt;/h2&gt;
@@ -3431,495 +3751,6 @@ $$&lt;/p&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;result &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; reduce(f,items)
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(result)
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>IMPALA</title>
-      <link>https://yshane-ai.github.io/post/4-imapla/</link>
-      <pubDate>Thu, 13 May 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/4-imapla/</guid>
-      
-        <description>&lt;h2 id=&#34;原文链接&#34;&gt;原文链接&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&#34;https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/1802.01561&#34;&gt;Espeholt, Lasse, et al. &amp;ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&amp;rdquo; arXiv preprint arXiv:1802.01561 (2018).&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
-&lt;p&gt;IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、较好的扩展性（scalability）和较高的效率（data-efficiency）。在大规模计算的框架下，采样和策略更新会有一些错位（不再是完全的on-policy），在这种情况下，文章通过V-trace技术来完成地使用off-policy样本进行训练。&lt;/p&gt;
-&lt;h2 id=&#34;过程&#34;&gt;过程&lt;/h2&gt;
-&lt;h3 id=&#34;1-impala&#34;&gt;1. IMPALA&lt;/h3&gt;
-
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/04-IMPALA/001.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/04-IMPALA/001.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;首先，我们来看一个single learner的模式。learner的主要作用是通过获取actor得到的轨迹来做SGD来更新各个神经网络的参数，神经网络训练本身可并行的特性，learner使用的是一块GPU。actor定期从learner获取最新的神经网络参数，并且每个actor起一个模拟环境，来使用自己能获得的最新策略去采样，并且把获取到的${x_t, a_t, r_t, \mu(a_t|x_t)}$传回供learner去更新各个神经网络参数。由于模拟环境的运行通常不方便做并行，actor一般使用CPU。由于actor上的策略$\mu$可能不是learner中最新的策略$\pi$，因此这里使用了不同的符号来表示。&lt;/p&gt;
-&lt;p&gt;下一步，当训练规模扩大的时候，可以考虑使用多个learner（多块GPU）并且每块GPU配套多个actor（CPU）。每个learner只从自己的actor们中获取样本进行更新，learner之间定期交换gradient并且更新网络参数，actor也定期从任意learner上获取并更新神经网络参数。&lt;/p&gt;
-&lt;p&gt;IMPALA中actor和learner相互异步工作，极大提高了时间利用率。文章还与与batched A2C做了对比，如下图所示。a图中，正向传播和反向传播都想凑一批来做（可能是给到GPU来算），因此每一步都需要同步，而模拟环境各步所需时间方差很大，这样浪费了大量的等待时间；b图中，只把耗时较长的反向传播凑一批来做，正向传播就给各个actor自己做；而c图中的IMPALA则完全把actor和learner分开异步进行，这样actor不用去等待别的actor，可以尽可能多的做采样，相应地，所作出的牺牲就是每次更新得到的样本变为了off-policy样本。接下来本文提出了V-trace对于off-policy样本做修正。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/04-IMPALA/002.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/04-IMPALA/002.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&#34;2-v-trace&#34;&gt;2. V-trace&lt;/h3&gt;
-&lt;p&gt;算法中需要根据采样到的样本来维护一个状态价值函数$V_theta(x)$。V-trace的目的是根据采样到的${x_t, a_t, r_t, \mu(a_t|x_t)}$和当前状态价值函数网络来给出当前状态价值函数的一个更好的估计$v_s$（$s$下标表示它是其中的一个样本），这样价值神经网络就可以把它作为一个更新的目标来更新权重。&lt;/p&gt;
-&lt;p&gt;我们直接写出$v_s$的表达形式。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/04-IMPALA/003.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/04-IMPALA/003.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;非常复杂，看不懂，有没有？看看里面一些变量的定义是什么：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/04-IMPALA/006.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/04-IMPALA/006.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;括号里的表达式是Temporal Difference，然而外面的$\rho_t$是什么含义了？&lt;/p&gt;
-&lt;p&gt;$$
-\rho_t = \min(\overline\rho, \frac{\pi(a_t|x_t)}{\mu(a_t|x_t)})
-$$&lt;/p&gt;
-&lt;p&gt;还有其他变量的定义：&lt;/p&gt;
-&lt;p&gt;$$
-c_i = \min(\overline c, \frac{\pi(a_i|x_i)}{\mu(a_i|x_i)})
-$$&lt;/p&gt;
-&lt;p&gt;$$
-\overline\rho \geq \overline c
-$$&lt;/p&gt;
-&lt;p&gt;看到$\rho_t$和$c_i$的表达式，是不是联想起什么了？这就是Importance Sampling。从策略$mu$中采样，更新当前的策略$\pi$。只不过加上了最大值的限制，不能超过$\overline\rho$和$\overline c$，也就是说进行了截断处理，一般情况下这两个值可以设置成1啦。&lt;/p&gt;
-&lt;h3 id=&#34;3-actor-critic&#34;&gt;3. Actor-critic&lt;/h3&gt;
-&lt;p&gt;IMPALA中需要维护两个神经网络，一个是策略神经网络（用作actor），一个是状态价值函数网络（用作critic）。前面提到，V-trace技术就是根据采样到的${x_t, a_t, r_t, \mu(a_t|x_t)}$和当前状态价值函数网络来给出当前状态价值函数的一个更好的估计$v_s$。&lt;/p&gt;
-&lt;h4 id=&#34;31-critic的更新&#34;&gt;3.1 Critic的更新&lt;/h4&gt;
-&lt;p&gt;Critic的更新方式为最小化拟合的价值函数 [公式] 相对于目标价值函数 [公式] 的均方误差，即朝如下方向更新&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/04-IMPALA/004.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/04-IMPALA/004.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h4 id=&#34;32-actor的更新&#34;&gt;3.2 Actor的更新&lt;/h4&gt;
-&lt;p&gt;Actor朝着off-policy policy gradient给出的梯度方向更新。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/04-IMPALA/005.png&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/04-IMPALA/005.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h4 id=&#34;33-熵&#34;&gt;3.3 熵&lt;/h4&gt;
-&lt;p&gt;前两项再加上对于熵的激励，就可以得到最后的算法更新公式。&lt;/p&gt;
-&lt;h2 id=&#34;实验结果&#34;&gt;实验结果&lt;/h2&gt;
-&lt;p&gt;实验主要说明了以下几点：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;相比于A3C和batched A2C，具有更好的高性能计算性能；&lt;/li&gt;
-&lt;li&gt;单任务训练上相比于分布式A3C、单机A3C和batched A2C有更好的性能，并且对于超参数更稳定；&lt;/li&gt;
-&lt;li&gt;本文中使用的V-trace相比于no correction、 [公式] -correction、1-step importance sampling都有更好的效果（ablation study）。其中no correction指的是认为样本都是on-policy样本； [公式] -correction指的是仅仅在计算 [公式] 的时候加上一个很小的数值防止不稳定（不太懂）；1-step importance sampling，V-trace其实是做了多步，这里只做一步。&lt;/li&gt;
-&lt;li&gt;训练单一智能体去完成多个任务。&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-      
-    </item>
-    
-    <item>
-      <title>推荐系统之阿里Item2Vec</title>
-      <link>https://yshane-ai.github.io/post/41-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E9%98%BF%E9%87%8Cembedding%E7%94%9F%E6%88%901/</link>
-      <pubDate>Fri, 23 Apr 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/41-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E9%98%BF%E9%87%8Cembedding%E7%94%9F%E6%88%901/</guid>
-      
-        <description>&lt;p&gt;本文介绍的文章题目为《Learning and Transferring IDs Representation in E-commerce》，下载地址为：&lt;a href=&#34;https://arxiv.org/abs/1712.08289&#34;&gt;https://arxiv.org/abs/1712.08289&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;本文介绍了一种ID类特征的表示方法。该方法基于item2vec方式，同时考虑了不同ID类特征之间的连接结构，在盒马鲜生app上取得了不错的应用效果，我们来一探究竟。&lt;/p&gt;
-&lt;h2 id=&#34;1-背景&#34;&gt;1 背景&lt;/h2&gt;
-&lt;p&gt;在推荐系统特别是电商领域的推荐中，ID类特征是至关重要的的特征。传统的处理方式一般是one-hot编码。但是这种处理方式存在两个主要的弊端：&lt;/p&gt;
-&lt;p&gt;1）高维稀疏问题：对于高维稀疏问题，若有N个物品，那么用户交互过的物品的可能情况共2^N种情况，为了使我们的模型更加具有可信度，所需要的样本数量是随着N的增加呈指数级增加的。
-2）它无法反映ID之间的关系：对于同质信息来说，比如不同的物品，假设是iphone5和iphone6，以及iphone5和华为，在转换成one-hot编码后，距离是一样的，但是实际上，iphone5和iphone6的距离应该更近。对于异质信息，如物品ID和商铺ID，它们的距离甚至无法衡量，但实际上，一家卖苹果手机的商铺和苹果手机之间，距离应该更近。&lt;/p&gt;
-&lt;p&gt;对于上述问题，出现了word2vec以及item2vec的解决方案，将ID类特征转换为一个低维的embedding向量，这种方式在电商领域的推荐中取得了不错的效果。&lt;/p&gt;
-&lt;p&gt;本文提出的方式，基于item2vec，同时还考虑了不同ID类特征之间的连接结构，通过这些连接，在ItemID序列中的信息可以传播到其它类型的ID特征，并且可以同时学习这些ID特征的表示，框架如下图所示：&lt;/p&gt;
-
-&lt;link rel=&#34;stylesheet&#34; href=&#34;https://yshane-ai.github.io/css/hugo-easy-gallery.css&#34; /&gt;
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/154.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/154.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;上面的学习方式在盒马app中有以下几方面的应用：&lt;/p&gt;
-&lt;p&gt;1）Measuring the similarity between items：建模物品之间的相似度
-2）Transferring from seen items to unseen items：将已知物品的向量迁移到位置物品上
-3）Transferring across different domains：将不同领域的向量进行迁移
-4）Transferring across different tasks.：从不同的应用场景中进行迁移。&lt;/p&gt;
-&lt;p&gt;上面的几个应用我们在后文中会详细介绍。接下来，我们首先来介绍一下本文如何对ID类特征进行处理。&lt;/p&gt;
-&lt;h2 id=&#34;2-学习id的表征方式&#34;&gt;2 学习ID的表征方式&lt;/h2&gt;
-&lt;h3 id=&#34;21-skip-gram-on-users-interactive-sequences&#34;&gt;2.1 Skip-gram on User’s Interactive Sequences&lt;/h3&gt;
-&lt;p&gt;在电商领域，我们可以通过用户的隐式反馈，整理得到用户的一个交互序列。如果把每一个交互序列认为是一篇文档，那么我们可以通过Skip-Gram的方法来学习每一个item的向量。Skip-Gram的方法是最大化下面的对数概率：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/155.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/155.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;其中，C是我们的上下文长度，假设长度是2，那么下图中梨的上下文就是前后的两个item：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/156.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/156.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;有关Skip-Gram模型的相关知识，可以参考：&lt;a href=&#34;https://www.cnblogs.com/peghoty/p/3857839.html&#34;&gt;https://www.cnblogs.com/peghoty/p/3857839.html&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;在基本的Skip-Gram模型中，概率计算方式定义为如下的softmax方程：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/157.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/157.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;其中，每个物品都有两套向量表示，分别是目标向量表示和上下文向量表示。D表示item的总数量。&lt;/p&gt;
-&lt;h3 id=&#34;22-log-uniform-negative-sampling&#34;&gt;2.2 Log-uniform Negative-sampling&lt;/h3&gt;
-&lt;p&gt;当item的总数量十分巨大时，求解Skip-Gram的方法通常是负采样的方式，此时概率计算如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/158.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/158.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;这里使用的负采样方式是Log-uniform Negative-sampling。简单介绍一下其流程：首先将D个物品按照其出现的频率进行降序排序，那么排名越靠前的物品，其出现的频率越高。采样基于Zipfian分布，每个物品采样到的概率如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/159.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/159.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;由于分母都是一样的，分子依次为log(2/1),log(3/2)&amp;hellip;log(D+1/D)，是顺次减小的，同时求和为1。那么排名越靠前即出现频率越高的商品，被采样到的概率是越大的。&lt;/p&gt;
-&lt;p&gt;那么，该分布的累积分布函数为：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/160.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/160.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;这样，当随机产生一个(0,1]之间的随机数r时，可以通过下面的转换快速得到对应的index：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/161.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/161.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&#34;23-ids-and-their-structural-connections&#34;&gt;2.3 IDs and Their Structural Connections&lt;/h3&gt;
-&lt;p&gt;实际应用中，有许多组不同的ID，但是可以归结为两组：&lt;/p&gt;
-&lt;p&gt;1）物品ID及其属性ID：物品item ID是电商领域的核心，每一个物品有对应的属性ID，比如产品product ID，店铺store ID，品牌brand ID，品类category ID等。举个简单的例子，xxx店卖的哈登篮球鞋是一个物品item ID，其对应的产品是哈登篮球鞋，对应一个product ID，另一家店卖的同款哈登篮球鞋是另一个item ID。xxx店对应的是一个store ID，addias是哈登篮球鞋对应的品牌brand ID，而篮球鞋是其对应的category ID。品类ID可能有分一级品类、二级品类和三级品类。&lt;/p&gt;
-&lt;p&gt;2）用户ID：用户身份可以通过ID进行识别，这里的ID可以有多种形式，如cookie、uuid、用户昵称等等。&lt;/p&gt;
-&lt;h3 id=&#34;24-jointly-embedding-attribute-ids&#34;&gt;2.4 Jointly Embedding Attribute IDs&lt;/h3&gt;
-&lt;p&gt;如何将上面所说的属性ID加入到物品ID的表示上来呢？结构如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/162.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/162.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;这里，定义item i的ID组IDs(item i)如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/163.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/163.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;这里，id1(item i)代表物品本身，id2(item i)代表产品ID，id3(item i)代表店铺ID等等。那么，Skip-gram的概率计算变为如下的方式：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/164.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/164.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;这里，每一种ID的向量长度可以是不同的，也就是说不通的ID类映射到不同的语义空间中。而权重的定义方式如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/165.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/165.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;比如，$w_{i1}$=1,因为item$_i$是唯一的，而如果item$&lt;em&gt;i$对应的产品有10种item的话，那么$w&lt;/em&gt;{i2}=1/10$。&lt;/p&gt;
-&lt;p&gt;除了上面计算的item之间的共现概率外，我们还希望，属性ID和itemID之间也要满足一定的关系，简单理解就是希望itemID和其对应的属性ID关系越近越好，于是定义：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/166.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/166.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;其中Mk将item ID对应的向量转换成跟每个属性ID对应向量长度一样的向量。&lt;/p&gt;
-&lt;p&gt;结合两部分的对数概率，加入正则项，则我们期望最大化的式子变为：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/167.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/167.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&#34;25-embedding-user-ids&#34;&gt;2.5 Embedding User IDs&lt;/h3&gt;
-&lt;p&gt;用户ID的Embedding通常通过其交互过的item表示，比如通过一个RNN模型或者简单的取平均的方式，这里我们将用户最近交互过的T个物品对应向量的平均值，来代表用户的Embedding：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/168.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/168.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;这里提到的是用平均值法代表用户的Embedding，后文还提到了一种加权法，主要根据用户的不同行为对T个物品进行加权，比如，购买过的物品要比只点击不购买的物品获得更高的权重。&lt;/p&gt;
-&lt;h3 id=&#34;26-model-learning&#34;&gt;2.6 Model Learning&lt;/h3&gt;
-&lt;p&gt;模型的训练具体参数如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/169.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/169.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h2 id=&#34;3-应用&#34;&gt;3 应用&lt;/h2&gt;
-&lt;p&gt;本节我们来介绍一下上述方法的四种应用。在应用中，上述的框架我们将其定义为一种ITEM2VEC的方法。下文中ITEM2VEC便指代本文提出的新方法。&lt;/p&gt;
-&lt;h3 id=&#34;31-measuring-items-similarity&#34;&gt;3.1 Measuring Items Similarity&lt;/h3&gt;
-&lt;p&gt;在电商领域中，一种简单却有效的方式就是推荐给用户其喜欢的相似物品。通常使用cosine相似度来计算物品之间的相似度。那么应用上面的框架，基于得到的物品向量，便可以计算其相似度，进而推荐相似度最高的N个物品。&lt;/p&gt;
-&lt;p&gt;我们将其与协同过滤方法进行了对比，结果如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/170.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/170.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;可以看到，点击率超过了协同过滤模型。&lt;/p&gt;
-&lt;h3 id=&#34;transferring-from-seen-items-to-unseen-items&#34;&gt;Transferring from Seen Items to Unseen Items&lt;/h3&gt;
-&lt;p&gt;对于新的物品，无法得到其向量表示，这导致了许多推荐系统无法对新物品进行处理。但本文提出的方法可以在一定程度上解决冷启动问题。在模型训练时，我们添加了约束，即希望itemID和其对应的属性ID关系越近越好，如下式：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/171.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/171.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;我们期望上面的式子越接近于1越好，因此：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/172.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/172.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;那么对于新的物品，其对应的属性ID我们往往是知道的，基于其属性ID对应的向量，我们便可以近似计算新物品的向量。上面最后一个地方可以好好理解一下，为什么可以表示成近似？&lt;/p&gt;
-&lt;p&gt;我的思考如下(不一定正确，望指正）：如果我们把括号里面的向量表示成另一个向量e的话，当两个向量长度固定的时候，什么时候内积取得最大值？是二者同向且共线的时候，那么ei1和e应该是线性关系，即使e是真实的ei1的n倍的话，在计算该物品与其他物品的相似度的时候，是不会产生影响的，因此ei1可近似用e来代替。&lt;/p&gt;
-&lt;p&gt;实验结果也表明，这种代替方式是十分有效的。下面的表格展示了实验结果：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/173.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/173.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&#34;33-transferring-across-different-domains&#34;&gt;3.3 Transferring across Different Domains&lt;/h3&gt;
-&lt;p&gt;第三个应用主要是针对用户冷启动，在盒马平台上，相对于淘宝平台用户数量还是少很多的。那么对于盒马平台上的新用户，我们如何进行推荐呢？过程如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/174.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/174.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;p&gt;这里，用Us表示淘宝的用户，Ut表示盒马的用户，Ui表示既是淘宝又是盒马的用户，那么进行推荐的过程如下：&lt;/p&gt;
-&lt;p&gt;1）计算淘宝用户Us之间的相似度，相似度的计算基于用户最近在淘宝交互过的T个商品的向量。可以是简单的平均，可以是加权平均。权重取决于人工的设定，比如购买是5，点击是1；
-2）基于计算的用户相似度，对Ui中的用户进行k-均值聚类，这里聚成1000个类别；
-3）对于每个类别，选择N个最受欢迎的盒马上的物品，作为候选集；
-4）对于盒马上的一个新用户，如果它在淘宝上有交互记录，那么就取得他在淘宝上对应的用户向量，并计算该向量所属的类别；
-5）基于得到的类别，将经过筛选和排序后的该类别的候选集中物品中推荐给用户。&lt;/p&gt;
-&lt;p&gt;我们对比了三种不同策略的PPM(Pay-Per-Impression)值，三种策略为：&lt;/p&gt;
-&lt;p&gt;1）推荐给新用户最热门的物品，该组为Base
-2）基于简单平均的方式计算用户向量
-3）基于加权平均的方式计算用户向量&lt;/p&gt;
-&lt;p&gt;实验结果表明，采用简单平均的方式，PPM提升71.4%，采用加权平均的方式，PPM提升141.8%。&lt;/p&gt;
-&lt;h3 id=&#34;34-transferring-across-different-tasks&#34;&gt;3.4 Transferring across Different Tasks&lt;/h3&gt;
-&lt;p&gt;这里，我们主要对每个店铺第二天每个30分钟的配送需求进行预测，这里有三种不同的输入：&lt;/p&gt;
-&lt;p&gt;1）仅使用过去7天每三十分钟的店铺配送量作为输入
-2）使用使用过去7天每三十分钟的店铺配送量作为输入 + 店铺ID的one-hot encoding
-3）使用使用过去7天每三十分钟的店铺配送量作为输入 + 店铺ID对应的向量。&lt;/p&gt;
-&lt;p&gt;输入经过全联接神经网络得到配送需求的预测值，并通过RMAE指标来计算误差，结果如下：&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/175.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/175.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-&lt;h2 id=&#34;4-总结&#34;&gt;4 总结&lt;/h2&gt;
-&lt;p&gt;本文介绍了一种处理ID类特征的方式，该方式基于Skip-Gram方法，并考虑了多种不同ID类特征之间的联系。本文介绍了该方法的详细过程，以及在盒马app上的具体应用，具有一定的参考价值。&lt;/p&gt;
-
-
-&lt;div class=&#34;box&#34;&gt;
-&lt;figure  itemprop=&#34;associatedMedia&#34;
-  itemscope itemtype=&#34;http://schema.org/ImageObject&#34; &gt;
-    &lt;div class=&#34;img&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://yshane-ai.github.io/image/23-Recommendation/176.webp&#34; /&gt;
-    &lt;/div&gt;
-    &lt;a href=&#34;https://yshane-ai.github.io/image/23-Recommendation/176.webp&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
-  &lt;/figure&gt;
-&lt;/div&gt;
-
-</description>
       
     </item>
     

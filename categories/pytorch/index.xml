@@ -32,7 +32,7 @@
       <pubDate>Thu, 14 May 2020 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/post/12-ppo/</guid>
-      <description>算法概述 在PG算法中，策略梯度的计算公式如下所示： $$J(\theta) = E[R(\tau)]$$，策略梯度可以表示为$$\nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau)</description>
+      <description>算法概述 在PG算法中，策略梯度的计算公式如下所示： $J(\theta) = E[R(\tau)]$，策略梯度可以表示为 $$ \nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau) = \int \nabla_\theta \rho_\tau R(\tau) = \int \rho_\tau \nabla_\theta \log\rho_\tau R(\tau) $$ $$ =</description>
     </item>
     
     <item>

@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="算法概述 在PG算法中，策略梯度的计算公式如下所示： $$J(\theta) = E[R(\tau)]$$，策略梯度可以表示为$$\nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau)" />
+  <meta name="description" content="算法概述 在PG算法中，策略梯度的计算公式如下所示： $J(\theta) = E[R(\tau)]$，策略梯度可以表示为 $$ \nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau) = \int \nabla_\theta \rho_\tau R(\tau) = \int \rho_\tau \nabla_\theta \log\rho_\tau R(\tau) $$ $$ =" />
 
   <meta name="keywords" content="RL, ML, " />
 
@@ -60,19 +60,19 @@
 
 
 <meta property="og:title" content="PPO的Pytorch实现" />
-<meta property="og:description" content="算法概述 在PG算法中，策略梯度的计算公式如下所示： $$J(\theta) = E[R(\tau)]$$，策略梯度可以表示为$$\nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau)" />
+<meta property="og:description" content="算法概述 在PG算法中，策略梯度的计算公式如下所示： $J(\theta) = E[R(\tau)]$，策略梯度可以表示为 $$ \nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau) = \int \nabla_\theta \rho_\tau R(\tau) = \int \rho_\tau \nabla_\theta \log\rho_\tau R(\tau) $$ $$ =" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://yshane-ai.github.io/post/12-ppo/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2020-05-14T16:01:23+08:00" />
 <meta property="article:modified_time" content="2020-05-14T16:01:23+08:00" />
 
 <meta itemprop="name" content="PPO的Pytorch实现">
-<meta itemprop="description" content="算法概述 在PG算法中，策略梯度的计算公式如下所示： $$J(\theta) = E[R(\tau)]$$，策略梯度可以表示为$$\nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau)"><meta itemprop="datePublished" content="2020-05-14T16:01:23+08:00" />
+<meta itemprop="description" content="算法概述 在PG算法中，策略梯度的计算公式如下所示： $J(\theta) = E[R(\tau)]$，策略梯度可以表示为 $$ \nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau) = \int \nabla_\theta \rho_\tau R(\tau) = \int \rho_\tau \nabla_\theta \log\rho_\tau R(\tau) $$ $$ ="><meta itemprop="datePublished" content="2020-05-14T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2020-05-14T16:01:23+08:00" />
-<meta itemprop="wordCount" content="1168">
+<meta itemprop="wordCount" content="1159">
 <meta itemprop="keywords" content="RL,Pytorch," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="PPO的Pytorch实现"/>
-<meta name="twitter:description" content="算法概述 在PG算法中，策略梯度的计算公式如下所示： $$J(\theta) = E[R(\tau)]$$，策略梯度可以表示为$$\nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau)"/>
+<meta name="twitter:description" content="算法概述 在PG算法中，策略梯度的计算公式如下所示： $J(\theta) = E[R(\tau)]$，策略梯度可以表示为 $$ \nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau) = \int \nabla_\theta \rho_\tau R(\tau) = \int \rho_\tau \nabla_\theta \log\rho_\tau R(\tau) $$ $$ ="/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -259,6 +259,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/71-gcn/">图卷积神经网络GCN详解与Pytorch实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-deepfm/">推荐系统之DeepFM</a>
               </li>
             
@@ -340,6 +344,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/6-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/">神经网络的初始化和优化</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/8-%E8%85%BE%E8%AE%AF%E6%B8%B8%E6%88%8Fai%E5%B7%A5%E4%BD%9C%E6%A2%B3%E7%90%86/">腾讯游戏AI工作梳理：觉悟</a>
               </li>
             
               <li>
@@ -611,6 +619,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/71-gcn/">图卷积神经网络GCN详解与Pytorch实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-deepfm/">推荐系统之DeepFM</a>
               </li>
             
@@ -695,6 +707,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/8-%E8%85%BE%E8%AE%AF%E6%B8%B8%E6%88%8Fai%E5%B7%A5%E4%BD%9C%E6%A2%B3%E7%90%86/">腾讯游戏AI工作梳理：觉悟</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/51-%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6-apollo%E8%87%AA%E5%8A%A8%E9%A9%BE%E9%A9%B6%E6%8A%80%E6%9C%AF/">自动驾驶之Apollo控制算法</a>
               </li>
             
@@ -764,11 +780,20 @@
     <div class="post-content">
       <h2 id="算法概述">算法概述</h2>
 <p>在PG算法中，策略梯度的计算公式如下所示：</p>
-<p>$$J(\theta) = E[R(\tau)]$$，策略梯度可以表示为$$\nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau) = \int \nabla_\theta \rho_\tau R(\tau) = \int \rho_\tau \nabla_\theta \log\rho_\tau R(\tau)$$ $$= E[\nabla_\theta \log\rho_\tau R(\tau)] = E[\sum_t\nabla_\theta \log[\pi_\theta(a_t| s_t)] A(s_t, a_t)]$$</p>
+<p>$J(\theta) = E[R(\tau)]$，策略梯度可以表示为
+$$
+\nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau) = \int \nabla_\theta \rho_\tau R(\tau) = \int \rho_\tau \nabla_\theta \log\rho_\tau R(\tau)
+$$
+$$
+= E[\nabla_\theta \log\rho_\tau R(\tau)] = E[\sum_t\nabla_\theta \log[\pi_\theta(a_t| s_t)] A(s_t, a_t)]
+$$</p>
 <p>我们根据策略$\theta$采样得到的轨迹$\tau$做期望，但是，一旦更新了参数，我们的$\theta$就变了，采样的概率会发生变化，所以之前的数据就不能用了。</p>
 <p>这导致的结果就是PG算法需要花很多时间去采样。</p>
 <p>PPO的思想就是用另外一个actor$\theta^\prime$去跟环境互动（采样），然后将收集到的数据去更新$\theta$，将数据重复使用多次后再将$\theta^\prime$和$\theta$同步。</p>
-<p>PPO: $$L(\theta) = E[\min(\frac{\pi_{\theta_k} (a_t| s_t)}{\pi_{\theta} (a_t | s_t)} A(s_t, a_t), clip (\frac{\pi_{\theta_k}(a_t| s_t)}{\pi_{\theta} (a_t|s_t)}, 1-\epsilon, 1+\epsilon)A(s_t, a_t))]$$</p>
+<p>PPO: 
+$$
+L(\theta) = E[\min(\frac{\pi_{\theta_k} (a_t| s_t)}{\pi_{\theta} (a_t | s_t)} A(s_t, a_t), clip (\frac{\pi_{\theta_k}(a_t| s_t)}{\pi_{\theta} (a_t|s_t)}, 1-\epsilon, 1+\epsilon)A(s_t, a_t))]
+$$</p>
 <p>然后PPO利用了重要性采样来保证样本的策略分布和当前策略的的策略分布保持一致，此外利用clip方法保证策略更新的幅度不要过大。</p>
 <h2 id="代码实现">代码实现</h2>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
