@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.93.2" />
+<meta name="generator" content="Hugo 0.80.0" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/" />
@@ -62,15 +62,19 @@
 <meta property="og:title" content="推荐系统之谷歌MMOE架构" />
 <meta property="og:description" content="多任务学习最近越来越受欢迎，咱们前面也介绍过几篇阿里多任务学习的模型，不过多任务学习的效果受不同任务之间的相关性影响较大，因此本文基于Mix" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/38-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-mmoe/" />
 <meta property="article:published_time" content="2021-03-30T16:01:23+08:00" />
 <meta property="article:modified_time" content="2021-03-30T16:01:23+08:00" />
-
 <meta itemprop="name" content="推荐系统之谷歌MMOE架构">
-<meta itemprop="description" content="多任务学习最近越来越受欢迎，咱们前面也介绍过几篇阿里多任务学习的模型，不过多任务学习的效果受不同任务之间的相关性影响较大，因此本文基于Mix"><meta itemprop="datePublished" content="2021-03-30T16:01:23+08:00" />
+<meta itemprop="description" content="多任务学习最近越来越受欢迎，咱们前面也介绍过几篇阿里多任务学习的模型，不过多任务学习的效果受不同任务之间的相关性影响较大，因此本文基于Mix">
+<meta itemprop="datePublished" content="2021-03-30T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-03-30T16:01:23+08:00" />
 <meta itemprop="wordCount" content="1738">
-<meta itemprop="keywords" content="Recommendation System," /><meta name="twitter:card" content="summary"/>
+
+
+
+<meta itemprop="keywords" content="Recommendation System," />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="推荐系统之谷歌MMOE架构"/>
 <meta name="twitter:description" content="多任务学习最近越来越受欢迎，咱们前面也介绍过几篇阿里多任务学习的模型，不过多任务学习的效果受不同任务之间的相关性影响较大，因此本文基于Mix"/>
 
@@ -208,6 +212,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/">Offline RL梳理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/72-pointer-network/">Pointer Network详解与Pytorch实践</a>
               </li>
             
               <li>
@@ -571,6 +579,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/72-pointer-network/">Pointer Network详解与Pytorch实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/12-ppo/">PPO的Pytorch实现</a>
               </li>
             
@@ -766,44 +778,28 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#1-背景">1 背景</a></li>
-    <li><a href="#2-任务相关性试验">2 任务相关性试验</a>
-      <ul>
-        <li><a href="#21-一般的多任务学习模型框架">2.1 一般的多任务学习模型框架</a></li>
-        <li><a href="#22-任务相关性实验">2.2 任务相关性实验</a></li>
-        <li><a href="#23-实验结果">2.3 实验结果</a></li>
-      </ul>
-    </li>
-    <li><a href="#3-mmoe模型">3 MMoE模型</a>
-      <ul>
-        <li><a href="#31-moe模型">3.1 MoE模型</a></li>
-        <li><a href="#32-mmoe模型">3.2 MMoE模型</a></li>
-      </ul>
-    </li>
-    <li><a href="#4-实验结果">4 实验结果</a>
-      <ul>
-        <li><a href="#41-人工合成数据集-实验结果">4.1 人工合成数据集-实验结果</a></li>
-        <li><a href="#42-uci-census-income-dataset-实验结果">4.2 UCI census-income dataset-实验结果</a></li>
-        <li><a href="#43-large-scale-content-recommendation-实验结果">4.3 Large-scale Content Recommendation-实验结果</a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
+    
   </div>
 </div>
 
     
     <div class="post-content">
       <p>多任务学习最近越来越受欢迎，咱们前面也介绍过几篇阿里多任务学习的模型，不过多任务学习的效果受不同任务之间的相关性影响较大，因此本文基于Mixture-of-Experts (MoE)模型，提出了一种显式建模任务相关性的模型Multi-gate Mixture-of-Experts (MMoE) ，一起来学习一下。</p>
+
 <h2 id="1-背景">1 背景</h2>
+
 <p>近年来，深度神经网络的应用越来越广，如推荐系统。推荐系统通常需要同时优化多个目标，如电影推荐中不仅需要预测用户是否会购买，还需要预测用户对于电影的评分，在比如电商领域同时需要预测物品的点击率CTR和转化率CVR。因此，多任务学习模型成为研究领域的一大热点。</p>
+
 <p>许多多任务学习模型取得了不错的效果，但是实践中多任务学习模型并不总比单任务模型效果更突出。这主要是因为不同任务之间的相关性低（如数据的分布不同等等）导致的。</p>
+
 <p>是不是真的如上述所说，任务之间的相关性会影响多任务学习的效果呢，咱们先在第二节中做一个实验。</p>
+
 <h2 id="2-任务相关性试验">2 任务相关性试验</h2>
+
 <h3 id="21-一般的多任务学习模型框架">2.1 一般的多任务学习模型框架</h3>
+
 <p>一般的多任务学习模型框架如下：</p>
+
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -816,14 +812,21 @@
   </figure>
 </div>
 
+
 <p>对于不同的任务，底层的参数和网络结构是共享的，然后上层经过不同的神经网络得到对应任务的输出。 假设底层输出是$f(x)$，那么第k个任务的输出$y_k$为：</p>
-<p>$$
+
+<p><span  class="math">\[
 y_k = h^k (f(x))
-$$</p>
+\]</span></p>
+
 <p>其中$h^k$是第$k$个任务上层神经网络的参数。</p>
+
 <h3 id="22-任务相关性实验">2.2 任务相关性实验</h3>
+
 <p>接下来，我们通过一个实验来探讨任务相关性和多任务学习效果的关系。</p>
+
 <p>假设模型中包含两个回归任务，而数据通过采样生成，并且规定输入相同，输出label不同。那么任务的相关性就使用label之间的皮尔逊相关系数来表示，相关系数越大，表示任务之间越相关，数据生成的过程如下：</p>
+
 
 
 <div class="box">
@@ -836,8 +839,11 @@ $$</p>
   </figure>
 </div>
 
+
 <p>首先，生成了两个垂直的单位向量u1和u2，并根据两个单位向量生成了模型的系数w1和w2，如上图中的第二步。w1和w2之间的cosine距离即为p，大伙可以根据cosine的计算公式得到。</p>
+
 <p>随后基于正态分布的到输入数据x，而y根据下面的两个式子的到：</p>
+
 
 
 <div class="box">
@@ -850,7 +856,9 @@ $$</p>
   </figure>
 </div>
 
+
 <p>注意，这里x和y之间并非线性的关系，因为模型的第二步是多个sin函数，因此label之间的皮尔逊相关系数和参数w1和w2之间的cosine距离并不相等，但是呈现出一个正相关的关系，如下图：</p>
+
 
 
 <div class="box">
@@ -863,9 +871,13 @@ $$</p>
   </figure>
 </div>
 
+
 <p>因此，本文中使用参数的cosine距离来近似表示任务之间的相关性。</p>
+
 <h3 id="23-实验结果">2.3 实验结果</h3>
+
 <p>基于上述数据生成过程以及任务相关性的表示方法，分别测试任务相关性在0.5、0.9和1时的多任务学习模型的效果，如下图：</p>
+
 
 
 <div class="box">
@@ -878,10 +890,15 @@ $$</p>
   </figure>
 </div>
 
+
 <p>可以看到的是，随着任务相关性的提升，模型的loss越小，效果越好，从而印证了前面的猜想。</p>
+
 <h2 id="3-mmoe模型">3 MMoE模型</h2>
+
 <h3 id="31-moe模型">3.1 MoE模型</h3>
+
 <p>先来看一下Mixture-of-Experts (MoE)模型（文中后面称作 One-gate Mixture-of-Experts (OMoE)），如下图所示：</p>
+
 
 
 <div class="box">
@@ -894,13 +911,19 @@ $$</p>
   </figure>
 </div>
 
+
 <p>可以看到，相较于一般的多任务学习框架，共享的底层分为了多个expert，同时设置了一个Gate，使不同的数据可以多样化的使用共享层。此时共享层的输出可以表示为：</p>
-<p>$$
+
+<p><span  class="math">\[
 y = \sum_{i = 1}^n g_i(x)f_i(x)
-$$</p>
+\]</span></p>
+
 <p>其中$f_i$代表第$i$个expert的输出，$g_i$代表第$i$个expert对应的权重，是基于输入数据得到的，计算公式为$g(x) = softmax(W_g x)$。</p>
+
 <h3 id="32-mmoe模型">3.2 MMoE模型</h3>
+
 <p>相较于MoE模型，Multi-gate Mixture-of-Experts (MMoE)模型为每一个task设置了一个gate，使不同的任务和不同的数据可以多样化的使用共享层，模型结构如下：</p>
+
 
 
 <div class="box">
@@ -913,20 +936,29 @@ $$</p>
   </figure>
 </div>
 
+
 <p>此时每个任务的共享层的输出不同，第k个任务的共享层输出计算公式如下：</p>
-<p>$$
-f^k(x) = \sum_{i = 1}^n g_i^k(x)f_i(x) \
-$$</p>
-<p>$$
+
+<p><span  class="math">\[
+f^k(x) = \sum_{i = 1}^n g_i^k(x)f_i(x) \\
+\]</span></p>
+
+<p><span  class="math">\[
 g^k(x) = softmax(W_{gk} x)
-$$</p>
+\]</span></p>
+
 <p>随后每个任务对应的共享层输出，经过多层全连接神经网络得到每个任务的输出：</p>
-<p>$$
+
+<p><span  class="math">\[
 y_k = h^k(f^k(x))
-$$</p>
+\]</span></p>
+
 <p>从直观上考虑，如果两个任务并不十分相关，那么经过Gate之后，二者得到的权重系数会差别比较大，从而可以利用部分expert网络输出的信息，近似于多个单任务学习模型。如果两个任务紧密相关，那么经过Gate得到的权重分布应该相差不多，类似于一般的多任务学习框架。</p>
+
 <h2 id="4-实验结果">4 实验结果</h2>
+
 <p>先回顾上面介绍的三种多任务学习的架构：</p>
+
 
 
 <div class="box">
@@ -939,8 +971,11 @@ $$</p>
   </figure>
 </div>
 
+
 <p>实验分为三部分：人工合成数据集（即本文第二部分所介绍的人工生成的数据集）、UCI census-income dataset和Large-scale Content Recommendation。</p>
-<h3 id="41-人工合成数据集-实验结果">4.1 人工合成数据集-实验结果</h3>
+
+<h3 id="41-人工合成数据集实验结果">4.1 人工合成数据集-实验结果</h3>
+
 
 
 <div class="box">
@@ -953,8 +988,11 @@ $$</p>
   </figure>
 </div>
 
-<h3 id="42-uci-census-income-dataset-实验结果">4.2 UCI census-income dataset-实验结果</h3>
+
+<h3 id="42-uci-censusincome-dataset实验结果">4.2 UCI census-income dataset-实验结果</h3>
+
 <p>这块文中介绍了几种多任务学习的模式，这里就不过多介绍了。</p>
+
 
 
 <div class="box">
@@ -967,7 +1005,9 @@ $$</p>
   </figure>
 </div>
 
-<h3 id="43-large-scale-content-recommendation-实验结果">4.3 Large-scale Content Recommendation-实验结果</h3>
+
+<h3 id="43-largescale-content-recommendation实验结果">4.3 Large-scale Content Recommendation-实验结果</h3>
+
 
 
 <div class="box">

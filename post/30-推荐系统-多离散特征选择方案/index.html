@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.93.2" />
+<meta name="generator" content="Hugo 0.80.0" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/30-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%A4%9A%E7%A6%BB%E6%95%A3%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%96%B9%E6%A1%88/" />
@@ -62,15 +62,19 @@
 <meta property="og:title" content="推荐系统之多值离散特征的embedding解决方案" />
 <meta property="og:description" content="多值离散特征的embedding解决方案 背景 在处理DeepFM数据时，由于每一个离散特征只有一个取值，因此我们在处理的过程中，将原始数据处理" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/30-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%A4%9A%E7%A6%BB%E6%95%A3%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%96%B9%E6%A1%88/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/30-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%A4%9A%E7%A6%BB%E6%95%A3%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%96%B9%E6%A1%88/" />
 <meta property="article:published_time" content="2021-01-10T16:01:23+08:00" />
 <meta property="article:modified_time" content="2021-01-10T16:01:23+08:00" />
-
 <meta itemprop="name" content="推荐系统之多值离散特征的embedding解决方案">
-<meta itemprop="description" content="多值离散特征的embedding解决方案 背景 在处理DeepFM数据时，由于每一个离散特征只有一个取值，因此我们在处理的过程中，将原始数据处理"><meta itemprop="datePublished" content="2021-01-10T16:01:23+08:00" />
+<meta itemprop="description" content="多值离散特征的embedding解决方案 背景 在处理DeepFM数据时，由于每一个离散特征只有一个取值，因此我们在处理的过程中，将原始数据处理">
+<meta itemprop="datePublished" content="2021-01-10T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-01-10T16:01:23+08:00" />
-<meta itemprop="wordCount" content="1105">
-<meta itemprop="keywords" content="Recommendation System," /><meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="1100">
+
+
+
+<meta itemprop="keywords" content="Recommendation System," />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="推荐系统之多值离散特征的embedding解决方案"/>
 <meta name="twitter:description" content="多值离散特征的embedding解决方案 背景 在处理DeepFM数据时，由于每一个离散特征只有一个取值，因此我们在处理的过程中，将原始数据处理"/>
 
@@ -208,6 +212,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/">Offline RL梳理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/72-pointer-network/">Pointer Network详解与Pytorch实践</a>
               </li>
             
               <li>
@@ -571,6 +579,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/72-pointer-network/">Pointer Network详解与Pytorch实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/12-ppo/">PPO的Pytorch实现</a>
               </li>
             
@@ -766,41 +778,44 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#多值离散特征的embedding解决方案">多值离散特征的embedding解决方案</a>
-      <ul>
-        <li><a href="#背景">背景</a></li>
-        <li><a href="#解决方案">解决方案</a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
+    
   </div>
 </div>
 
     
     <div class="post-content">
       <h2 id="多值离散特征的embedding解决方案">多值离散特征的embedding解决方案</h2>
+
 <h3 id="背景">背景</h3>
+
 <p>在处理DeepFM数据时，由于每一个离散特征只有一个取值，因此我们在处理的过程中，将原始数据处理成了两个文件，一个记录特征的索引，一个记录了特征的值，而每一列，则代表一个离散特征。</p>
+
 <p>但假如，我们某一个离散特征有多个取值呢？举个例子来说，每个人喜欢的NBA球队，有的人可能喜欢火箭和湖人，有的人可能只喜欢勇士，也有的人喜欢骑士、绿军、猛龙等一大堆。对于这种特征，我们本文将其称为多值离散特征。</p>
+
 <p>根据DeepFM的思想，我们需要将每一个field的特征转换为定长的embedding，即使有多个取值，也是要变换成定长的embedding。</p>
-<p>那么，一种思路来了，比如一个用户喜欢两个球队，这个field的特征可能是[1,1,0,0,0,0,0&hellip;..0]，那么我们使用两次embedding lookup，再取个平均不就好了嘛。</p>
+
+<p>那么，一种思路来了，比如一个用户喜欢两个球队，这个field的特征可能是[1,1,0,0,0,0,0.....0]，那么我们使用两次embedding lookup，再取个平均不就好了嘛。</p>
+
 <p>嗯，这的确也许可能是一种思路吧，在tensorflow中，其实有一个函数能够实现我们上述的思路，那就是tf.nn.embedding_lookup_sparse。别着急，我们一步一步来实现多值离散特征的embedding处理过程。</p>
+
 <h3 id="解决方案">解决方案</h3>
+
 <p>输入数据</p>
+
 <p>假设我们有三条数据，每条数据代表一个user所喜欢的nba球员，比如有登哥，炮哥，杜老四，慕斯等等：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>csv <span style="color:#f92672">=</span> [
-</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;1,harden|james|curry&#34;</span>,
-</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;2,wrestbrook|harden|durant&#34;</span>,
-</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;3,|paul|towns&#34;</span>,
-</span></span><span style="display:flex;"><span>]
-</span></span></code></pre></div><p>我们建立一个所有球员的集合：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>TAG_SET <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#34;harden&#34;</span>, <span style="color:#e6db74">&#34;james&#34;</span>, <span style="color:#e6db74">&#34;curry&#34;</span>, <span style="color:#e6db74">&#34;durant&#34;</span>, <span style="color:#e6db74">&#34;paul&#34;</span>,<span style="color:#e6db74">&#34;towns&#34;</span>,<span style="color:#e6db74">&#34;wrestbrook&#34;</span>]
-</span></span></code></pre></div><p><strong>数据处理</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">csv <span style="color:#f92672">=</span> [
+  <span style="color:#e6db74">&#34;1,harden|james|curry&#34;</span>,
+  <span style="color:#e6db74">&#34;2,wrestbrook|harden|durant&#34;</span>,
+  <span style="color:#e6db74">&#34;3,|paul|towns&#34;</span>,
+]</code></pre></div>
+<p>我们建立一个所有球员的集合：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">TAG_SET <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#34;harden&#34;</span>, <span style="color:#e6db74">&#34;james&#34;</span>, <span style="color:#e6db74">&#34;curry&#34;</span>, <span style="color:#e6db74">&#34;durant&#34;</span>, <span style="color:#e6db74">&#34;paul&#34;</span>,<span style="color:#e6db74">&#34;towns&#34;</span>,<span style="color:#e6db74">&#34;wrestbrook&#34;</span>]</code></pre></div>
+<p><strong>数据处理</strong></p>
+
 <p>这里我们需要一个得到一个SparseTensor，即多维稀疏矩阵的一种表示方式，我们只记录非0值所在的位置和值。</p>
+
 <p>比如说，下面就是我们对上面数据处理过后的一个SparseTensor，indices是数组中非0元素的下标，values跟indices一一对应，表示该下标位置的值，最后一个表示的是数组的大小。</p>
+
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -813,30 +828,34 @@
   </figure>
 </div>
 
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">sparse_from_csv</span>(csv):
-</span></span><span style="display:flex;"><span>  ids, post_tags_str <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>decode_csv(csv, [[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>], [<span style="color:#e6db74">&#34;&#34;</span>]])
-</span></span><span style="display:flex;"><span>  table <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>contrib<span style="color:#f92672">.</span>lookup<span style="color:#f92672">.</span>index_table_from_tensor(
-</span></span><span style="display:flex;"><span>      mapping<span style="color:#f92672">=</span>TAG_SET, default_value<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>) <span style="color:#75715e">## 这里构造了个查找表 ##</span>
-</span></span><span style="display:flex;"><span>  split_tags <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>string_split(post_tags_str, <span style="color:#e6db74">&#34;|&#34;</span>)
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> tf<span style="color:#f92672">.</span>SparseTensor(
-</span></span><span style="display:flex;"><span>      indices<span style="color:#f92672">=</span>split_tags<span style="color:#f92672">.</span>indices,
-</span></span><span style="display:flex;"><span>      values<span style="color:#f92672">=</span>table<span style="color:#f92672">.</span>lookup(split_tags<span style="color:#f92672">.</span>values), <span style="color:#75715e">## 这里给出了不同值通过表查到的index ##</span>
-</span></span><span style="display:flex;"><span>      dense_shape<span style="color:#f92672">=</span>split_tags<span style="color:#f92672">.</span>dense_shape)
-</span></span></code></pre></div><p><strong>定义embedding变量</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">sparse_from_csv</span>(csv):
+  ids, post_tags_str <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>decode_csv(csv, [[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>], [<span style="color:#e6db74">&#34;&#34;</span>]])
+  table <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>contrib<span style="color:#f92672">.</span>lookup<span style="color:#f92672">.</span>index_table_from_tensor(
+      mapping<span style="color:#f92672">=</span>TAG_SET, default_value<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>) <span style="color:#75715e">## 这里构造了个查找表 ##</span>
+  split_tags <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>string_split(post_tags_str, <span style="color:#e6db74">&#34;|&#34;</span>)
+  <span style="color:#66d9ef">return</span> tf<span style="color:#f92672">.</span>SparseTensor(
+      indices<span style="color:#f92672">=</span>split_tags<span style="color:#f92672">.</span>indices,
+      values<span style="color:#f92672">=</span>table<span style="color:#f92672">.</span>lookup(split_tags<span style="color:#f92672">.</span>values), <span style="color:#75715e">## 这里给出了不同值通过表查到的index ##</span>
+      dense_shape<span style="color:#f92672">=</span>split_tags<span style="color:#f92672">.</span>dense_shape)</code></pre></div>
+<p><strong>定义embedding变量</strong></p>
+
 <p>定义我们的embedding的大小为3：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>TAG_EMBEDDING_DIM <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>
-</span></span><span style="display:flex;"><span>embedding_params <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>Variable(tf<span style="color:#f92672">.</span>truncated_normal([len(TAG_SET), TAG_EMBEDDING_DIM]))
-</span></span></code></pre></div><p>得到embedding值</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">TAG_EMBEDDING_DIM <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>
+embedding_params <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>Variable(tf<span style="color:#f92672">.</span>truncated_normal([len(TAG_SET), TAG_EMBEDDING_DIM]))</code></pre></div>
+<p>得到embedding值</p>
+
 <p>将我们刚才得到的SparseTensor，传入到tf.nn.embedding_lookup_sparse中，我们就可以得到多值离散特征的embedding值。</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>tags <span style="color:#f92672">=</span> sparse_from_csv(csv)
-</span></span><span style="display:flex;"><span>embedded_tags <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>embedding_lookup_sparse(embedding_params, sp_ids<span style="color:#f92672">=</span>tags, sp_weights<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>)
-</span></span></code></pre></div><p>sp_ids就是我们刚刚得到的SparseTensor，而sp_weights=None代表的每一个取值的权重，如果是None的话，所有权重都是1，也就是相当于取了平均。如果不是None的话，我们需要同样传入一个SparseTensor，代表不同球员的喜欢权重。大家感兴趣可以自己去尝试。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">tags <span style="color:#f92672">=</span> sparse_from_csv(csv)
+embedded_tags <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>embedding_lookup_sparse(embedding_params, sp_ids<span style="color:#f92672">=</span>tags, sp_weights<span style="color:#f92672">=</span>None)</code></pre></div>
+<p>sp_ids就是我们刚刚得到的SparseTensor，而sp_weights=None代表的每一个取值的权重，如果是None的话，所有权重都是1，也就是相当于取了平均。如果不是None的话，我们需要同样传入一个SparseTensor，代表不同球员的喜欢权重。大家感兴趣可以自己去尝试。</p>
+
 <p>测试输出</p>
+
 <p>最后我们来看看得到的效果：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">with</span> tf<span style="color:#f92672">.</span>Session() <span style="color:#66d9ef">as</span> s:
-</span></span><span style="display:flex;"><span>  s<span style="color:#f92672">.</span>run([tf<span style="color:#f92672">.</span>global_variables_initializer(), tf<span style="color:#f92672">.</span>tables_initializer()])
-</span></span><span style="display:flex;"><span>  print(s<span style="color:#f92672">.</span>run([embedded_tags]))
-</span></span></code></pre></div>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">with</span> tf<span style="color:#f92672">.</span>Session() <span style="color:#66d9ef">as</span> s:
+  s<span style="color:#f92672">.</span>run([tf<span style="color:#f92672">.</span>global_variables_initializer(), tf<span style="color:#f92672">.</span>tables_initializer()])
+  <span style="color:#66d9ef">print</span>(s<span style="color:#f92672">.</span>run([embedded_tags]))</code></pre></div>
+
 
 <div class="box">
 <figure  itemprop="associatedMedia"

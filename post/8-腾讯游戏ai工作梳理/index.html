@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.93.2" />
+<meta name="generator" content="Hugo 0.80.0" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/8-%E8%85%BE%E8%AE%AF%E6%B8%B8%E6%88%8Fai%E5%B7%A5%E4%BD%9C%E6%A2%B3%E7%90%86/" />
@@ -62,15 +62,19 @@
 <meta property="og:title" content="腾讯游戏AI工作梳理：觉悟" />
 <meta property="og:description" content="Ye et al_2020_Mastering Complex Control in MOBA Games with Deep Reinforcement Learning 这片工作是叶德珩博士牵头发表于AAAI2020的工作。 在算法方面文章阐述的创新点有以下几点： 使用target atte" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/8-%E8%85%BE%E8%AE%AF%E6%B8%B8%E6%88%8Fai%E5%B7%A5%E4%BD%9C%E6%A2%B3%E7%90%86/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/8-%E8%85%BE%E8%AE%AF%E6%B8%B8%E6%88%8Fai%E5%B7%A5%E4%BD%9C%E6%A2%B3%E7%90%86/" />
 <meta property="article:published_time" content="2022-01-07T16:01:23+08:00" />
 <meta property="article:modified_time" content="2022-01-07T16:01:23+08:00" />
-
 <meta itemprop="name" content="腾讯游戏AI工作梳理：觉悟">
-<meta itemprop="description" content="Ye et al_2020_Mastering Complex Control in MOBA Games with Deep Reinforcement Learning 这片工作是叶德珩博士牵头发表于AAAI2020的工作。 在算法方面文章阐述的创新点有以下几点： 使用target atte"><meta itemprop="datePublished" content="2022-01-07T16:01:23+08:00" />
+<meta itemprop="description" content="Ye et al_2020_Mastering Complex Control in MOBA Games with Deep Reinforcement Learning 这片工作是叶德珩博士牵头发表于AAAI2020的工作。 在算法方面文章阐述的创新点有以下几点： 使用target atte">
+<meta itemprop="datePublished" content="2022-01-07T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2022-01-07T16:01:23+08:00" />
 <meta itemprop="wordCount" content="457">
-<meta itemprop="keywords" content="RL,Game AI," /><meta name="twitter:card" content="summary"/>
+
+
+
+<meta itemprop="keywords" content="RL,Game AI," />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="腾讯游戏AI工作梳理：觉悟"/>
 <meta name="twitter:description" content="Ye et al_2020_Mastering Complex Control in MOBA Games with Deep Reinforcement Learning 这片工作是叶德珩博士牵头发表于AAAI2020的工作。 在算法方面文章阐述的创新点有以下几点： 使用target atte"/>
 
@@ -208,6 +212,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/">Offline RL梳理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/72-pointer-network/">Pointer Network详解与Pytorch实践</a>
               </li>
             
               <li>
@@ -571,6 +579,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/72-pointer-network/">Pointer Network详解与Pytorch实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/12-ppo/">PPO的Pytorch实现</a>
               </li>
             
@@ -767,32 +779,27 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    <nav id="TableOfContents">
-  <ul>
-    <li>
-      <ul>
-        <li><a href="#ye-et-al_2020_mastering-complex-control-in-moba-games-with-deep-reinforcement-learning">Ye et al_2020_Mastering Complex Control in MOBA Games with Deep Reinforcement Learning</a></li>
-        <li><a href="#ye-et-al_2020_towards-playing-full-moba-games-with-deep-reinforcement-learning">Ye et al_2020_Towards Playing Full MOBA Games with Deep Reinforcement Learning</a></li>
-        <li><a href="#heading"></a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
+    
   </div>
 </div>
 
     
     <div class="post-content">
-      <h3 id="ye-et-al_2020_mastering-complex-control-in-moba-games-with-deep-reinforcement-learning">Ye et al_2020_Mastering Complex Control in MOBA Games with Deep Reinforcement Learning</h3>
+      <h3 id="ye-et-al2020mastering-complex-control-in-moba-games-with-deep-reinforcement-learning">Ye et al_2020_Mastering Complex Control in MOBA Games with Deep Reinforcement Learning</h3>
+
 <p>这片工作是<a href="https://yedeheng.weebly.com/">叶德珩博士</a>牵头发表于AAAI2020的工作。</p>
+
 <p>在算法方面文章阐述的创新点有以下几点：</p>
+
 <ul>
 <li>使用target attention机制来帮助英雄选择目标；</li>
 <li>使用LSTM缓解游戏场景中遇到的部分可观测问题；</li>
 <li>对动作进行解耦，实现一个多目标的PPO算法；</li>
 <li>最后，对PPO进行改进，使用了dual-clip来稳定训练</li>
 </ul>
+
 <p>算法结构如下：</p>
+
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -805,9 +812,13 @@
   </figure>
 </div>
 
-<h3 id="ye-et-al_2020_towards-playing-full-moba-games-with-deep-reinforcement-learning">Ye et al_2020_Towards Playing Full MOBA Games with Deep Reinforcement Learning</h3>
+
+<h3 id="ye-et-al2020towards-playing-full-moba-games-with-deep-reinforcement-learning">Ye et al_2020_Towards Playing Full MOBA Games with Deep Reinforcement Learning</h3>
+
 <p>这片工作是<a href="https://yedeheng.weebly.com/">叶德珩博士</a>牵头发表于NeurIPS2020的工作。这篇工作采用了与上篇文章中一样的技巧：target attention，LSTM，action mask；</p>
+
 <p>在算法方面文章阐述的创新点有以下几点：</p>
+
 <ul>
 <li>采用了课程自博弈学习（curriculum self-play）；</li>
 <li>使用了off-policy来应对离线训练中遇到的训练不稳定问题；</li>
@@ -815,7 +826,9 @@
 <li>使用了多头值估计（multi-head value estimation）来分别捕捉不同的奖励带来的奖励，并且利用全局的信息作为输入来加速训练；</li>
 <li>使用了蒙特卡洛树搜索（Monte-Carlo tree search）</li>
 </ul>
+
 <p>算法流程如下：</p>
+
 
 
 <div class="box">
@@ -828,7 +841,6 @@
   </figure>
 </div>
 
-<h3 id="heading"></h3>
 
     </div>
 

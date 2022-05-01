@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.93.2" />
+<meta name="generator" content="Hugo 0.80.0" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm-mf/" />
@@ -62,15 +62,19 @@
 <meta property="og:title" content="推荐系统之FM与MF傻傻分不清楚" />
 <meta property="og:description" content="FM 因子分解机(Factorization Machine, FM)是由Steffen Rendle提出的一种基于矩阵分解思想的机器学习算法，FM的提出是为了解决" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm-mf/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm-mf/" />
 <meta property="article:published_time" content="2020-12-17T16:01:23+08:00" />
 <meta property="article:modified_time" content="2020-12-17T16:01:23+08:00" />
-
 <meta itemprop="name" content="推荐系统之FM与MF傻傻分不清楚">
-<meta itemprop="description" content="FM 因子分解机(Factorization Machine, FM)是由Steffen Rendle提出的一种基于矩阵分解思想的机器学习算法，FM的提出是为了解决"><meta itemprop="datePublished" content="2020-12-17T16:01:23+08:00" />
+<meta itemprop="description" content="FM 因子分解机(Factorization Machine, FM)是由Steffen Rendle提出的一种基于矩阵分解思想的机器学习算法，FM的提出是为了解决">
+<meta itemprop="datePublished" content="2020-12-17T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2020-12-17T16:01:23+08:00" />
 <meta itemprop="wordCount" content="1859">
-<meta itemprop="keywords" content="Recommendation System," /><meta name="twitter:card" content="summary"/>
+
+
+
+<meta itemprop="keywords" content="Recommendation System," />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="推荐系统之FM与MF傻傻分不清楚"/>
 <meta name="twitter:description" content="FM 因子分解机(Factorization Machine, FM)是由Steffen Rendle提出的一种基于矩阵分解思想的机器学习算法，FM的提出是为了解决"/>
 
@@ -208,6 +212,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/">Offline RL梳理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/72-pointer-network/">Pointer Network详解与Pytorch实践</a>
               </li>
             
               <li>
@@ -571,6 +579,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/72-pointer-network/">Pointer Network详解与Pytorch实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/12-ppo/">PPO的Pytorch实现</a>
               </li>
             
@@ -766,26 +778,20 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    <nav id="TableOfContents">
-  <ul>
-    <li>
-      <ul>
-        <li><a href="#fm">FM</a></li>
-        <li><a href="#mf">MF</a></li>
-        <li><a href="#fm-vs-mf">FM vs MF</a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
+    
   </div>
 </div>
 
     
     <div class="post-content">
       <h3 id="fm">FM</h3>
+
 <p>因子分解机(Factorization Machine, FM)是由Steffen Rendle提出的一种基于矩阵分解思想的机器学习算法，FM的提出是为了<strong>解决大规模稀疏数据中的特征组合问题</strong>。</p>
+
 <p>最常见的预测任务是估计一个函数：$y:\mathbb{R}^n\to T$，将实值特征$x\in\mathbb{R}^n$映射到目标域$T$中（其中对回归任务$T = \mathbb{R}$，对分类任务 $T = {+, -}$）。在监督模型中，已知训练数据$\mathcal{D} = { (x^{(1)}, y^{(1)}), (x^{(2)}, y^{(2)}), \ldots }$。另外在排序任务中，可以通过成对的训练数据来训练得到打分函数，其中特征元组$(x^{(A)}, y^{(B)})\in \mathcal{D}$，$x^{(A)}$ 排名高于$x^{(B)}$。</p>
+
 <p>假设我们从电影评论系统中获取了这么一组交互数据（见下图），其中用户集合$U={ A, B, C }$，物品（这里为电影）集合$ I = { TI, NH, SW, ST } $。根据以上数据构造了如图1所示的实值特征向量，蓝色框框内代表用户的one-hot编码，橙色框框内代表电影的one-hot编码，黄色框框内代表用户评论过的其他物品，并做了归一化，绿色框框内表示评论的时间，紫色框框内表示最近评论过的物品，最后一列Target y表示用户对该物品的一个评分（以$x^{(1)}$为例，即用户A对电影TI的评分为5）。</p>
+
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -798,28 +804,43 @@
   </figure>
 </div>
 
+
 <p>一般的预测任务通过线性回归就能实现，LR的公式如下：</p>
-<p>$$
+
+<p><span  class="math">\[
 y = w_0 + \sum_{i = 1}^n w_i x_i
-$$</p>
+\]</span></p>
+
 <p>FM是在逻辑回归（LR）的基础上扩展的，因此在特征线性组合的前提下增加了特征交叉项，公式如下：</p>
-<p>$$
+
+<p><span  class="math">\[
 y = w_0 + \sum_{i = 1}^n w_i x_i + \sum_{i = 1}^{n - 1} \sum_{j = i + 1}^n w_{ij} x_i x_j
-$$</p>
+\]</span></p>
+
 <h3 id="mf">MF</h3>
+
 <p>推荐系统核心技术是协同过滤技术 其中协同过滤技术中最常用的便是矩阵分解技术，矩阵分解将用户与物品嵌入到一个共享的低维隐空间内。</p>
+
 <p>我们将用户和物品构造成一个二维矩阵（后称U-I矩阵），其中每一行代表一个用户，每一列代表一个物品，由于U-I矩阵的稀疏性，许多用户对物品没有过相应的评分，那么预测某一个用户对某一个物品的喜爱程度便成了推荐系统的主要任务。矩阵分解的思想是将U-I矩阵分解为两个低秩稠密的矩阵P和Q，其中P为用户的隐因子矩阵，Q为物品的隐因子矩阵，通过这两个矩阵来预测用户对物品的评分，也即：</p>
-<p>$$
+
+<p><span  class="math">\[
 \hat r_{ui} = p_u^T q_i
-$$</p>
+\]</span></p>
+
 <p>但是考虑一些额外因素：1、一些用户给分偏高，一些用户给分较低，2、一些物品本就比较受欢迎，一些物品不被大众所喜爱，3、评分系统的固有属性，与用户物品都无关。因此，考虑到这些因素，将用户对物品的预测函数升级为：</p>
-<p>$$
+
+<p><span  class="math">\[
 \hat r_{ui} = \alpha + \beta_u + \beta_i + p_u^T q_i
-$$</p>
+\]</span></p>
+
 <p>其中$\alpha$为全局偏置，$\beta_u$为用户偏置，$\beta_i$为物品偏置。</p>
+
 <h3 id="fm-vs-mf">FM vs MF</h3>
+
 <p>分解机的思想是从线性模型中通过增加二阶交叉项来拟合特征之间的交叉，为了拓展到数据稀疏场景并便于计算，吸收了矩阵分解的思想。这一节中主要简单了解一下FM与MF之间的关系。</p>
+
 <p>本质上，MF模型是FM模型的特例，MF可以被认为是只有User ID 和Item ID这两个特征信息时的FM模型。FM与MF的不同可分为以下：</p>
+
 <ol>
 <li>输入数据形式不同：一般来说，FM的输入数据是一个实值特征向量（如图1的每一行），相当于是对多个one-hot特征的拼接；MF的输入数据是一个二元组$(u, i)$，$u$为用户ID，$i$为物品ID。往往对于FM和MF理解的难点在于此，一个数据形式为one-hot，一个数据形式为标号ID。只不过MF中的数据只有user和item，因此可以通过标号ID直接查询对应的隐向量，而FM则需要通过one-hot的形式与隐向量矩阵做乘得到对应的隐向量。</li>
 <li>参数矩阵不同：往往我们在FM模型中只初始化一个参数矩阵$V\in \mathbb{R}^{d\times f}$，其中$d$为特征的数目；MF模型由于只涉及user和item的隐特征，因此可以分别学得一个用户矩阵$P\in \mathbb{R}^{m \times f}$和物品矩阵$Q\in \mathbb{R}^{n \times f}$。如果FM中只有user和item的特征时，$d = m + n$。因此，只不过MF为了方便，把user和item分开进行初始化，其实类似于FM只初始化一个矩阵未尝不可，只不过需要注意user和item的下标不要重复，比如user从1开始，那么item很可能需要从$m + 1$开始。</li>

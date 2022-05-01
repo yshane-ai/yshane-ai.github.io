@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.93.2" />
+<meta name="generator" content="Hugo 0.80.0" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/" />
@@ -62,15 +62,19 @@
 <meta property="og:title" content="Python调试器pdb的使用" />
 <meta property="og:description" content="如果你还主要靠print来调试代码，那值得花10分钟试试pdb这个Python自带的Debug工具。 pdb有2种用法： 非侵入式方法（不用额外" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/15-python%E8%B0%83%E8%AF%95%E5%99%A8pdb%E4%BD%BF%E7%94%A8/" />
 <meta property="article:published_time" content="2020-10-14T16:01:23+08:00" />
 <meta property="article:modified_time" content="2020-10-14T16:01:23+08:00" />
-
 <meta itemprop="name" content="Python调试器pdb的使用">
-<meta itemprop="description" content="如果你还主要靠print来调试代码，那值得花10分钟试试pdb这个Python自带的Debug工具。 pdb有2种用法： 非侵入式方法（不用额外"><meta itemprop="datePublished" content="2020-10-14T16:01:23+08:00" />
+<meta itemprop="description" content="如果你还主要靠print来调试代码，那值得花10分钟试试pdb这个Python自带的Debug工具。 pdb有2种用法： 非侵入式方法（不用额外">
+<meta itemprop="datePublished" content="2020-10-14T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2020-10-14T16:01:23+08:00" />
-<meta itemprop="wordCount" content="743">
-<meta itemprop="keywords" content="Python," /><meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="738">
+
+
+
+<meta itemprop="keywords" content="Python," />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Python调试器pdb的使用"/>
 <meta name="twitter:description" content="如果你还主要靠print来调试代码，那值得花10分钟试试pdb这个Python自带的Debug工具。 pdb有2种用法： 非侵入式方法（不用额外"/>
 
@@ -208,6 +212,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/">Offline RL梳理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/72-pointer-network/">Pointer Network详解与Pytorch实践</a>
               </li>
             
               <li>
@@ -571,6 +579,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/72-pointer-network/">Pointer Network详解与Pytorch实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/12-ppo/">PPO的Pytorch实现</a>
               </li>
             
@@ -766,139 +778,161 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#1-查看源码">1 查看源码</a></li>
-    <li><a href="#2-添加断点">2 添加断点</a></li>
-    <li><a href="#3-添加临时断点">3 添加临时断点</a></li>
-    <li><a href="#5-打印变量值">5 打印变量值</a></li>
-    <li><a href="#6-逐行调试命令">6 逐行调试命令</a></li>
-    <li><a href="#7-非逐行调试命令">7 非逐行调试命令</a></li>
-    <li><a href="#8-查看函数参数">8 查看函数参数</a></li>
-    <li><a href="#9-打印变量类型">9 打印变量类型</a></li>
-    <li><a href="#10-启动交互式解释器">10 启动交互式解释器</a></li>
-    <li><a href="#11-打印堆栈信息">11 打印堆栈信息</a></li>
-    <li><a href="#12-退出pdb">12 退出pdb</a></li>
-  </ul>
-</nav>
+    
   </div>
 </div>
 
     
     <div class="post-content">
       <p>如果你还主要靠print来调试代码，那值得花10分钟试试pdb这个Python自带的Debug工具。</p>
+
 <p>pdb有2种用法：</p>
+
 <ul>
 <li>非侵入式方法（不用额外修改源代码，在命令行下直接运行就能调试）</li>
 </ul>
-<pre tabindex="0"><code>python3 -m pdb filename.py
-</code></pre><ul>
+<pre><code>python3 -m pdb filename.py</code></pre>
+<ul>
 <li>侵入式方法（需要在被调试的代码中添加一行代码然后再正常运行代码）</li>
 </ul>
-<pre tabindex="0"><code>import pdb;pdb.set_trace()
-</code></pre><p>当你在命令行看到下面这个提示符时，说明已经正确打开了pdb</p>
-<pre tabindex="0"><code>(Pdb) 
-</code></pre><p>然后就可以开始输入pdb命令了，下面是pdb的常用命令</p>
+<pre><code>import pdb;pdb.set_trace()</code></pre>
+<p>当你在命令行看到下面这个提示符时，说明已经正确打开了pdb</p>
+<pre><code>(Pdb) </code></pre>
+<p>然后就可以开始输入pdb命令了，下面是pdb的常用命令</p>
+
 <h2 id="1-查看源码">1 查看源码</h2>
-<pre tabindex="0"><code>l
-</code></pre><p>说明：</p>
+<pre><code>l</code></pre>
+<p>说明：</p>
+
 <blockquote>
 <p>查看当前位置前后11行源代码（多次会翻页）
-当前位置在代码中会用&ndash;&gt;这个符号标出来</p>
+当前位置在代码中会用--&gt;这个符号标出来</p>
 </blockquote>
-<pre tabindex="0"><code># 查看当前函数或框架的所有源代码
-ll
-</code></pre><p>说明：</p>
+<pre><code># 查看当前函数或框架的所有源代码
+ll</code></pre>
+<p>说明：</p>
+
 <blockquote>
 <p>执行下一行（能够进入函数体）</p>
 </blockquote>
+
 <h2 id="2-添加断点">2 添加断点</h2>
-<pre tabindex="0"><code>b
+<pre><code>b
 b lineno
 b filename:lineno 
-b functionname
-</code></pre><p>说明：</p>
+b functionname</code></pre>
+<p>说明：</p>
+
 <blockquote>
 <p>filename文件名，断点添加到哪个文件，如test.py
 lineno断点添加到哪一行
 function：函数名，在该函数执行的第一行设置断点</p>
 </blockquote>
+
 <h2 id="3-添加临时断点">3 添加临时断点</h2>
-<pre tabindex="0"><code>tbreak
+<pre><code>tbreak
 tbreak lineno
 tbreak filename:lineno
-tbreak functionname
-</code></pre><p>说明：</p>
+tbreak functionname</code></pre>
+<p>说明：</p>
+
 <blockquote>
 <p>同b
 执行一次后时自动删除（这就是它被称为临时断点的原因）</p>
 </blockquote>
+
 <h2 id="5-打印变量值">5 打印变量值</h2>
+
 <p>命令：</p>
-<pre tabindex="0"><code>p expression
-</code></pre><p>参数：</p>
+<pre><code>p expression</code></pre>
+<p>参数：</p>
+
 <blockquote>
 <p>expression Python表达式</p>
 </blockquote>
+
 <h2 id="6-逐行调试命令">6 逐行调试命令</h2>
+
 <p>包括 s，n，r 这3个相似的命令，区别在如何对待函数上</p>
+
 <p>命令1：</p>
-<pre tabindex="0"><code>s
-</code></pre><p>说明：</p>
+<pre><code>s</code></pre>
+<p>说明：</p>
+
 <blockquote>
 <p>执行下一行（能够进入函数体）</p>
 </blockquote>
+
 <p>命令2：</p>
-<pre tabindex="0"><code>n
-</code></pre><p>说明：</p>
+<pre><code>n</code></pre>
+<p>说明：</p>
+
 <blockquote>
 <p>执行下一行（不会进入函数体）</p>
 </blockquote>
+
 <p>命令3：</p>
-<pre tabindex="0"><code>r
-</code></pre><p>说明：</p>
+<pre><code>r</code></pre>
+<p>说明：</p>
+
 <blockquote>
 <p>执行下一行（在函数中时会直接执行到函数返回处）</p>
 </blockquote>
+
 <h2 id="7-非逐行调试命令">7 非逐行调试命令</h2>
+
 <p>命令：</p>
-<pre tabindex="0"><code>c 
-</code></pre><p>说明：</p>
+<pre><code>c </code></pre>
+<p>说明：</p>
+
 <blockquote>
 <p>持续执行下去，直到遇到一个断点</p>
 </blockquote>
+
 <h2 id="8-查看函数参数">8 查看函数参数</h2>
+
 <p>命令：</p>
-<pre tabindex="0"><code>a
-</code></pre><p>说明：</p>
+<pre><code>a</code></pre>
+<p>说明：</p>
+
 <blockquote>
 <p>在函数中时打印函数的参数和参数的值</p>
 </blockquote>
+
 <h2 id="9-打印变量类型">9 打印变量类型</h2>
+
 <p>命令：</p>
-<pre tabindex="0"><code>whatis expression
-</code></pre><p>说明：</p>
+<pre><code>whatis expression</code></pre>
+<p>说明：</p>
+
 <blockquote>
 <p>打印表达式的类型，常用来打印变量值</p>
 </blockquote>
+
 <h2 id="10-启动交互式解释器">10 启动交互式解释器</h2>
+
 <p>命令：</p>
-<pre tabindex="0"><code>interact
-</code></pre><p>说明：</p>
+<pre><code>interact</code></pre>
+<p>说明：</p>
+
 <blockquote>
 <p>启动一个python的交互式解释器，使用当前代码的全局命名空间（使用ctrl+d返回pdb）</p>
 </blockquote>
+
 <h2 id="11-打印堆栈信息">11 打印堆栈信息</h2>
+
 <p>命令：</p>
-<pre tabindex="0"><code>w
-</code></pre><p>说明：</p>
+<pre><code>w</code></pre>
+<p>说明：</p>
+
 <blockquote>
 <p>打印堆栈信息，最新的帧在最底部。箭头表示当前帧。</p>
 </blockquote>
+
 <h2 id="12-退出pdb">12 退出pdb</h2>
+
 <p>命令：</p>
-<pre tabindex="0"><code>q
-</code></pre>
+<pre><code>q</code></pre>
     </div>
 
     

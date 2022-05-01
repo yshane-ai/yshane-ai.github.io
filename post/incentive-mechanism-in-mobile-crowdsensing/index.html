@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.93.2" />
+<meta name="generator" content="Hugo 0.80.0" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/incentive-mechanism-in-mobile-crowdsensing/" />
@@ -62,15 +62,19 @@
 <meta property="og:title" content="Incentive Mechanism in Mobile Crowdsensing" />
 <meta property="og:description" content="如何有效的招募用户参与到感知任务中是移动群感知（Mobile Crowdsensing）的一个重要研究方向，近年来也有许多的研究团队对其进行了" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/incentive-mechanism-in-mobile-crowdsensing/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/incentive-mechanism-in-mobile-crowdsensing/" />
 <meta property="article:published_time" content="2021-03-02T16:01:23+08:00" />
 <meta property="article:modified_time" content="2021-03-02T16:01:23+08:00" />
-
 <meta itemprop="name" content="Incentive Mechanism in Mobile Crowdsensing">
-<meta itemprop="description" content="如何有效的招募用户参与到感知任务中是移动群感知（Mobile Crowdsensing）的一个重要研究方向，近年来也有许多的研究团队对其进行了"><meta itemprop="datePublished" content="2021-03-02T16:01:23+08:00" />
+<meta itemprop="description" content="如何有效的招募用户参与到感知任务中是移动群感知（Mobile Crowdsensing）的一个重要研究方向，近年来也有许多的研究团队对其进行了">
+<meta itemprop="datePublished" content="2021-03-02T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-03-02T16:01:23+08:00" />
 <meta itemprop="wordCount" content="2443">
-<meta itemprop="keywords" content="Incentive Mechanism,MCS," /><meta name="twitter:card" content="summary"/>
+
+
+
+<meta itemprop="keywords" content="Incentive Mechanism,MCS," />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Incentive Mechanism in Mobile Crowdsensing"/>
 <meta name="twitter:description" content="如何有效的招募用户参与到感知任务中是移动群感知（Mobile Crowdsensing）的一个重要研究方向，近年来也有许多的研究团队对其进行了"/>
 
@@ -208,6 +212,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/">Offline RL梳理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/72-pointer-network/">Pointer Network详解与Pytorch实践</a>
               </li>
             
               <li>
@@ -571,6 +579,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/72-pointer-network/">Pointer Network详解与Pytorch实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/12-ppo/">PPO的Pytorch实现</a>
               </li>
             
@@ -766,42 +778,41 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#spatial-perspective">Spatial Perspective</a>
-      <ul>
-        <li><a href="#trajectory-based">Trajectory-Based</a></li>
-        <li><a href="#area-based">Area-Based</a></li>
-      </ul>
-    </li>
-    <li><a href="#temporal-perspective">Temporal Perspective</a></li>
-    <li><a href="#参考文献">参考文献</a></li>
-  </ul>
-</nav>
+    
   </div>
 </div>
 
     
     <div class="post-content">
       <p><code>如何有效的招募用户参与到感知任务中是移动群感知（Mobile Crowdsensing）的一个重要研究方向，近年来也有许多的研究团队对其进行了深入探索，本文对这些已有的工作进行梳理。</code></p>
+
 <p><a href="https://yshane-ai.github.io/post/maddpg-based-mcs/">激励机制的设计</a>一直是群感知应用中的一个重要问题。我们希望平台可以尽可能地招募到高质量的用户参与到感知任务当中，从而收集到高质量的感知数据。然而，有许许多多的限制条件约束着用户的招募和任务的部署，例如用户希望通过参与感知任务获得奖励或者回报，平台如何根据用户的行为特点分配这些任务，用户如何平衡多个任务之间的分配问题等等。</p>
+
 <p>本文希望通过讨论近些年来提出的若干种群感知奖励机制，来为接下来群感知的发展提供更好的解决思路。由于个人能力有限，很难一次性将所有优秀的研究成果全部展示在这里，因此博主会定期更新本文，有兴趣的研究伙伴可以持续关注。</p>
-<!-- raw HTML omitted -->
+
+<!-- TOC -->
+
 <ul>
 <li><a href="#spatial-perspective">Spatial Perspective</a>
+
 <ul>
 <li><a href="#trajectory-based">Trajectory-Based</a></li>
 <li><a href="#area-based">Area-Based</a></li>
-</ul>
-</li>
+</ul></li>
 <li><a href="#temporal-perspective">Temporal Perspective</a></li>
-<li><a href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE">参考文献</a></li>
+<li><a href="#参考文献">参考文献</a></li>
 </ul>
-<!-- raw HTML omitted -->
+
+<!-- /TOC -->
+
 <h2 id="spatial-perspective">Spatial Perspective</h2>
+
 <p>从空间的角度来讲，群感知任务一般可分为“基于轨迹”和“基于区域”两类。“基于轨迹”的任务一般要求用户到达目标地点才可以执行任务，主要解决的问题包括路径规划和任务分配；“基于区域”的任务则允许在一定区域内的用户都可以参与到任务当中来，主要问题包括用户招募。</p>
-<h3 id="trajectory-based">Trajectory-Based</h3>
-<p>在<a href="https://ieeexplore.ieee.org/document/8345281">Gao, et al. 2018</a>中，作者考虑一种多用户、单任务的模型，每个用户只有到达任务兴趣点才可以执行任务。但用户的运动具有不确定性，即有多种轨迹方案，因此平台方面需要招募特定的用户，使任务每个兴趣点都有车辆经过的概率大于一个阈值（$$\eta$$）。系统模型如下图所示：</p>
+
+<h3 id="trajectorybased">Trajectory-Based</h3>
+
+<p>在<a href="https://ieeexplore.ieee.org/document/8345281">Gao, et al. 2018</a>中，作者考虑一种多用户、单任务的模型，每个用户只有到达任务兴趣点才可以执行任务。但用户的运动具有不确定性，即有多种轨迹方案，因此平台方面需要招募特定的用户，使任务每个兴趣点都有车辆经过的概率大于一个阈值（<span  class="math">\(\eta\)</span>）。系统模型如下图所示：</p>
+
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -817,15 +828,20 @@
   </figure>
 </div>
 
+
 <p>该系统包括如下几个特点：</p>
+
 <ul>
 <li><strong>用户报价</strong>：针对每个任务上报自己的可能经过路线以及该路线的报价（bid），其中报价等于感知成本；</li>
 <li><strong>用户轨迹</strong>：根据到达目的地的时间选择路线，并非最大化自身感知收益，因此轨迹具有随机性。</li>
 <li><strong>平台观测</strong>：目标用户的历史运动轨迹。</li>
 <li><strong>平台动作</strong>：为每个任务选择合适的车辆，为每个车辆指定合理的回报。</li>
 </ul>
-<p>基于以上信息，本文利用一种基于反向拍卖的算法来解决最低感知概率（$$\eta$$）约束下的最小化成本问题。</p>
+
+<p>基于以上信息，本文利用一种基于反向拍卖的算法来解决最低感知概率（<span  class="math">\(\eta\)</span>）约束下的最小化成本问题。</p>
+
 <p>在<a href="https://ieeexplore.ieee.org/document/8241402">Wang, et al. 2018</a>中，作者制定出两套方案来分别满足确定性轨迹和不确定性轨迹的不同场景。与上篇文章满足最小概率即视为完成感知任务的模型不同，本篇文章将感知目标设定为目标地点的长时间不间断感知，如下图所示：</p>
+
 
 
 <div class="box">
@@ -841,8 +857,11 @@
   </figure>
 </div>
 
-<p>左图中$$u_i$$代表不同的车辆，$$R_i$$代表不同的感知兴趣点，下方的cost代表雇佣该车辆的车本，右图中是两种不同的解决方案，满足三个时刻都有车辆在目标兴趣点执行感知任务。可以观察到，方案2的成本更低。</p>
+
+<p>左图中<span  class="math">\(u_i\)</span>代表不同的车辆，<span  class="math">\(R_i\)</span>代表不同的感知兴趣点，下方的cost代表雇佣该车辆的车本，右图中是两种不同的解决方案，满足三个时刻都有车辆在目标兴趣点执行感知任务。可以观察到，方案2的成本更低。</p>
+
 <p>以上两篇文章都具有不改变车辆自身运动计划的前提，<a href="https://ieeexplore.ieee.org/document/8554148">Gong, et al. 2019</a>考虑可以改变车辆的运动轨迹，提出在用户轨迹距离约束下的任务分配和轨迹优化算法，模型如下图所示：</p>
+
 
 
 <div class="box">
@@ -858,9 +877,13 @@
   </figure>
 </div>
 
+
 <p>其中红色虚线代表用户本来的运动轨迹，紫色实线代表优化后的运动轨迹。</p>
-<h3 id="area-based">Area-Based</h3>
+
+<h3 id="areabased">Area-Based</h3>
+
 <p>与基于轨迹的群感知系统不同，基于区域的群感知系统不要求用户到特定的地点才能执行感知任务，通常这种系统中假设目标用户都在感知区域内，因此只需要设计如何根据用户提供的数据质量而反馈相应奖励的模型即可。在<a href="https://ieeexplore.ieee.org/document/9147064">Liu, et al. 2020</a>中，作者首先提出一种用户价值的衡量标准，分别通过用户的空间价值（即距离目标地点远近），历史数据质量，当前区域的感知用户数量三个方面来为每个用户计算其感知价值,然后通过博弈论为平台和用户双方得到一个较满意的行为策略。本文的实验是建立在一个公开的数据集<a href="https://crawdad.org/epfl/mobility/20090224/index.html">CRAWDAD</a>上，里面记录了美国旧金山市的537辆出租车运动轨迹，系统的其他参数设置如下所示：</p>
+
 
 
 <div class="box">
@@ -876,8 +899,11 @@
   </figure>
 </div>
 
+
 <p>其中红色标出的是决定用户价值的三个因素系数。</p>
+
 <p>以上模型是建立在小尺度范围内，在大尺度场景下，地区与地区间的感知成本可能会截然不同，如山区和城市，用户的报价也会出现巨大的差异，导致高成本的地区很难与低成本地区竞争，传统的选择算法在这种场景下显得无能为力。因此，<a href="https://ieeexplore.ieee.org/document/8643950">Zhang, et al. 2019</a>将不同区域间的感知成本不平衡现象考虑在内，提出两种优化模型，优化目标分别是<strong>参与感知的用户数量</strong>和<strong>感知数据质量</strong>，并将之规划为一个最大化最小值问题，即最大化所有区域中的收益最小值。整体模型如下图所示：</p>
+
 
 
 <div class="box">
@@ -893,11 +919,15 @@
   </figure>
 </div>
 
+
 <p>在<a href="https://ieeexplore.ieee.org/document/9173810">Zhao, et al. 2020</a>中，作者除了考虑参与感知任务的得到的外在奖励，同时考虑周围车辆网络对自身的内在奖励。简单来讲，就是将车联网构成一个整体，车辆与车辆之间的任务数据信息可以互相分享，从而避免相同的任务被重复执行。针对以上两种奖励，这篇文章为每个车辆构建了一个效用函数：</p>
-<p>$$
-u_i^k(x_i^k,\mathbf{x}<em>{-i}^k)=f_i^k(x_i^k,\mathbf{x}</em>{-i}^k)+\phi_i^k(x_i^k,\mathbf{x}_{-i}^k)
-$$</p>
-<p>其中第一项$$f_i^k(\cdot)$$表示外部奖励函数，与当前时刻任务的预算与参与任务的车辆数量相关，当提高自身贡献质量时，外部的奖励会随之上升，诱导自身感知水平上升；第二项$$\phi_i^k(\cdot)$$表示内部奖励函数，与周围车辆贡献的数据质量相关，当周围车辆贡献质量上升时，自身获得的数据也随之变多，促使自身不需再执行重复的任务，诱导感知水平下降。系统模型如下图所示：</p>
+
+<p><span  class="math">\[
+u_i^k(x_i^k,\mathbf{x}_{-i}^k)=f_i^k(x_i^k,\mathbf{x}_{-i}^k)+\phi_i^k(x_i^k,\mathbf{x}_{-i}^k)
+\]</span></p>
+
+<p>其中第一项<span  class="math">\(f_i^k(\cdot)\)</span>表示外部奖励函数，与当前时刻任务的预算与参与任务的车辆数量相关，当提高自身贡献质量时，外部的奖励会随之上升，诱导自身感知水平上升；第二项<span  class="math">\(\phi_i^k(\cdot)\)</span>表示内部奖励函数，与周围车辆贡献的数据质量相关，当周围车辆贡献质量上升时，自身获得的数据也随之变多，促使自身不需再执行重复的任务，诱导感知水平下降。系统模型如下图所示：</p>
+
 
 
 <div class="box">
@@ -913,10 +943,15 @@ $$</p>
   </figure>
 </div>
 
+
 <p>为解决以上问题，本文利用一种多智能体强化学习算法，为每个车辆构建一个策略网络，将车辆的感知水平作为模型的输出。</p>
+
 <h2 id="temporal-perspective">Temporal Perspective</h2>
+
 <p>相比于任务在空间上的分布特性，时间上的不确定性同样值得关注。</p>
+
 <p>在<a href="https://ieeexplore.ieee.org/document/9072576">Tao, et al. 2020</a>中，作者在普通的空间任务分配层面之外，还讨论了任务及用户都具有时间窗的场景，即任务和用户都可能随时到达，随时离开。文章首先提出一种信息提前已知的场景，并利用蚁群算法获得近似最优解。之后拓展到一种动态的场景，即信息不完全已知，利用一种启发式的算法，结合用户的历史轨迹信息推测未来轨迹并分配任务。具体模型如下图所示：</p>
+
 
 
 <div class="box">
@@ -932,7 +967,9 @@ $$</p>
   </figure>
 </div>
 
+
 <h2 id="参考文献">参考文献</h2>
+
 <ul>
 <li>[1] <a href="https://ieeexplore.ieee.org/document/8345281">Gu et al 2020 Multi-Agent Actor-Critic Network-based Incentive Mechanism for Mobile Crowdsensing IEEE Transactions on Industrial Informatics</a></li>
 <li>[2] <a href="https://ieeexplore.ieee.org/document/8345281">Gao et al 2018 Truthful Incentive Mechanism for Nondeterministic Crowdsensing with Vehicles IEEE Transactions on Mobile Computing</a></li>

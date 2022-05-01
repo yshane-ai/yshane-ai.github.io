@@ -7,7 +7,16 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Sun, 27 Mar 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 02 Apr 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Pointer Network详解与Pytorch实践</title>
+      <link>https://yshane-ai.github.io/post/72-pointer-network/</link>
+      <pubDate>Sat, 02 Apr 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/72-pointer-network/</guid>
+      <description>Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。在旅行商问题（trav</description>
+    </item>
+    
     <item>
       <title>图卷积神经网络GCN详解与Pytorch实践</title>
       <link>https://yshane-ai.github.io/post/71-gcn/</link>
@@ -177,15 +186,6 @@
       
       <guid>https://yshane-ai.github.io/post/16-python%E4%B8%ADmap%E5%92%8Creduce%E4%BD%BF%E7%94%A8/</guid>
       <description>map map()方法会将 一个函数 映射到序列的每一个元素上，生成新序列，包含所有函数返回值。 也就是说序列里每一个元素都被当做x变量，放到一个函数f</description>
-    </item>
-    
-    <item>
-      <title>IMPALA</title>
-      <link>https://yshane-ai.github.io/post/4-imapla/</link>
-      <pubDate>Thu, 13 May 2021 16:01:23 +0800</pubDate>
-      
-      <guid>https://yshane-ai.github.io/post/4-imapla/</guid>
-      <description>原文链接 Espeholt, Lasse, et al. &amp;ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&amp;rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、</description>
     </item>
     
   </channel>

@@ -7,7 +7,16 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Sun, 27 Mar 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/ml/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 02 Apr 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/ml/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Pointer Network详解与Pytorch实践</title>
+      <link>https://yshane-ai.github.io/post/72-pointer-network/</link>
+      <pubDate>Sat, 02 Apr 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/72-pointer-network/</guid>
+      <description>Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。在旅行商问题（trav</description>
+    </item>
+    
     <item>
       <title>图卷积神经网络GCN详解与Pytorch实践</title>
       <link>https://yshane-ai.github.io/post/71-gcn/</link>
