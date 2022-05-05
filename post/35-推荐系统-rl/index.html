@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="原文链接：[《DRN: A Deep Reinforcement Learning Framework for News Recommendation》]() 背景 新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过" />
+  <meta name="description" content="原文链接：《DRN: A Deep Reinforcement Learning Framework for News Recommendation》 背景 新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过滤、深度" />
 
   <meta name="keywords" content="RL, ML, " />
 
@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-rl/" />
@@ -60,23 +60,19 @@
 
 
 <meta property="og:title" content="推荐系统之RL的应用" />
-<meta property="og:description" content="原文链接：[《DRN: A Deep Reinforcement Learning Framework for News Recommendation》]() 背景 新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过" />
+<meta property="og:description" content="原文链接：《DRN: A Deep Reinforcement Learning Framework for News Recommendation》 背景 新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过滤、深度" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-rl/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-rl/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-02-25T16:01:23+08:00" />
 <meta property="article:modified_time" content="2021-02-25T16:01:23+08:00" />
+
 <meta itemprop="name" content="推荐系统之RL的应用">
-<meta itemprop="description" content="原文链接：[《DRN: A Deep Reinforcement Learning Framework for News Recommendation》]() 背景 新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过">
-<meta itemprop="datePublished" content="2021-02-25T16:01:23+08:00" />
+<meta itemprop="description" content="原文链接：《DRN: A Deep Reinforcement Learning Framework for News Recommendation》 背景 新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过滤、深度"><meta itemprop="datePublished" content="2021-02-25T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-02-25T16:01:23+08:00" />
-<meta itemprop="wordCount" content="2591">
-
-
-
-<meta itemprop="keywords" content="Recommendation System," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="2587">
+<meta itemprop="keywords" content="Recommendation System," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="推荐系统之RL的应用"/>
-<meta name="twitter:description" content="原文链接：[《DRN: A Deep Reinforcement Learning Framework for News Recommendation》]() 背景 新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过"/>
+<meta name="twitter:description" content="原文链接：《DRN: A Deep Reinforcement Learning Framework for News Recommendation》 背景 新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过滤、深度"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -260,6 +256,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
               </li>
             
               <li>
@@ -627,6 +627,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -778,22 +782,38 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#背景">背景</a></li>
+        <li><a href="#问题定义">问题定义</a></li>
+        <li><a href="#模型介绍">模型介绍</a></li>
+        <li><a href="#特征设计">特征设计</a></li>
+        <li><a href="#算法介绍">算法介绍</a></li>
+        <li><a href="#用户活跃度">用户活跃度</a></li>
+        <li><a href="#探索">探索</a></li>
+        <li><a href="#数据集">数据集</a></li>
+        <li><a href="#评估指标">评估指标</a></li>
+        <li><a href="#实验设定">实验设定</a></li>
+        <li><a href="#对比模型">对比模型</a></li>
+        <li><a href="#离线实验">离线实验</a></li>
+        <li><a href="#在线实验">在线实验</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
   </div>
 </div>
 
     
     <div class="post-content">
-      <p>原文链接：[《DRN: A Deep Reinforcement Learning Framework for News Recommendation》]()</p>
-
+      <p>原文链接：<a href="">《DRN: A Deep Reinforcement Learning Framework for News Recommendation》</a></p>
 <h3 id="背景">背景</h3>
-
 <p>新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过滤、深度学习方法在建模user-item交互关系时，经常面临以下三个问题：</p>
-
 <ol>
 <li>难以处理新闻推荐的动态变化。这种动态变化体现在两个方面，首先新闻具有很强的时效性，其次是用户对于新闻阅读的兴趣是不断变化的，如下图所示。因此，在建模过程中，不仅要考虑用户对当前推荐的反馈，还要考虑长期的影响。就好比买股票，不能只考虑眼前的收益，而是要考虑未来的预期收益。</li>
 </ol>
-
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -806,22 +826,17 @@
   </figure>
 </div>
 
-
 <ol start="2">
 <li>当前的推荐算法通常只考虑用户的点击／未点击 或者 用户的评分作为反馈，然而，用户隔多久会再次使用服务也能在一定程度上反映用户对推荐结果的满意度。</li>
 <li>目前的推荐系统倾向于推荐用户重复或相似内容的东西，这也许会降低用户在同一个主题上的兴趣度。因此需要进行exploration。传统方法 $\epsilon$-greedy strategy 或者 Upper Confidence Bound (UCB) 都会在短期对推荐系统的效果造成一定的影响，需要更有效的exploration策略。</li>
 </ol>
-
 <p>因此，本文提出了基于强化学习的推荐系统框架来解决上述提到的三个问题：</p>
-
 <ol>
 <li>首先，使用DQN网络来有效建模新闻推荐的动态变化属性，DQN可以将短期回报和长期回报进行有效的模拟。</li>
 <li>将用户活跃度（activeness score）作为一种新的反馈信息，用户活跃度在后面会详细介绍。</li>
 <li>使用Dueling Bandit Gradient Descent方法来进行有效的探索。</li>
 </ol>
-
 <p>算法的框架如下图所示：</p>
-
 
 
 <div class="box">
@@ -834,20 +849,15 @@
   </figure>
 </div>
 
-
 <p>本文的贡献主要有：</p>
-
 <ol>
 <li>提出了一种强化学习的框架用于在线新闻的个性化推荐</li>
 <li>使用用户活跃度作为一种新的反馈，来提高推荐的准确性</li>
 <li>使用了一种更加高效的探索算法：Dueling Bandit Gradient Descent</li>
 <li>模型可以进行在线学习和更新，在离线和在线实验上的表现都超过了传统的算法。</li>
 </ol>
-
 <h3 id="问题定义">问题定义</h3>
-
 <p>下面是本文中的一些符号约定：</p>
-
 
 
 <div class="box">
@@ -860,11 +870,8 @@
   </figure>
 </div>
 
-
 <h3 id="模型介绍">模型介绍</h3>
-
 <p>模型整体框架如下图所示：</p>
-
 
 
 <div class="box">
@@ -877,34 +884,21 @@
   </figure>
 </div>
 
-
 <p>有几个关键的环节：</p>
-
 <p>PUSH：在每一个时刻，用户发送请求时，agent根据当前的state产生k篇新闻推荐给用户，这个推荐结果是exploitation和exploration的结合</p>
-
 <p>FEEDBACK：通过用户对推荐新闻的点击行为得到反馈结果。</p>
-
 <p>MINOR UPDATE：在每个时间点过后，根据用户的信息（state）和推荐的新闻（action）及得到的反馈（reward），agent会评估exploitation network Q 和 exploration network Q ̃ 的表现，如果exploitation network Q效果更好，则模型保持不动，如果 exploration network Q ̃ 的表现更好，exploitation network Q的参数将会向exploration network Q ̃变化。</p>
-
 <p>MAJOR UPDATE：在一段时间过后，根据DQN的经验池中存放的历史经验，对exploitation network Q 模型参数进行更新。</p>
-
 <h3 id="特征设计">特征设计</h3>
-
 <p>DQN每次的输入有下面四部分的特征：</p>
-
 <p>新闻的特征：包括题目，作者，排名，类别等等，共417维
 用户的特征：包括用户在1小时，6小时，24小时，1周，1年内点击过的新闻的特征表示，共413*5=2065维。
 新闻和用户的交互特征：25维。
 上下文特征：32维的上下文信息，如时间，周几，新闻的新鲜程度等。</p>
-
 <p>在这四组特征中，用户特征和上下文特征用于表示当前的state，新闻特征和交互特征用于表示当前的一个action。</p>
-
 <h3 id="算法介绍">算法介绍</h3>
-
 <p>这里深度强化学习用的是Dueling-Double-DQN。将用户特征和上下文特征用于表示当前的state，新闻特征和交互特征用语表示当前的一个action，经过模型可以输出当前状态state采取这个action的预测Q值。</p>
-
 <p>Q现实值包含两个部分：立即获得的奖励和未来获得奖励的折现：</p>
-
 
 
 <div class="box">
@@ -917,9 +911,7 @@
   </figure>
 </div>
 
-
 <p>立即的奖励可能包含两部分，即用户的点击奖励和用户活跃度奖励。由于采取了Double-DQN 的结构，Q现实值的计算变为：</p>
-
 
 
 <div class="box">
@@ -932,9 +924,7 @@
   </figure>
 </div>
 
-
 <p>再加上Dueling的考虑，模型的网络结构如下：</p>
-
 
 
 <div class="box">
@@ -947,13 +937,9 @@
   </figure>
 </div>
 
-
 <h3 id="用户活跃度">用户活跃度</h3>
-
 <p>用户活跃度（User Activeness） 是本文提出的新的可以用作推荐结果反馈的指标。用户活跃度可以理解为使用app的频率，好的推荐结果可以增加用户使用该app的频率，因此可以作为一个反馈指标。</p>
-
 <p>用户活跃度的图示如下：</p>
-
 
 
 <div class="box">
@@ -966,11 +952,8 @@
   </figure>
 </div>
 
-
 <p>如果用户在一定时间内没有点击行为，活跃度会下降，但一旦有了点击行为，活跃度会上升。</p>
-
 <p>在考虑了点击和活跃度之后，之前提到过的立即奖励变为：</p>
-
 
 
 <div class="box">
@@ -983,11 +966,8 @@
   </figure>
 </div>
 
-
 <h3 id="探索">探索</h3>
-
 <p>本文的探索采取的是Dueling Bandit Gradient Descent 算法，算法的结构如下：</p>
-
 
 
 <div class="box">
@@ -1000,9 +980,7 @@
   </figure>
 </div>
 
-
 <p>在DQN网络的基础上又多出来一个exploration network Q ̃ ，这个网络的参数是由当前的Q网络参数基础上加入一定的噪声产生的，具体来说：</p>
-
 
 
 <div class="box">
@@ -1015,9 +993,7 @@
   </figure>
 </div>
 
-
 <p>当一个用户请求到来时，由两个网络同时产生top-K的新闻列表，然后将二者产生的新闻进行一定程度的混合，然后得到用户的反馈。如果exploration network Q ̃的效果好的话，那么当前Q网络的参数向着exploration network Q ̃的参数方向进行更新，具体公式如下：</p>
-
 
 
 <div class="box">
@@ -1030,15 +1006,10 @@
   </figure>
 </div>
 
-
 <p>否则的话，当前Q网络的参数不变。</p>
-
 <p>总的来说，使用深度强化学习来进行推荐，同时考虑了用户活跃度和对多样性推荐的探索，可以说是一个很完备的推荐框架了！</p>
-
 <h3 id="数据集">数据集</h3>
-
 <p>使用的数据集是新闻app得到的数据：</p>
-
 
 
 <div class="box">
@@ -1051,9 +1022,7 @@
   </figure>
 </div>
 
-
 <p>数据中存在明显的长尾特点：</p>
-
 
 
 <div class="box">
@@ -1066,11 +1035,8 @@
   </figure>
 </div>
 
-
 <h3 id="评估指标">评估指标</h3>
-
 <p>主要用的评估指标有CTR、top-K准确率，nDCG，三者的计算公式如下：</p>
-
 
 
 <div class="box">
@@ -1082,7 +1048,6 @@
     <a href="/image/23-Recommendation/060.webp" itemprop="contentUrl"></a>
   </figure>
 </div>
-
 
 
 
@@ -1098,7 +1063,6 @@
 
 
 
-
 <div class="box">
 <figure  itemprop="associatedMedia"
   itemscope itemtype="http://schema.org/ImageObject" >
@@ -1109,11 +1073,8 @@
   </figure>
 </div>
 
-
 <p>在nDCG中，r是新闻的排序，n是推荐新闻列表的长度。</p>
-
 <h3 id="实验设定">实验设定</h3>
-
 
 
 <div class="box">
@@ -1126,11 +1087,8 @@
   </figure>
 </div>
 
-
 <h3 id="对比模型">对比模型</h3>
-
 <p>本文选取了五个基准模型：LR，FM，Wide&amp;Deep，LinUCB，HLinUCB。同时根据组件的不同(U代表用户活跃度，EG代表e-greedy，DBGD代表Dueling Bandit Gradient De- scent ）强化学习模型又分为以下几种：</p>
-
 <ul>
 <li>DN：没有考虑未来收益的Double-DQN</li>
 <li>DDQN：考虑未来收益的Double-DQN</li>
@@ -1138,11 +1096,8 @@
 <li>DDQN+U+EG：采用e-greedy作为探索策略的Double-DQN</li>
 <li>DDQN+U+DBGD：采用DBGD作为探索模型的Double-DQN</li>
 </ul>
-
 <h3 id="离线实验">离线实验</h3>
-
 <p>离线实验的结果如下所示：</p>
-
 
 
 <div class="box">
@@ -1155,17 +1110,11 @@
   </figure>
 </div>
 
-
 <p>本文提出的模型效果明显好于基准模型。</p>
-
 <h3 id="在线实验">在线实验</h3>
-
 <p>在线实验的效果分两部分，准确率和Diversity。</p>
-
 <p><strong>准确率</strong></p>
-
 <p>准确率用CTR来表征，如果CTR高，我们认为模型准确率较好，实验结果如下：</p>
-
 
 
 <div class="box">
@@ -1178,11 +1127,8 @@
   </figure>
 </div>
 
-
 <p><strong>多样性</strong></p>
-
 <p>多样性这里采用的指标是ILS，用来表示推荐列表中item的相似性，如果这个相似性较低，可以认为推荐结果的多样性较好，计算公式如下：</p>
-
 
 
 <div class="box">
@@ -1195,9 +1141,7 @@
   </figure>
 </div>
 
-
 <p>实验结果如下：</p>
-
 
 
 <div class="box">
@@ -1209,7 +1153,6 @@
     <a href="/image/23-Recommendation/067.webp" itemprop="contentUrl"></a>
   </figure>
 </div>
-
 
 <p>可以看到DDQN+U+DBGD的多样性明显好于其他模型。</p>
 

@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/71-gcn/" />
@@ -62,19 +62,15 @@
 <meta property="og:title" content="图卷积神经网络GCN详解与Pytorch实践" />
 <meta property="og:description" content="机器学习领域中一个非常重要的分支就是图神经网络，图可以用来构建非常复杂的关系，比如现实世界中的的社交关系，推荐系统中的商品关系以及交通网络中" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/71-gcn/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/71-gcn/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2022-03-27T16:01:23+08:00" />
 <meta property="article:modified_time" content="2022-03-27T16:01:23+08:00" />
+
 <meta itemprop="name" content="图卷积神经网络GCN详解与Pytorch实践">
-<meta itemprop="description" content="机器学习领域中一个非常重要的分支就是图神经网络，图可以用来构建非常复杂的关系，比如现实世界中的的社交关系，推荐系统中的商品关系以及交通网络中">
-<meta itemprop="datePublished" content="2022-03-27T16:01:23+08:00" />
+<meta itemprop="description" content="机器学习领域中一个非常重要的分支就是图神经网络，图可以用来构建非常复杂的关系，比如现实世界中的的社交关系，推荐系统中的商品关系以及交通网络中"><meta itemprop="datePublished" content="2022-03-27T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2022-03-27T16:01:23+08:00" />
 <meta itemprop="wordCount" content="1945">
-
-
-
-<meta itemprop="keywords" content="ML," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="ML," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="图卷积神经网络GCN详解与Pytorch实践"/>
 <meta name="twitter:description" content="机器学习领域中一个非常重要的分支就是图神经网络，图可以用来构建非常复杂的关系，比如现实世界中的的社交关系，推荐系统中的商品关系以及交通网络中"/>
 
@@ -260,6 +256,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
               </li>
             
               <li>
@@ -627,6 +627,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -778,29 +782,27 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#概述">概述</a></li>
+    <li><a href="#简易实现">简易实现</a></li>
+  </ul>
+</nav>
   </div>
 </div>
 
     
     <div class="post-content">
       <p>机器学习领域中一个非常重要的分支就是图神经网络，图可以用来构建非常复杂的关系，比如现实世界中的的社交关系，推荐系统中的商品关系以及交通网络中的路口连接关系等，学会使用图神经网络是研究机器学习的不可获取能力之一。</p>
-
 <p>本篇文章从非常朴素的方面来介绍图神经网络，并使用pytorch实现一个小的demo模型。</p>
-
 <h2 id="概述">概述</h2>
-
 <p>在研究图神经网络之前需要先回答一个问题：什么是图？图由两个重要的要素构成：</p>
-
 <ul>
 <li>节点：具有一些特征属性的实体；</li>
 <li>边：表示两个节点间的关联关系；</li>
 </ul>
-
 <p>以社交网络为例，对一个人影响最大的是其本身，其次通过这个人的亲密朋友，然后再是其朋友的朋友，以此类推。这就是图神经网络的基本思想，我们通过汇聚当前节点的直接相邻节点、次相邻节点并以此类推节点的信息到当前节点，可以得到目标节点在周围节点影响下的一个状态表达。</p>
-
 <p>下图表示一个较小的社交网络图，每个节点代表一个人，节点相连代表两个人是朋友关系。</p>
-
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -813,9 +815,7 @@
   </figure>
 </div>
 
-
 <p>我们研究个体A，首先我们观察连接距离为0的朋友信息，即其本人的一些特征信息：</p>
-
 
 
 <div class="box">
@@ -828,9 +828,7 @@
   </figure>
 </div>
 
-
 <p>显然依靠这些信息并不能非常了解这个人，那我们再来观察与之相邻距离为1的朋友信息：</p>
-
 
 
 <div class="box">
@@ -843,9 +841,7 @@
   </figure>
 </div>
 
-
 <p>我们可以通过其朋友的信息获得对个体A的进一步了解。我们再来观察连接距离为2的朋友信息：</p>
-
 
 
 <div class="box">
@@ -858,11 +854,8 @@
   </figure>
 </div>
 
-
 <p>是不是越来越像神经网络了，每个节点汇聚上一层节点的信息作为输入，然后自己的输出再被当做下一层节点的输入。这里我们把汇聚的信息称为<strong>embeddings</strong>。</p>
-
 <p>我们来深入分析一下这里进行的一些计算：</p>
-
 
 
 <div class="box">
@@ -875,25 +868,18 @@
   </figure>
 </div>
 
-
 <p>我们定义在第0层的节点的embedding是其本身的特征，而第$k$层的节点的embedding由第$k-1$层的节点embedding的求和平均然后适用激活函数非线性化得到。</p>
-
 <p>这里注意两个点：</p>
-
 <ul>
 <li>这里注意每个邻接节点的重要性都是一样的，即上式中的weights是相同的；</li>
 <li>每次计算节点$v$的embedding时，我们需要保留其本身的特征信息，因此每个节点在更新embedding时都有一条自连接的边；</li>
 </ul>
-
 <p>目前我们得到了最朴素的图神经网络，他的更新方式稍微有些繁琐，我们引入它的一个改进版本：图卷积神经网络（Graph Convolution Network，GCN），主要有两点不同：</p>
-
-<!-- 然而这种网络没有考虑周围节点的一个重要性差异，在很多场景并不现实，例如亲密朋友相比与普通朋友对自己的影响大。 -->
-
+<!-- raw HTML omitted -->
 <ul>
 <li>每一层只有一组权重，即相邻节点的权重$W$和自身节点的权重$B$合为了一体；</li>
 <li>特征融合只发生在相邻节点之间；</li>
 </ul>
-
 
 
 <div class="box">
@@ -906,80 +892,75 @@
   </figure>
 </div>
 
-
 <h2 id="简易实现">简易实现</h2>
-
 <p>首先我们需要先定义一个GCN层：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">import</span> torch
-<span style="color:#f92672">from</span> torch_geometric.nn <span style="color:#f92672">import</span> MessagePassing
-<span style="color:#f92672">from</span> torch_geometric.utils <span style="color:#f92672">import</span> add_self_loops, degree
-
-<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">GCNConv</span>(MessagePassing):
-    <span style="color:#66d9ef">def</span> __init__(self, in_channels, out_channels):
-        super(GCNConv, self)<span style="color:#f92672">.</span>__init__(aggr<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;add&#39;</span>)
-        self<span style="color:#f92672">.</span>lin <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>Linear(in_channels, out_channels)
-
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x, edge_index):
-        <span style="color:#75715e"># Step 1: Add self-loops</span>
-        edge_index, _ <span style="color:#f92672">=</span> add_self_loops(edge_index, num_nodes<span style="color:#f92672">=</span>x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>))
-
-        <span style="color:#75715e"># Step 2: Multiply with weights</span>
-        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>lin(x)
-
-        <span style="color:#75715e"># Step 3: Calculate the normalization</span>
-        row, col <span style="color:#f92672">=</span> edge_index
-        deg <span style="color:#f92672">=</span> degree(row, x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>), dtype<span style="color:#f92672">=</span>x<span style="color:#f92672">.</span>dtype)
-        deg_inv_sqrt <span style="color:#f92672">=</span> deg<span style="color:#f92672">.</span>pow(<span style="color:#f92672">-</span><span style="color:#ae81ff">0.5</span>)
-        norm <span style="color:#f92672">=</span> deg_inv_sqrt[row] <span style="color:#f92672">*</span> deg_inv_sqrt[col]
-
-        <span style="color:#75715e"># Step 4: Propagate the embeddings to the next layer</span>
-        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>propagate(edge_index, size<span style="color:#f92672">=</span>(x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>), x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>)), x<span style="color:#f92672">=</span>x,
-                              norm<span style="color:#f92672">=</span>norm)
-
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">message</span>(self, x_j, norm):
-        <span style="color:#75715e"># Normalize node features.</span>
-        <span style="color:#66d9ef">return</span> norm<span style="color:#f92672">.</span>view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> x_j</code></pre></div>
-<p>这里我们逐行进行分析：</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torch_geometric.nn <span style="color:#f92672">import</span> MessagePassing
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torch_geometric.utils <span style="color:#f92672">import</span> add_self_loops, degree
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">GCNConv</span>(MessagePassing):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, in_channels, out_channels):
+</span></span><span style="display:flex;"><span>        super(GCNConv, self)<span style="color:#f92672">.</span>__init__(aggr<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;add&#39;</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>lin <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>Linear(in_channels, out_channels)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x, edge_index):
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Step 1: Add self-loops</span>
+</span></span><span style="display:flex;"><span>        edge_index, _ <span style="color:#f92672">=</span> add_self_loops(edge_index, num_nodes<span style="color:#f92672">=</span>x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Step 2: Multiply with weights</span>
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>lin(x)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Step 3: Calculate the normalization</span>
+</span></span><span style="display:flex;"><span>        row, col <span style="color:#f92672">=</span> edge_index
+</span></span><span style="display:flex;"><span>        deg <span style="color:#f92672">=</span> degree(row, x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>), dtype<span style="color:#f92672">=</span>x<span style="color:#f92672">.</span>dtype)
+</span></span><span style="display:flex;"><span>        deg_inv_sqrt <span style="color:#f92672">=</span> deg<span style="color:#f92672">.</span>pow(<span style="color:#f92672">-</span><span style="color:#ae81ff">0.5</span>)
+</span></span><span style="display:flex;"><span>        norm <span style="color:#f92672">=</span> deg_inv_sqrt[row] <span style="color:#f92672">*</span> deg_inv_sqrt[col]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Step 4: Propagate the embeddings to the next layer</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>propagate(edge_index, size<span style="color:#f92672">=</span>(x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>), x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>)), x<span style="color:#f92672">=</span>x,
+</span></span><span style="display:flex;"><span>                              norm<span style="color:#f92672">=</span>norm)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">message</span>(self, x_j, norm):
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Normalize node features.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> norm<span style="color:#f92672">.</span>view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> x_j
+</span></span></code></pre></div><p>这里我们逐行进行分析：</p>
 <p>在step 1，我们需要对每个节点自身和其相邻节点做特征融合，使用了Pytorch本身的一个库函数就可以实现：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">edge_index, _ <span style="color:#f92672">=</span> add_self_loops(edge_index, num_nodes<span style="color:#f92672">=</span>x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>))
-
-<span style="color:#75715e"># add_self_loops方法使用</span>
-<span style="color:#75715e"># x = torch.tensor([[-1], [0], [1]], dtype=torch.float)</span>
-<span style="color:#75715e"># edge_index = torch.tensor([[0, 1, 1, 2],</span>
-<span style="color:#75715e">#                            [1, 0, 2, 1]], dtype=torch.long)</span>
-
-<span style="color:#75715e"># print(&#34;original edge_index &#34;)</span>
-<span style="color:#75715e"># print(edge_index)</span>
-
-<span style="color:#75715e"># edge_index, _ = add_self_loops(edge_index, num_nodes=x.size(0))</span>
-<span style="color:#75715e"># print(&#34;new edge_index&#34;)</span>
-<span style="color:#75715e"># print(edge_index)</span>
-
-<span style="color:#75715e"># original edge_index </span>
-<span style="color:#75715e"># tensor([[0, 1, 1, 2],</span>
-<span style="color:#75715e">#         [1, 0, 2, 1]])</span>
-<span style="color:#75715e"># new edge_index</span>
-<span style="color:#75715e"># tensor([[0, 1, 1, 2, 0, 1, 2],</span>
-<span style="color:#75715e">#         [1, 0, 2, 1, 0, 1, 2]])</span></code></pre></div>
-<p>接下来需要做embedding和权重w之间的乘积：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>lin(x)</code></pre></div>
-<p>最后利用每个节点的度计算embedding的归一化系数：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e"># 获得每条边的起始节点和目标节点</span>
-row, col <span style="color:#f92672">=</span> edge_index
-
-<span style="color:#75715e"># 获得每个节点的度</span>
-deg <span style="color:#f92672">=</span> degree(row, x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>), dtype<span style="color:#f92672">=</span>x<span style="color:#f92672">.</span>dtype)
-
-<span style="color:#75715e"># 根据节点的度计算归一化系数，维度等于节点的维度</span>
-deg_inv_sqrt <span style="color:#f92672">=</span> deg<span style="color:#f92672">.</span>pow(<span style="color:#f92672">-</span><span style="color:#ae81ff">0.5</span>)
-
-<span style="color:#75715e"># 计算每条边的权重</span>
-norm <span style="color:#f92672">=</span> deg_inv_sqrt[row] <span style="color:#f92672">*</span> deg_inv_sqrt[col]</code></pre></div>
-<p>这里需要解释一下，为什么对节点计算开方是归一化操作。</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>edge_index, _ <span style="color:#f92672">=</span> add_self_loops(edge_index, num_nodes<span style="color:#f92672">=</span>x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># add_self_loops方法使用</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># x = torch.tensor([[-1], [0], [1]], dtype=torch.float)</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># edge_index = torch.tensor([[0, 1, 1, 2],</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#                            [1, 0, 2, 1]], dtype=torch.long)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># print(&#34;original edge_index &#34;)</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># print(edge_index)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># edge_index, _ = add_self_loops(edge_index, num_nodes=x.size(0))</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># print(&#34;new edge_index&#34;)</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># print(edge_index)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># original edge_index </span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># tensor([[0, 1, 1, 2],</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#         [1, 0, 2, 1]])</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># new edge_index</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># tensor([[0, 1, 1, 2, 0, 1, 2],</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#         [1, 0, 2, 1, 0, 1, 2]])</span>
+</span></span></code></pre></div><p>接下来需要做embedding和权重w之间的乘积：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>lin(x)
+</span></span></code></pre></div><p>最后利用每个节点的度计算embedding的归一化系数：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#75715e"># 获得每条边的起始节点和目标节点</span>
+</span></span><span style="display:flex;"><span>row, col <span style="color:#f92672">=</span> edge_index
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 获得每个节点的度</span>
+</span></span><span style="display:flex;"><span>deg <span style="color:#f92672">=</span> degree(row, x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>), dtype<span style="color:#f92672">=</span>x<span style="color:#f92672">.</span>dtype)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 根据节点的度计算归一化系数，维度等于节点的维度</span>
+</span></span><span style="display:flex;"><span>deg_inv_sqrt <span style="color:#f92672">=</span> deg<span style="color:#f92672">.</span>pow(<span style="color:#f92672">-</span><span style="color:#ae81ff">0.5</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 计算每条边的权重</span>
+</span></span><span style="display:flex;"><span>norm <span style="color:#f92672">=</span> deg_inv_sqrt[row] <span style="color:#f92672">*</span> deg_inv_sqrt[col]
+</span></span></code></pre></div><p>这里需要解释一下，为什么对节点计算开方是归一化操作。</p>
 <p>融合邻居节点特征的最朴素方法是直接对邻居节点进行求和得到：</p>
-
 
 
 <div class="box">
@@ -992,9 +973,7 @@ norm <span style="color:#f92672">=</span> deg_inv_sqrt[row] <span style="color:#
   </figure>
 </div>
 
-
 <p>因为不同节点的边的数量不一样，有的节点边数量特别多，有的则很少，这就导致多边节点在特征融合后的特征值远远大于少边节点，所以需要在节点更新前对邻居传来的信息进行归一化操作，即为$\tilde D^{-1}\tilde A$，所以聚合后变为：</p>
-
 
 
 <div class="box">
@@ -1007,9 +986,7 @@ norm <span style="color:#f92672">=</span> deg_inv_sqrt[row] <span style="color:#
   </figure>
 </div>
 
-
 <p>然而上述的归一化只考虑了聚合节点$i$的度，并没有考虑邻居节点$j$的度，这样会导致节点的总特征和在融合后会增加，和现实能量守恒的观点冲突。更好的操作是计算每个节点在融合信息的同时，也向外发射信息，变越多的节点，每条边发送出去的消息量就越小，所以现在的聚合方程如下：</p>
-
 
 
 <div class="box">
@@ -1022,28 +999,26 @@ norm <span style="color:#f92672">=</span> deg_inv_sqrt[row] <span style="color:#
   </figure>
 </div>
 
-
 <p>做完以上工作，我们现在可以开始搭建一个图神经网络了。代码如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">import</span> torch
-<span style="color:#f92672">import</span> torch.nn.functional <span style="color:#f92672">as</span> F
-
-<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Net</span>(torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>Module):
-    <span style="color:#66d9ef">def</span> __init__(self, dataset):
-        super(Net, self)<span style="color:#f92672">.</span>__init__()
-        self<span style="color:#f92672">.</span>conv1 <span style="color:#f92672">=</span> GCNConv(dataset<span style="color:#f92672">.</span>num_node_features, <span style="color:#ae81ff">16</span>)
-        self<span style="color:#f92672">.</span>conv2 <span style="color:#f92672">=</span> GCNConv(<span style="color:#ae81ff">16</span>, dataset<span style="color:#f92672">.</span>num_classes)
-
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, data):
-        x, edge_index <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span>x, data<span style="color:#f92672">.</span>edge_index
-
-        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>conv1(x, edge_index)
-        x <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>relu(x)
-        x <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>dropout(x, training<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>training)
-        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>conv2(x, edge_index)
-
-        <span style="color:#66d9ef">return</span> F<span style="color:#f92672">.</span>log_softmax(x, dim<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)</code></pre></div>
-<p>现在让我们来测试一下搭建的模型效果吧。但是我们的模型比较小，使用的数据集最好也不要太大，一个比较好的选择是使用2000年左右的Cora数据集，目标是对来自7个不同领域的机器学习论文进行分类，每篇论文的特征包括单词的统计量，两篇论文相连是指他们之间有引用关系。下图展示了数据集的一个分布状态。</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.nn.functional <span style="color:#66d9ef">as</span> F
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Net</span>(torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, dataset):
+</span></span><span style="display:flex;"><span>        super(Net, self)<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conv1 <span style="color:#f92672">=</span> GCNConv(dataset<span style="color:#f92672">.</span>num_node_features, <span style="color:#ae81ff">16</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conv2 <span style="color:#f92672">=</span> GCNConv(<span style="color:#ae81ff">16</span>, dataset<span style="color:#f92672">.</span>num_classes)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, data):
+</span></span><span style="display:flex;"><span>        x, edge_index <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span>x, data<span style="color:#f92672">.</span>edge_index
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>conv1(x, edge_index)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>relu(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>dropout(x, training<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>training)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>conv2(x, edge_index)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> F<span style="color:#f92672">.</span>log_softmax(x, dim<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span></code></pre></div><p>现在让我们来测试一下搭建的模型效果吧。但是我们的模型比较小，使用的数据集最好也不要太大，一个比较好的选择是使用2000年左右的Cora数据集，目标是对来自7个不同领域的机器学习论文进行分类，每篇论文的特征包括单词的统计量，两篇论文相连是指他们之间有引用关系。下图展示了数据集的一个分布状态。</p>
 
 
 <div class="box">
@@ -1056,9 +1031,7 @@ norm <span style="color:#f92672">=</span> deg_inv_sqrt[row] <span style="color:#
   </figure>
 </div>
 
-
 <p>通过训练若干个epochs后可以达到训练集100%和测试集80%的效果，如下图所示：</p>
-
 
 
 <div class="box">
@@ -1070,7 +1043,6 @@ norm <span style="color:#f92672">=</span> deg_inv_sqrt[row] <span style="color:#
     <a href="/image/81-GCN/011.png" itemprop="contentUrl"></a>
   </figure>
 </div>
-
 
 <p>完整的代码放在了我的<a href="https://github.com/yshane-ai/yangxx_ML/tree/main/Basic/Transformer">Github</a>，你也可以按照以上流程，自己动手实现一个GCN模型，快动手试试吧！</p>
 

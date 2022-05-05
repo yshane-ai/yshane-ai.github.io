@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/" />
@@ -62,19 +62,15 @@
 <meta property="og:title" content="Pytorch加速模型训练" />
 <meta property="og:description" content="前言 PyTorch 是 torch 的 python 版本，它是 Facebook AI 研究组开发并开源的一个深度学习框架，也是目前非常流行的框架，特别是在研究人员中，短短几年已经有追上 Tensorflow 的趋势了。这" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/19-pytorch%E5%8A%A0%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-10-01T16:01:23+08:00" />
 <meta property="article:modified_time" content="2021-10-01T16:01:23+08:00" />
+
 <meta itemprop="name" content="Pytorch加速模型训练">
-<meta itemprop="description" content="前言 PyTorch 是 torch 的 python 版本，它是 Facebook AI 研究组开发并开源的一个深度学习框架，也是目前非常流行的框架，特别是在研究人员中，短短几年已经有追上 Tensorflow 的趋势了。这">
-<meta itemprop="datePublished" content="2021-10-01T16:01:23+08:00" />
+<meta itemprop="description" content="前言 PyTorch 是 torch 的 python 版本，它是 Facebook AI 研究组开发并开源的一个深度学习框架，也是目前非常流行的框架，特别是在研究人员中，短短几年已经有追上 Tensorflow 的趋势了。这"><meta itemprop="datePublished" content="2021-10-01T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-10-01T16:01:23+08:00" />
-<meta itemprop="wordCount" content="1413">
-
-
-
-<meta itemprop="keywords" content="Python,Pytorch," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="1420">
+<meta itemprop="keywords" content="Python,Pytorch," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Pytorch加速模型训练"/>
 <meta name="twitter:description" content="前言 PyTorch 是 torch 的 python 版本，它是 Facebook AI 研究组开发并开源的一个深度学习框架，也是目前非常流行的框架，特别是在研究人员中，短短几年已经有追上 Tensorflow 的趋势了。这"/>
 
@@ -260,6 +256,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
               </li>
             
               <li>
@@ -627,6 +627,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -779,20 +783,25 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#前言">前言</a></li>
+    <li><a href="#1-如何检查-cuda-是否可用">1. 如何检查 cuda 是否可用？</a></li>
+    <li><a href="#2-在-gpu-上存储-tensors-和运行模型的方法">2. 在 GPU 上存储 Tensors 和运行模型的方法</a></li>
+    <li><a href="#3-有多个-gpu-的时候如何选择和使用它们">3. 有多个 GPU 的时候，如何选择和使用它们</a></li>
+    <li><a href="#4-数据并行">4. 数据并行</a></li>
+    <li><a href="#torchmultiprocessing">torch.multiprocessing</a></li>
+  </ul>
+</nav>
   </div>
 </div>
 
     
     <div class="post-content">
       <h2 id="前言">前言</h2>
-
 <p>PyTorch 是 torch 的 python 版本，它是 Facebook AI 研究组开发并开源的一个深度学习框架，也是目前非常流行的框架，特别是在研究人员中，短短几年已经有追上 Tensorflow 的趋势了。这主要是因为其简单、动态计算图的优点。</p>
-
 <p>本文将主要介绍如何采用 cuda 和 pycuda 检查、初始化 GPU 设备，并让你的算法跑得更快。</p>
-
 <p>本文目录如下：</p>
-
 <ol>
 <li>如何检查 cuda 是否可用？</li>
 <li>在 GPU 上存储 Tensors 和运行模型的方法</li>
@@ -800,109 +809,96 @@
 <li>数据并行</li>
 <li>torch.multiprocessing</li>
 </ol>
-
 <h2 id="1-如何检查-cuda-是否可用">1. 如何检查 cuda 是否可用？</h2>
-
 <p>检查 cuda 是否可用的代码非常简单，如下所示：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">import</span> torch
-torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>is_available()
-<span style="color:#75715e"># True</span>
-
-<span style="color:#66d9ef">print</span>(torch<span style="color:#f92672">.</span>uda<span style="color:#f92672">.</span>is_available()) <span style="color:#75715e"># true 查看GPU是否可用</span>
-
-<span style="color:#66d9ef">print</span>(torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>device_count()) <span style="color:#75715e"># GPU数量， 1</span>
-
-torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>current_device() <span style="color:#75715e"># 当前GPU的索引， 0</span>
-
-torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>get_device_name(<span style="color:#ae81ff">0</span>) <span style="color:#75715e"># 输出GPU名称</span></code></pre></div>
-<h2 id="2-在-gpu-上存储-tensors-和运行模型的方法">2. 在 GPU 上存储 Tensors 和运行模型的方法</h2>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>is_available()
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># True</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(torch<span style="color:#f92672">.</span>uda<span style="color:#f92672">.</span>is_available()) <span style="color:#75715e"># true 查看GPU是否可用</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>device_count()) <span style="color:#75715e"># GPU数量， 1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>current_device() <span style="color:#75715e"># 当前GPU的索引， 0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>get_device_name(<span style="color:#ae81ff">0</span>) <span style="color:#75715e"># 输出GPU名称</span>
+</span></span></code></pre></div><h2 id="2-在-gpu-上存储-tensors-和运行模型的方法">2. 在 GPU 上存储 Tensors 和运行模型的方法</h2>
 <p>如果有多块GPU，我们用.cuda(i)来表示第 i 块GPU及相应的显存（i从0开始）且cuda(0)和cuda()等价。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">x <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>tensor([<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>])
-x <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>cuda(<span style="color:#ae81ff">0</span>)
-
-x<span style="color:#f92672">.</span>device <span style="color:#75715e">#通过Tensor的device属性判断该Tensor所在的设备</span>
-
-device <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>device(<span style="color:#e6db74">&#39;cuda&#39;</span> <span style="color:#66d9ef">if</span> torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>is_available <span style="color:#66d9ef">else</span> <span style="color:#e6db74">&#39;cpu&#39;</span>)
-x <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>tensor([<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">3</span>], device<span style="color:#f92672">=</span>device)
-<span style="color:#75715e">#or </span>
-<span style="color:#75715e"># x = torch.tensor([1,2,3]).to(device)</span></code></pre></div>
-<p>如果对在GPU设备上的数据进行计算，那么计算结果也会在该设备上。但是，位于不同设备上的数据是不可以直接进行计算的，这包括在GPU上的数据不可以与在CPU上的数据直接进行计算，在不同的GPU设备上的数据也不可以直接进行计算。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">y <span style="color:#f92672">=</span> x<span style="color:#f92672">**</span><span style="color:#ae81ff">2</span>
-<span style="color:#66d9ef">print</span>(y<span style="color:#f92672">.</span>device) <span style="color:#75715e"># cuda:0</span>
-
-z <span style="color:#f92672">=</span> y <span style="color:#f92672">+</span> x<span style="color:#f92672">.</span>cpu()
-
-<span style="color:#75715e"># RuntimeError: Expected object of type torch.cuda.LongTensor but found type torch.LongTensor for argument #3 &#39;other&#39;</span></code></pre></div>
-<p>我们在使用模型的时候，需要保证模型的输入的Tensor和模型在同一个设备上，否则会报错。与Tensor类似，pytorch模型也可以通过.cuda()转移到设备上，而我们可以通过查看模型参数的device属性查看模型所在的设备。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">module <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">1</span>)
-list(module<span style="color:#f92672">.</span>parameters())[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">.</span>device <span style="color:#75715e"># device(type=&#39;cpu&#39;)</span>
-
-module<span style="color:#f92672">.</span>cuda(<span style="color:#ae81ff">0</span>)
-list(module<span style="color:#f92672">.</span>parameters())[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">.</span>device  <span style="color:#75715e">#device=(type=&#39;cuda&#39;, index=0)</span></code></pre></div>
-<h2 id="3-有多个-gpu-的时候如何选择和使用它们">3. 有多个 GPU 的时候，如何选择和使用它们</h2>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>x <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>tensor([<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>])
+</span></span><span style="display:flex;"><span>x <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>cuda(<span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>x<span style="color:#f92672">.</span>device <span style="color:#75715e">#通过Tensor的device属性判断该Tensor所在的设备</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>device <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>device(<span style="color:#e6db74">&#39;cuda&#39;</span> <span style="color:#66d9ef">if</span> torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>is_available <span style="color:#66d9ef">else</span> <span style="color:#e6db74">&#39;cpu&#39;</span>)
+</span></span><span style="display:flex;"><span>x <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>tensor([<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">3</span>], device<span style="color:#f92672">=</span>device)
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#or </span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># x = torch.tensor([1,2,3]).to(device)</span>
+</span></span></code></pre></div><p>如果对在GPU设备上的数据进行计算，那么计算结果也会在该设备上。但是，位于不同设备上的数据是不可以直接进行计算的，这包括在GPU上的数据不可以与在CPU上的数据直接进行计算，在不同的GPU设备上的数据也不可以直接进行计算。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>y <span style="color:#f92672">=</span> x<span style="color:#f92672">**</span><span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>print(y<span style="color:#f92672">.</span>device) <span style="color:#75715e"># cuda:0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>z <span style="color:#f92672">=</span> y <span style="color:#f92672">+</span> x<span style="color:#f92672">.</span>cpu()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># RuntimeError: Expected object of type torch.cuda.LongTensor but found type torch.LongTensor for argument #3 &#39;other&#39;</span>
+</span></span></code></pre></div><p>我们在使用模型的时候，需要保证模型的输入的Tensor和模型在同一个设备上，否则会报错。与Tensor类似，pytorch模型也可以通过.cuda()转移到设备上，而我们可以通过查看模型参数的device属性查看模型所在的设备。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>module <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>list(module<span style="color:#f92672">.</span>parameters())[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">.</span>device <span style="color:#75715e"># device(type=&#39;cpu&#39;)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>module<span style="color:#f92672">.</span>cuda(<span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>list(module<span style="color:#f92672">.</span>parameters())[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">.</span>device  <span style="color:#75715e">#device=(type=&#39;cuda&#39;, index=0)</span>
+</span></span></code></pre></div><h2 id="3-有多个-gpu-的时候如何选择和使用它们">3. 有多个 GPU 的时候，如何选择和使用它们</h2>
 <p>PyTorch默认使用从0开始的GPU，如果GPU0正在运行程序，需要指定其他GPU。</p>
-
 <p>类似tensorflow指定GPU的方式，使用CUDA_VISIBLE_DEVICES。</p>
-
 <p>3.1 直接终端中设定</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">CUDA_VISIBLE_DEVICES<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> python my_script<span style="color:#f92672">.</span>py</code></pre></div>
-<p>3.2 直接在代码中设定</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">import</span> os
-os<span style="color:#f92672">.</span>environ[<span style="color:#e6db74">&#34;CUDA_VISIBLE_DEVICES&#34;</span>] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;2&#34;</span></code></pre></div>
-<h2 id="4-数据并行">4. 数据并行</h2>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>CUDA_VISIBLE_DEVICES<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> python my_script<span style="color:#f92672">.</span>py
+</span></span></code></pre></div><p>3.2 直接在代码中设定</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">import</span> os
+</span></span><span style="display:flex;"><span>os<span style="color:#f92672">.</span>environ[<span style="color:#e6db74">&#34;CUDA_VISIBLE_DEVICES&#34;</span>] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;2&#34;</span>
+</span></span></code></pre></div><h2 id="4-数据并行">4. 数据并行</h2>
 <p>数据并行的操作要求我们将数据划分成多份，然后发送给多个 GPU 进行并行的计算。</p>
-
 <p>PyTorch 中实现数据并行的操作可以通过使用 torch.nn.DataParallel。</p>
-
 <p>下面是一个简单的示例。要实现数据并行，第一个方法是采用 nn.parallel 中的几个函数，分别实现的功能如下所示：</p>
-
 <ol>
 <li>复制(Replicate)：将模型拷贝到多个 GPU 上；
 分发(Scatter)：将输入数据根据其第一个维度(通常就是 batch 大小)划分多份，并传送到多个 GPU 上；</li>
 <li>收集(Gather)：从多个 GPU 上传送回来的数据，再次连接回一起；</li>
 <li>并行的应用(parallel_apply)：将第三步得到的分布式的输入数据应用到第一步中拷贝的多个模型上。</li>
 </ol>
-
 <p>实现代码如下所示：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e"># Replicate module to devices in device_ids</span>
-replicas <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>parallel<span style="color:#f92672">.</span>replicate(module, device_ids)
-<span style="color:#75715e"># Distribute input to devices in device_ids</span>
-inputs <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>parallel<span style="color:#f92672">.</span>scatter(input, device_ids)
-<span style="color:#75715e"># Apply the models to corresponding inputs</span>
-outputs <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>parallel<span style="color:#f92672">.</span>parallel_apply(replicas, inputs)
-<span style="color:#75715e"># Gather result from all devices to output_device</span>
-result <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>parallel<span style="color:#f92672">.</span>gather(outputs, output_device)</code></pre></div>
-<p>实际上，还有一个更简单的也是常用的实现方法，如下所示，只需一行代码即可：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">model <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>DataParallel(model, device_ids<span style="color:#f92672">=</span>device_ids)
-result <span style="color:#f92672">=</span> model(input)</code></pre></div>
-<h2 id="torchmultiprocessing">torch.multiprocessing</h2>
-
-<p>torch.multiprocessing 是对 Python 的 multiprocessing 模块的一个封装，并且百分比兼容原始模块，也就是可以采用原始模块中的如 Queue 、Pipe、Array 等方法。并且为了加快速度，还添加了一个新的方法--share<em>memory</em>()，它允许数据处于一种特殊的状态，可以在不需要拷贝的情况下，任何进程都可以直接使用该数据。</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#75715e"># Replicate module to devices in device_ids</span>
+</span></span><span style="display:flex;"><span>replicas <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>parallel<span style="color:#f92672">.</span>replicate(module, device_ids)
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Distribute input to devices in device_ids</span>
+</span></span><span style="display:flex;"><span>inputs <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>parallel<span style="color:#f92672">.</span>scatter(input, device_ids)
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Apply the models to corresponding inputs</span>
+</span></span><span style="display:flex;"><span>outputs <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>parallel<span style="color:#f92672">.</span>parallel_apply(replicas, inputs)
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Gather result from all devices to output_device</span>
+</span></span><span style="display:flex;"><span>result <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>parallel<span style="color:#f92672">.</span>gather(outputs, output_device)
+</span></span></code></pre></div><p>实际上，还有一个更简单的也是常用的实现方法，如下所示，只需一行代码即可：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>model <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>DataParallel(model, device_ids<span style="color:#f92672">=</span>device_ids)
+</span></span><span style="display:flex;"><span>result <span style="color:#f92672">=</span> model(input)
+</span></span></code></pre></div><h2 id="torchmultiprocessing">torch.multiprocessing</h2>
+<p>torch.multiprocessing 是对 Python 的 multiprocessing 模块的一个封装，并且百分比兼容原始模块，也就是可以采用原始模块中的如 Queue 、Pipe、Array 等方法。并且为了加快速度，还添加了一个新的方法&ndash;share_memory_()，它允许数据处于一种特殊的状态，可以在不需要拷贝的情况下，任何进程都可以直接使用该数据。</p>
 <p>通过该方法，可以共享 Tensors 、模型的参数 parameters ，可以在 CPU 或者 GPU 之间共享它们。</p>
-
 <p>下面展示一个采用多进程训练模型的例子：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e"># Training a model using multiple processes:</span>
-<span style="color:#f92672">import</span> torch.multiprocessing <span style="color:#f92672">as</span> mp
-<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">train</span>(model):
-    <span style="color:#66d9ef">for</span> data, labels <span style="color:#f92672">in</span> data_loader:
-        optimizer<span style="color:#f92672">.</span>zero_grad()
-        loss_fn(model(data), labels)<span style="color:#f92672">.</span>backward()
-        optimizer<span style="color:#f92672">.</span>step()  <span style="color:#75715e"># This will update the shared parameters</span>
-model <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Sequential(nn<span style="color:#f92672">.</span>Linear(n_in, n_h1),
-                      nn<span style="color:#f92672">.</span>ReLU(),
-                      nn<span style="color:#f92672">.</span>Linear(n_h1, n_out))
-model<span style="color:#f92672">.</span>share_memory() <span style="color:#75715e"># Required for &#39;fork&#39; method to work</span>
-processes <span style="color:#f92672">=</span> []
-<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">4</span>): <span style="color:#75715e"># No. of processes</span>
-    p <span style="color:#f92672">=</span> mp<span style="color:#f92672">.</span>Process(target<span style="color:#f92672">=</span>train, args<span style="color:#f92672">=</span>(model,))
-    p<span style="color:#f92672">.</span>start()
-    processes<span style="color:#f92672">.</span>append(p)
-<span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> processes: 
-    p<span style="color:#f92672">.</span>join()</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#75715e"># Training a model using multiple processes:</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.multiprocessing <span style="color:#66d9ef">as</span> mp
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">train</span>(model):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> data, labels <span style="color:#f92672">in</span> data_loader:
+</span></span><span style="display:flex;"><span>        optimizer<span style="color:#f92672">.</span>zero_grad()
+</span></span><span style="display:flex;"><span>        loss_fn(model(data), labels)<span style="color:#f92672">.</span>backward()
+</span></span><span style="display:flex;"><span>        optimizer<span style="color:#f92672">.</span>step()  <span style="color:#75715e"># This will update the shared parameters</span>
+</span></span><span style="display:flex;"><span>model <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Sequential(nn<span style="color:#f92672">.</span>Linear(n_in, n_h1),
+</span></span><span style="display:flex;"><span>                      nn<span style="color:#f92672">.</span>ReLU(),
+</span></span><span style="display:flex;"><span>                      nn<span style="color:#f92672">.</span>Linear(n_h1, n_out))
+</span></span><span style="display:flex;"><span>model<span style="color:#f92672">.</span>share_memory() <span style="color:#75715e"># Required for &#39;fork&#39; method to work</span>
+</span></span><span style="display:flex;"><span>processes <span style="color:#f92672">=</span> []
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">4</span>): <span style="color:#75715e"># No. of processes</span>
+</span></span><span style="display:flex;"><span>    p <span style="color:#f92672">=</span> mp<span style="color:#f92672">.</span>Process(target<span style="color:#f92672">=</span>train, args<span style="color:#f92672">=</span>(model,))
+</span></span><span style="display:flex;"><span>    p<span style="color:#f92672">.</span>start()
+</span></span><span style="display:flex;"><span>    processes<span style="color:#f92672">.</span>append(p)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> processes: 
+</span></span><span style="display:flex;"><span>    p<span style="color:#f92672">.</span>join()
+</span></span></code></pre></div>
     </div>
 
     

@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/" />
@@ -62,19 +62,15 @@
 <meta property="og:title" content="关于RL实战的一点想法" />
 <meta property="og:description" content="相比于监督学习，例如CV中的分类检测任务，NLP中的翻译任务等，强化学习的优势在于不依赖人类的标签而可以自动捕捉“观测-&gt;动作”的隐含" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2022-03-04T16:01:23+08:00" />
 <meta property="article:modified_time" content="2022-03-04T16:01:23+08:00" />
+
 <meta itemprop="name" content="关于RL实战的一点想法">
-<meta itemprop="description" content="相比于监督学习，例如CV中的分类检测任务，NLP中的翻译任务等，强化学习的优势在于不依赖人类的标签而可以自动捕捉“观测-&gt;动作”的隐含">
-<meta itemprop="datePublished" content="2022-03-04T16:01:23+08:00" />
+<meta itemprop="description" content="相比于监督学习，例如CV中的分类检测任务，NLP中的翻译任务等，强化学习的优势在于不依赖人类的标签而可以自动捕捉“观测-&gt;动作”的隐含"><meta itemprop="datePublished" content="2022-03-04T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2022-03-04T16:01:23+08:00" />
 <meta itemprop="wordCount" content="1239">
-
-
-
-<meta itemprop="keywords" content="RL,Game AI," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="RL,Game AI," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="关于RL实战的一点想法"/>
 <meta name="twitter:description" content="相比于监督学习，例如CV中的分类检测任务，NLP中的翻译任务等，强化学习的优势在于不依赖人类的标签而可以自动捕捉“观测-&gt;动作”的隐含"/>
 
@@ -260,6 +256,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
               </li>
             
               <li>
@@ -627,6 +627,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -779,70 +783,72 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#游戏ai">游戏AI</a>
+      <ul>
+        <li><a href="#观测处理">观测处理</a></li>
+        <li><a href="#动作处理">动作处理</a></li>
+        <li><a href="#奖励处理">奖励处理</a></li>
+        <li><a href="#网络结构">网络结构</a></li>
+        <li><a href="#训练过程">训练过程</a></li>
+        <li><a href="#算法选择">算法选择</a></li>
+      </ul>
+    </li>
+    <li><a href="#自动驾驶">自动驾驶</a>
+      <ul>
+        <li><a href="#离线强化学习方案">离线强化学习方案</a></li>
+      </ul>
+    </li>
+    <li><a href="#推荐系统">推荐系统</a>
+      <ul>
+        <li><a href="#高维动态动作处理">高维动态动作处理</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
   </div>
 </div>
 
     
     <div class="post-content">
       <p>相比于监督学习，例如CV中的分类检测任务，NLP中的翻译任务等，强化学习的优势在于不依赖人类的标签而可以自动捕捉“观测-&gt;动作”的隐含关系。计算机通过和虚拟环境的直接交互，“跃过”人类的指导和示范，他们有机会比人类做得做的更好。</p>
-
 <p>下面整理了针对不同场景，如游戏AI、自动驾驶和推荐系统的RL实战想法。</p>
-
 <h2 id="游戏ai">游戏AI</h2>
-
 <h3 id="观测处理">观测处理</h3>
-
 <p>通常大型游戏的输入都是十分巨大的，很难从中提取出有用的信息或者说特征，例如图像输入。可以考虑两种方法：</p>
-
 <ul>
 <li><strong>特征提取</strong>：增加对输入的特征提取任务，保证信息的有效，例如利用无监督学习方法，训练特征提取网络，详见<a href="https://zhuanlan.zhihu.com/p/143874163">杨欣欣：CURL</a></li>
 <li><strong>Model-based</strong>：采用model-based的方式，建立世界模型，对未来进行预测，详见<a href="https://zhuanlan.zhihu.com/p/137261461">张楚珩：Dreamer</a></li>
 </ul>
-
 <h3 id="动作处理">动作处理</h3>
-
 <p>大型游戏的动作空间也是非常大，通常需要对一些无法执行的动作进行裁剪，一般使用如下方式：</p>
-
 <ul>
 <li><strong>Action mask</strong>：直接将神经网络输出的值改为负无穷再做softmax或将softmax之后的概率值改为0，以这个分布来采样（Q-learning一般可以直接这样</li>
 </ul>
-
 <h3 id="奖励处理">奖励处理</h3>
-
 <p>游戏中的奖励设置也十分复杂，特别是相对于观测和动作的处理，更有点case by case的意思，即对每个游戏都要非常认真的设置和考虑奖励设计，否则容易学习得一塌糊涂。下面是一些常见的注意点：</p>
-
 <ul>
 <li><strong>团队/个人奖励</strong>：借鉴OpenAI Five，可以针对分别设置team和solo奖励，其中team奖励与团体胜负、推塔、击杀远古生物等相关，solo奖励和自身的状态有关，例如掉血，击杀英雄等，</li>
 <li><strong>零和奖励</strong>：对于一个对战游戏来说，对一方有利必然对对方有害，通过对每个英雄的reward减去敌方平均reward的方式来实现零和。</li>
 <li><strong>时间权重</strong>：对于前期需要发育的游戏来说，后期的伤害要比前期高很多，因此学习过程中会导致忽视前期而只注意后期。这时考虑加入时间因子，保证前期后期的reward都有相同的尺度。</li>
 <li><strong>团队激励奖励</strong>：由于在多智能体对战的游戏中需要平衡自身和团队的奖励，有时自身需要必要的牺牲来换取团队更大的奖励，因此可以考虑，每个智能体的最终reward设置为自身和其他智能体reward的加权和。</li>
 </ul>
-
 <h3 id="网络结构">网络结构</h3>
-
 <ul>
 <li><strong>分层架构</strong>：对于长时间序列、多场景的的复杂游戏任务，通常可以考虑采用分层架构，即上层模型是一个调度网络，底层模型是多个执行网络，上层模型根据观测选择相应的底层网络执行，而底层网络则根据，例如在最新的MineCraft游戏中，华为和腾讯的团队都使用了分层强化学习架构来解决长序列决策问题，详见<a href="https://zhuanlan.zhihu.com/p/444200395">[华为诺亚、腾讯AI Lab] NeurIPS MineRL竞赛夺冠方案</a></li>
 <li><strong>多头Q值网络</strong>：把不同的奖励分组，从而训练多个Q值网络。因为考虑任务回报可能由各种类型的奖励构成，用一个值网络也许得到的方差就很大。多头值估计能把回报分成更加细致的多个部分，每个部分的目标更平稳，容易用神经网络去拟合。</li>
 </ul>
-
 <h3 id="训练过程">训练过程</h3>
-
 <ul>
 <li><strong>Self-play</strong>：</li>
 <li><strong>League-based SP</strong>：</li>
 </ul>
-
 <h3 id="算法选择">算法选择</h3>
-
 <p>借鉴如今前沿的工作，例如绝悟，通常无脑推荐PPO算法。</p>
-
 <h2 id="自动驾驶">自动驾驶</h2>
-
 <h3 id="离线强化学习方案">离线强化学习方案</h3>
-
 <h2 id="推荐系统">推荐系统</h2>
-
 <h3 id="高维动态动作处理">高维动态动作处理</h3>
 
     </div>

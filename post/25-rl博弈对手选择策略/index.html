@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="FSP（Fictitious self-play）通过与种群中所有之前的智能体比赛来避免出现多个智能体胜负关系成圈的情况。换句话说，FSP要求" />
+  <meta name="description" content="**FSP（Fictitious self-play）**通过与种群中所有之前的智能体比赛来避免出现多个智能体胜负关系成圈的情况。换句话说，F" />
 
   <meta name="keywords" content="RL, ML, " />
 
@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/25-rl%E5%8D%9A%E5%BC%88%E5%AF%B9%E6%89%8B%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5/" />
@@ -60,23 +60,19 @@
 
 
 <meta property="og:title" content="RL博弈对手选择策略" />
-<meta property="og:description" content="FSP（Fictitious self-play）通过与种群中所有之前的智能体比赛来避免出现多个智能体胜负关系成圈的情况。换句话说，FSP要求" />
+<meta property="og:description" content="**FSP（Fictitious self-play）**通过与种群中所有之前的智能体比赛来避免出现多个智能体胜负关系成圈的情况。换句话说，F" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/25-rl%E5%8D%9A%E5%BC%88%E5%AF%B9%E6%89%8B%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/25-rl%E5%8D%9A%E5%BC%88%E5%AF%B9%E6%89%8B%E9%80%89%E6%8B%A9%E7%AD%96%E7%95%A5/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2020-12-10T16:01:23+08:00" />
 <meta property="article:modified_time" content="2020-12-10T16:01:23+08:00" />
+
 <meta itemprop="name" content="RL博弈对手选择策略">
-<meta itemprop="description" content="FSP（Fictitious self-play）通过与种群中所有之前的智能体比赛来避免出现多个智能体胜负关系成圈的情况。换句话说，FSP要求">
-<meta itemprop="datePublished" content="2020-12-10T16:01:23+08:00" />
+<meta itemprop="description" content="**FSP（Fictitious self-play）**通过与种群中所有之前的智能体比赛来避免出现多个智能体胜负关系成圈的情况。换句话说，F"><meta itemprop="datePublished" content="2020-12-10T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2020-12-10T16:01:23+08:00" />
-<meta itemprop="wordCount" content="830">
-
-
-
-<meta itemprop="keywords" content="RL," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="834">
+<meta itemprop="keywords" content="RL," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="RL博弈对手选择策略"/>
-<meta name="twitter:description" content="FSP（Fictitious self-play）通过与种群中所有之前的智能体比赛来避免出现多个智能体胜负关系成圈的情况。换句话说，FSP要求"/>
+<meta name="twitter:description" content="**FSP（Fictitious self-play）**通过与种群中所有之前的智能体比赛来避免出现多个智能体胜负关系成圈的情况。换句话说，F"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -260,6 +256,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
               </li>
             
               <li>
@@ -627,6 +627,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -778,27 +782,22 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents"></nav>
   </div>
 </div>
 
     
     <div class="post-content">
-      <p><strong>FSP（Fictitious self-play）</strong>通过与种群中所有之前的智能体比赛来避免出现多个智能体胜负关系成圈的情况。换句话说，FSP要求agent需要打败历史上的所有对手，而不是仅仅打败自己，即agent打败的是一个对手集合。具体选择对手时，使用采样分布Q从对手池中采样对手，Q可以是uniform，可以是当前和历史对手的概率混合，概率Elo得分匹配，胜率的函数等。当前agent学习后会将当前更新过得版本加入到历史对手池中。</p>
-
+      <p>**FSP（Fictitious self-play）**通过与种群中所有之前的智能体比赛来避免出现多个智能体胜负关系成圈的情况。换句话说，FSP要求agent需要打败历史上的所有对手，而不是仅仅打败自己，即agent打败的是一个对手集合。具体选择对手时，使用采样分布Q从对手池中采样对手，Q可以是uniform，可以是当前和历史对手的概率混合，概率Elo得分匹配，胜率的函数等。当前agent学习后会将当前更新过得版本加入到历史对手池中。</p>
 <p>**PFSP(Prioritized Fictitious self-play) **这是Alphastar采用的办法，在使用FSP时，很多对手是可以100%打败的agent，所以不需要再与这样的对手进行比赛。paper中叫它matchmaking mechanism，具体来讲给定一个agentA，从候选集C中以概率P采样冻结的对手B，P的计算如下：</p>
-
-<p>具体f的算法为<span  class="math">\(f_{hard} = (1-x)^p\)</span>其中有一个调节系数$p\in R^+$控制所得分布的熵，具体的计算就查收益矩阵A对B的胜率做分子，再将A对集合中所有agent的胜率加和作为分母，得出选择对手B的概率。所以可以看出越困难的player有更高的权重被选取到，如果胜率为100%的时 $f_{gard}(1) = 0$，即不会选这个对手。如此选择对手，通过专注于最困难的对手，agent必须击败联盟中的每个对手，而不是最大化平均表现。</p>
-
-<p><span  class="math">\[
+<p>具体f的算法为$$f_{hard} = (1-x)^p$$其中有一个调节系数$p\in R^+$控制所得分布的熵，具体的计算就查收益矩阵A对B的胜率做分子，再将A对集合中所有agent的胜率加和作为分母，得出选择对手B的概率。所以可以看出越困难的player有更高的权重被选取到，如果胜率为100%的时 $f_{gard}(1) = 0$，即不会选这个对手。如此选择对手，通过专注于最困难的对手，agent必须击败联盟中的每个对手，而不是最大化平均表现。</p>
+<p>$$
 \frac{f(P[A beats B])}{\sum_{c\in\mathcal{C}}f(P[A beats C])}
-\]</span></p>
-
+$$</p>
 <p><strong>pure self-play</strong>，OpenAi Five的做法是纯自博弈，80%的对局对阵的是最新的模型，20%的对局对阵的是历史版本。具体是给每个过去版本一个质量分$q_i$，对手根据softmax分布进行采样，选择agent i的概率$p_i$与$e^{q_i}$成正比。每10次迭代，将当前agent添加到过去对手池并将其质量得分初始化为现有质量的最大值。 每次对局后，如果过去的agent击败了当前的agent，则不会更新。如果当前agent击败了过去的agent，则根据学习率$\mu$成比例地更新质量分$q_i$：</p>
-
-<p><span  class="math">\[
+<p>$$
 q_i\leftarrow q_i - \frac{\mu}{N p_i}
-\]</span></p>
+$$</p>
 
     </div>
 

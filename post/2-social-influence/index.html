@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/2-social-influence/" />
@@ -62,19 +62,15 @@
 <meta property="og:title" content="Influence" />
 <meta property="og:description" content="今天分享一篇多智能体相关的工作，发表于ICML2019. 原文链接 Jaques et al_2019_Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement_ICML2019 背景 现在单智能体的任务已经可以处理的很好，如上半年提出" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/2-social-influence/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/2-social-influence/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2020-10-13T16:01:23+08:00" />
 <meta property="article:modified_time" content="2020-10-13T16:01:23+08:00" />
+
 <meta itemprop="name" content="Influence">
-<meta itemprop="description" content="今天分享一篇多智能体相关的工作，发表于ICML2019. 原文链接 Jaques et al_2019_Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement_ICML2019 背景 现在单智能体的任务已经可以处理的很好，如上半年提出">
-<meta itemprop="datePublished" content="2020-10-13T16:01:23+08:00" />
+<meta itemprop="description" content="今天分享一篇多智能体相关的工作，发表于ICML2019. 原文链接 Jaques et al_2019_Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement_ICML2019 背景 现在单智能体的任务已经可以处理的很好，如上半年提出"><meta itemprop="datePublished" content="2020-10-13T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2020-10-13T16:01:23+08:00" />
-<meta itemprop="wordCount" content="1177">
-
-
-
-<meta itemprop="keywords" content="RL," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="1181">
+<meta itemprop="keywords" content="RL," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Influence"/>
 <meta name="twitter:description" content="今天分享一篇多智能体相关的工作，发表于ICML2019. 原文链接 Jaques et al_2019_Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement_ICML2019 背景 现在单智能体的任务已经可以处理的很好，如上半年提出"/>
 
@@ -260,6 +256,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
               </li>
             
               <li>
@@ -627,6 +627,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -778,7 +782,19 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#原文链接">原文链接</a></li>
+    <li><a href="#背景">背景</a></li>
+    <li><a href="#过程">过程</a>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+    <li><a href="#实验">实验</a></li>
+    <li><a href="#总结">总结</a></li>
+  </ul>
+</nav>
   </div>
 </div>
 
@@ -796,45 +812,30 @@
   </figure>
 </div>
 
-
 <p>今天分享一篇多智能体相关的工作，发表于ICML2019.</p>
-
 <h2 id="原文链接">原文链接</h2>
-
 <p><a href="http://arxiv.org/abs/1810.08647">Jaques et al_2019_Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement_ICML2019</a></p>
-
 <h2 id="背景">背景</h2>
-
 <p>现在单智能体的任务已经可以处理的很好，如上半年提出的<strong>Atari57</strong>，在Atari的所有任务上都表现出色。但多智能体相关的研究始终受困于状态空间巨大，动作协调困难等等原因，无法应用于大规模部署。因此，如何引导智能体产生更有意义的动作，比如合作型动作，成为一个很关键的问题。</p>
-
 <p>本文提出一个很有意思的思路是考虑智能体动作的社会影响力，即对其他智能体的影响，产生有意义的动作则应给予一个奖励，从而达到诱使合作的目的。</p>
-
 <h2 id="过程">过程</h2>
-
 <h4 id="动作模型">动作模型</h4>
-
-<p>这里提出将社会影响力作为一种内在奖励，即产生的动作对周围智能体有较大影响时，则相应给予一定的奖励。奖励函数可重新定义为：$r_t^k=\alpha e_t^k + \beta c_t<sup>k$，其中$e_t</sup>k$和$c_t^k$分别表示外部奖励和内部奖励，内部奖励和社会影响力相关。</p>
-
+<p>这里提出将社会影响力作为一种内在奖励，即产生的动作对周围智能体有较大影响时，则相应给予一定的奖励。奖励函数可重新定义为：$r_t^k=\alpha e_t^k + \beta c_t^k$，其中$e_t^k$和$c_t^k$分别表示外部奖励和内部奖励，内部奖励和社会影响力相关。</p>
 <p>但如何评价这个动作是否有意义，或者有影响力呢？这里提出通过对比“当前动作”与“反动作”造成的周围智能体策略变化程度作为衡量标准，即考虑若不采取“当前动作”，周围智能体的动作是否会相应变化。智能体$k$的内在奖励公式上可以表示为：
-<span  class="math">\(
+$$
 \begin{aligned}
-c_t^k &= \sum_{j=0,j\neq k}^N\left[D_{KL}[p(a_t^j|a_t^k,s_t^j)||\sum_{\tilde a_t^k}p(a_t^j|\tilde a_t^k,s_t^k)p(\tilde a_t^k|s_t^j)]\right] \\
-&=\sum_{j=0,j\neq k}^N\left[D_{KL}[p(a_t^j|a_t^k,s_t^j)||p(a_t^j|s_t^j)]\right]
+c_t^k &amp;= \sum_{j=0,j\neq k}^N\left[D_{KL}[p(a_t^j|a_t^k,s_t^j)||\sum_{\tilde a_t^k}p(a_t^j|\tilde a_t^k,s_t^k)p(\tilde a_t^k|s_t^j)]\right] \
+&amp;=\sum_{j=0,j\neq k}^N\left[D_{KL}[p(a_t^j|a_t^k,s_t^j)||p(a_t^j|s_t^j)]\right]
 \end{aligned}
-\)</span>
+$$
 其中$\tilde a_t^k$表示“反动作”。</p>
-
-<p>根据互信息的定义，上式等价于增大智能体$j$和$k$的动作相关性，即互信息$I(a<sup>k;a</sup>j|s)$，从而诱使产生合作行为。但为了保证上式可以计算，本文提出两点条件：</p>
-
+<p>根据互信息的定义，上式等价于增大智能体$j$和$k$的动作相关性，即互信息$I(a^k;a^j|s)$，从而诱使产生合作行为。但为了保证上式可以计算，本文提出两点条件：</p>
 <ul>
 <li>使用集中式训练的方法，在训练时可以直接利用对方的策略来观测“反动作”产生的策略变化；</li>
 <li>这种影响力是单边的，即智能体之间的动作影响程度是非对称的。</li>
 </ul>
-
 <h4 id="通信模型">通信模型</h4>
-
 <p>此外，除了直接观测动作，本文还提出可以实现合作型通信，即智能体之间可以互相发送信息，通收集周围智能体发送来的信息，选择合适的动作。模型如下所示：</p>
-
 
 
 <div class="box">
@@ -847,9 +848,7 @@ c_t^k &= \sum_{j=0,j\neq k}^N\left[D_{KL}[p(a_t^j|a_t^k,s_t^j)||\sum_{\tilde a_t
   </figure>
 </div>
 
-
 <h2 id="实验">实验</h2>
-
 
 
 <div class="box">
@@ -862,9 +861,7 @@ c_t^k &= \sum_{j=0,j\neq k}^N\left[D_{KL}[p(a_t^j|a_t^k,s_t^j)||\sum_{\tilde a_t
   </figure>
 </div>
 
-
 <p>本文的实验环境如上图所示，其中分两种角色：影响者（Influencer）和被影响者（Influencee）。在这个环境下，每个智能体仅可观测到周围的状态，如黄色智能体的视野边界是黄色方框，而对方框外的信息一无所知（其实这个图感觉不太好，应该把蓝色方框作为影响者）。当黄色智能体观测到影响者向上移动时，便可以推断出上方可能有食物，这时，影响者的动作便是有意义的，即有社会影响力。最终会产生这么一种情况，影响者仅仅在观测到食物时才会向食物方向运动，在其他时候都会静止不动，从而保证自己做的每个动作都是有影响力的。</p>
-
 
 
 <div class="box">
@@ -877,11 +874,8 @@ c_t^k &= \sum_{j=0,j\neq k}^N\left[D_{KL}[p(a_t^j|a_t^k,s_t^j)||\sum_{\tilde a_t
   </figure>
 </div>
 
-
 <p>相反，若是影响者在未观测到食物时做随机运动，那么他对周围智能体的影响就会很小，动作的影响力就相应比较低。本文对比了在“动作模型”和“通信模型”下的效果，如下图所示，可见都有相应提升，但“动作模型”的表现更加出色。</p>
-
 <h2 id="总结">总结</h2>
-
 <p>本文提出了一种社会影响力机制，通过估计自身行为对周围智能体的影响，相应提供内在奖励，诱使社会合作行为的产生。</p>
 
     </div>

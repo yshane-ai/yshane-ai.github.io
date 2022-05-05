@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/" />
@@ -62,19 +62,15 @@
 <meta property="og:title" content="Pytorch根据概率生成action" />
 <meta property="og:description" content="在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/10-pytorch%E6%A0%B9%E6%8D%AE%E6%A6%82%E7%8E%87%E7%94%9F%E6%88%90action/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2020-04-04T16:01:23+08:00" />
 <meta property="article:modified_time" content="2020-04-04T16:01:23+08:00" />
+
 <meta itemprop="name" content="Pytorch根据概率生成action">
-<meta itemprop="description" content="在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据">
-<meta itemprop="datePublished" content="2020-04-04T16:01:23+08:00" />
+<meta itemprop="description" content="在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据"><meta itemprop="datePublished" content="2020-04-04T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2020-04-04T16:01:23+08:00" />
 <meta itemprop="wordCount" content="1288">
-
-
-
-<meta itemprop="keywords" content="RL,Pytorch," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="RL,Pytorch," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Pytorch根据概率生成action"/>
 <meta name="twitter:description" content="在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据"/>
 
@@ -260,6 +256,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
               </li>
             
               <li>
@@ -627,6 +627,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -779,37 +783,47 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#随机numpy方法-nprandomchoice不推荐">随机numpy方法-np.random.choice（不推荐）</a></li>
+    <li><a href="#随机torch方法">随机torch方法</a>
+      <ul>
+        <li><a href="#torchdistributionscategorical">torch.distributions.Categorical</a></li>
+        <li><a href="#torchmultinomial">torch.multinomial</a></li>
+      </ul>
+    </li>
+    <li><a href="#贪心方法---torchmax--torchtopk">贪心方法 - torch.max() / torch.topk()</a></li>
+    <li><a href="#连续动作">连续动作</a></li>
+    <li><a href="#总结">总结</a></li>
+  </ul>
+</nav>
   </div>
 </div>
 
     
     <div class="post-content">
       <p>在强化学习（Reinforcement Learning）的Actor-Critic算法中，Actor生成每个action的概率，然后我们根据这个概率来选择我们的action。</p>
-<pre><code>probs = Actor(state,action) # probs.shape = (action_size)</code></pre>
-<h2 id="随机numpy方法nprandomchoice不推荐">随机numpy方法-np.random.choice（不推荐）</h2>
-
+<pre tabindex="0"><code>probs = Actor(state,action) # probs.shape = (action_size)
+</code></pre><h2 id="随机numpy方法-nprandomchoice不推荐">随机numpy方法-np.random.choice（不推荐）</h2>
 <p>当<code>probs</code>只是一维向量的时候，我们可以用numpy 的 np.random.choice()函数来获得我们的随机action <code>a</code>, replace指定能否对同一个action <code>a</code> 重复抽样。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">import</span> numpy <span style="color:#f92672">as</span> np
-action_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
-a <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>choice(actions, action_size, p<span style="color:#f92672">=</span>probs, replace<span style="color:#f92672">=</span>False)
-logp <span style="color:#f92672">=</span> p[a]<span style="color:#f92672">.</span>log()</code></pre></div>
-<p>但是如果我们用cuda训练的话，还需要在numpy array和torch tensor 之间的转换。此外如果是batch训练时候，<code>probs</code>从一维变成二维tensor。这时候就没法使用np.random.choice了，因为它的input 必须是1-D array。</p>
-<pre><code># probs.shape = (batch_size, action_size)</code></pre>
-<h2 id="随机torch方法">随机torch方法</h2>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
+</span></span><span style="display:flex;"><span>action_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>a <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>choice(actions, action_size, p<span style="color:#f92672">=</span>probs, replace<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>logp <span style="color:#f92672">=</span> p[a]<span style="color:#f92672">.</span>log()
+</span></span></code></pre></div><p>但是如果我们用cuda训练的话，还需要在numpy array和torch tensor 之间的转换。此外如果是batch训练时候，<code>probs</code>从一维变成二维tensor。这时候就没法使用np.random.choice了，因为它的input 必须是1-D array。</p>
+<pre tabindex="0"><code># probs.shape = (batch_size, action_size)
+</code></pre><h2 id="随机torch方法">随机torch方法</h2>
 <h3 id="torchdistributionscategorical">torch.distributions.Categorical</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">probs <span style="color:#f92672">=</span> policy_network(state)
-dist <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>distributions<span style="color:#f92672">.</span>categorical<span style="color:#f92672">.</span>Categorical(probs)
-action <span style="color:#f92672">=</span> dist<span style="color:#f92672">.</span>sample()
-next_state, reward, done, info <span style="color:#f92672">=</span> env<span style="color:#f92672">.</span>step(action)
-loss <span style="color:#f92672">=</span> <span style="color:#f92672">-</span>m<span style="color:#f92672">.</span>log_prob(action) <span style="color:#f92672">*</span> reward
-loss<span style="color:#f92672">.</span>backward()</code></pre></div>
-<h3 id="torchmultinomial">torch.multinomial</h3>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>probs <span style="color:#f92672">=</span> policy_network(state)
+</span></span><span style="display:flex;"><span>dist <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>distributions<span style="color:#f92672">.</span>categorical<span style="color:#f92672">.</span>Categorical(probs)
+</span></span><span style="display:flex;"><span>action <span style="color:#f92672">=</span> dist<span style="color:#f92672">.</span>sample()
+</span></span><span style="display:flex;"><span>next_state, reward, done, info <span style="color:#f92672">=</span> env<span style="color:#f92672">.</span>step(action)
+</span></span><span style="display:flex;"><span>loss <span style="color:#f92672">=</span> <span style="color:#f92672">-</span>m<span style="color:#f92672">.</span>log_prob(action) <span style="color:#f92672">*</span> reward
+</span></span><span style="display:flex;"><span>loss<span style="color:#f92672">.</span>backward()
+</span></span></code></pre></div><h3 id="torchmultinomial">torch.multinomial</h3>
 <p>更加通用的做法是torch自身的torch.multinomial函数。</p>
-<pre><code>torch.multinomial(input, num_samples,replacement=False, out=None) → LongTensor</code></pre>
-<blockquote>
+<pre tabindex="0"><code>torch.multinomial(input, num_samples,replacement=False, out=None) → LongTensor
+</code></pre><blockquote>
 <p>返回一个张量，每行包含从input相应行中定义的多项分布中抽取的num_samples个样本。
 [注意]:输入input每行的值不需要总和为1 (这里我们用来做权重)，但是必须非负且总和不能为0。
 当抽取样本时，依次从左到右排列(第一个样本对应第一列)。
@@ -817,48 +831,42 @@ loss<span style="color:#f92672">.</span>backward()</code></pre></div>
 如果参数replacement 为 True, 则样本抽取可以重复。否则，一个样本在每行不能被重复抽取。
 参数num_samples必须小于input长度(即，input的列数，如果是input是一个矩阵)。</p>
 </blockquote>
-
 <p>所以代码修改如下, 由于高维没法直接切片（slice）， 用torch.gather()函数取对应action的概率：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">import</span> torch
-num_a <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
-a <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>multinomial(probs, num_a, replacement<span style="color:#f92672">=</span>False)
-logp <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>gather(probs, index <span style="color:#f92672">=</span> a, dim <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>)
-logp <span style="color:#f92672">=</span> logp<span style="color:#f92672">.</span>log()</code></pre></div>
-<p>可以看到两种方法都支持取多个action，也就是我们可以很方便的运用beam search。</p>
-<pre><code>num_a = beam_search_size # number of the action we choose</code></pre>
-<h2 id="贪心方法--torchmax--torchtopk">贪心方法 - torch.max() / torch.topk()</h2>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span>num_a <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>a <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>multinomial(probs, num_a, replacement<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>logp <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>gather(probs, index <span style="color:#f92672">=</span> a, dim <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>logp <span style="color:#f92672">=</span> logp<span style="color:#f92672">.</span>log()
+</span></span></code></pre></div><p>可以看到两种方法都支持取多个action，也就是我们可以很方便的运用beam search。</p>
+<pre tabindex="0"><code>num_a = beam_search_size # number of the action we choose
+</code></pre><h2 id="贪心方法---torchmax--torchtopk">贪心方法 - torch.max() / torch.topk()</h2>
 <p>以上是随机的方法，对于确定性（Deterministic）或者说 greedy method 取值就更简单了, PyTorch 的最大值函数都自带了输出index。</p>
-
 <p>只取一个最大值的时候：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">prob, a <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>max(probs, dim <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>)
-logp <span style="color:#f92672">=</span> prob<span style="color:#f92672">.</span>log()</code></pre></div>
-<p>beam search取多个最大值时用torch.topk():</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e"># torch.topk(input, k, dim=None, largest=True, sorted=True, out=None) -&gt; (Tensor, LongTensor)</span>
-prob, a <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>topk(probs, num_a, dim<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
-logp <span style="color:#f92672">=</span> prob<span style="color:#f92672">.</span>log()</code></pre></div>
-<h2 id="连续动作">连续动作</h2>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>prob, a <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>max(probs, dim <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>logp <span style="color:#f92672">=</span> prob<span style="color:#f92672">.</span>log()
+</span></span></code></pre></div><p>beam search取多个最大值时用torch.topk():</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#75715e"># torch.topk(input, k, dim=None, largest=True, sorted=True, out=None) -&gt; (Tensor, LongTensor)</span>
+</span></span><span style="display:flex;"><span>prob, a <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>topk(probs, num_a, dim<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>logp <span style="color:#f92672">=</span> prob<span style="color:#f92672">.</span>log()
+</span></span></code></pre></div><h2 id="连续动作">连续动作</h2>
 <p>假如我们输出的动作是一个连续的动作，我们让神经网络输出期望(mu)和方差（sigma），根据mu和sigma使用torch.distributions.normal.Normal(mu, sigma)来构建一个正态分布，然后从中采用得出一个再-2到2之间的值。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Net</span>(nn<span style="color:#f92672">.</span>Module):
-    <span style="color:#f92672">***</span>
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
-        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>net(x)
-        mu <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>tanh(self<span style="color:#f92672">.</span>mu(x)) <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span>
-        sigma <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>softplus(self<span style="color:#f92672">.</span>sigma(x)) <span style="color:#f92672">+</span> <span style="color:#ae81ff">0.001</span>
-        <span style="color:#66d9ef">return</span> mu, sigma
-
-<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Agent</span>():
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">select_action</span>(self, x):
-        <span style="color:#66d9ef">with</span> torch<span style="color:#f92672">.</span>no_grad():
-            mu, sigma <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>net(x)
-            dis <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>distributions<span style="color:#f92672">.</span>normal<span style="color:#f92672">.</span>Normal(mu, sigma)
-            a <span style="color:#f92672">=</span> dis<span style="color:#f92672">.</span>sample()
-        <span style="color:#66d9ef">return</span> a<span style="color:#f92672">.</span>item()</code></pre></div>
-<h2 id="总结">总结</h2>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Net</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">***</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>net(x)
+</span></span><span style="display:flex;"><span>        mu <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>tanh(self<span style="color:#f92672">.</span>mu(x)) <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>        sigma <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>softplus(self<span style="color:#f92672">.</span>sigma(x)) <span style="color:#f92672">+</span> <span style="color:#ae81ff">0.001</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> mu, sigma
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Agent</span>():
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">select_action</span>(self, x):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">with</span> torch<span style="color:#f92672">.</span>no_grad():
+</span></span><span style="display:flex;"><span>            mu, sigma <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>net(x)
+</span></span><span style="display:flex;"><span>            dis <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>distributions<span style="color:#f92672">.</span>normal<span style="color:#f92672">.</span>Normal(mu, sigma)
+</span></span><span style="display:flex;"><span>            a <span style="color:#f92672">=</span> dis<span style="color:#f92672">.</span>sample()
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> a<span style="color:#f92672">.</span>item()
+</span></span></code></pre></div><h2 id="总结">总结</h2>
 <p>在RL中根据概率<code>probs</code> 选择行动 action <code>a</code>的时候，一般有随机stochastic和贪心greedy两种方法。</p>
-
 <p>在随机中推荐使用 torch.multinomial()，贪心方法推荐使用 torch.topk() 。二者都可向下兼容只取一个action。</p>
 
     </div>

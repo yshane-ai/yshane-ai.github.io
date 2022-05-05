@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm/" />
@@ -62,19 +62,15 @@
 <meta property="og:title" content="推荐系统之FM" />
 <meta property="og:description" content="背景 在计算广告和推荐系统中，CTR预估(click-through rate)是非常重要的一个环节，判断一个商品的是否进行推荐需要根据CTR预" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/27-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-fm/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2020-12-10T16:01:23+08:00" />
 <meta property="article:modified_time" content="2020-12-10T16:01:23+08:00" />
+
 <meta itemprop="name" content="推荐系统之FM">
-<meta itemprop="description" content="背景 在计算广告和推荐系统中，CTR预估(click-through rate)是非常重要的一个环节，判断一个商品的是否进行推荐需要根据CTR预">
-<meta itemprop="datePublished" content="2020-12-10T16:01:23+08:00" />
+<meta itemprop="description" content="背景 在计算广告和推荐系统中，CTR预估(click-through rate)是非常重要的一个环节，判断一个商品的是否进行推荐需要根据CTR预"><meta itemprop="datePublished" content="2020-12-10T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2020-12-10T16:01:23+08:00" />
-<meta itemprop="wordCount" content="1345">
-
-
-
-<meta itemprop="keywords" content="Recommendation System," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="1347">
+<meta itemprop="keywords" content="Recommendation System," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="推荐系统之FM"/>
 <meta name="twitter:description" content="背景 在计算广告和推荐系统中，CTR预估(click-through rate)是非常重要的一个环节，判断一个商品的是否进行推荐需要根据CTR预"/>
 
@@ -260,6 +256,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
               </li>
             
               <li>
@@ -627,6 +627,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -778,20 +782,27 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#背景">背景</a></li>
+        <li><a href="#one-hot-编码带来的问题">One-hot 编码带来的问题</a></li>
+        <li><a href="#对特征进行组合">对特征进行组合</a></li>
+        <li><a href="#fm求解">FM求解</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
   </div>
 </div>
 
     
     <div class="post-content">
       <h3 id="背景">背景</h3>
-
 <p>在计算广告和推荐系统中，CTR预估(click-through rate)是非常重要的一个环节，判断一个商品的是否进行推荐需要根据CTR预估的点击率来进行。在进行CTR预估时，除了单特征外，往往要对特征进行组合。对于特征组合来说，业界现在通用的做法主要有两大类：FM系列与Tree系列。今天，我们就来讲讲FM算法。</p>
-
-<h3 id="onehot-编码带来的问题">One-hot 编码带来的问题</h3>
-
+<h3 id="one-hot-编码带来的问题">One-hot 编码带来的问题</h3>
 <p>FM(Factorization Machine)主要是为了解决数据稀疏的情况下，特征怎样组合的问题。已一个广告分类的问题为例，根据用户与广告位的一些特征，来预测用户是否会点击广告。数据如下：(本例来自美团技术团队分享的paper)</p>
-
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -804,11 +815,8 @@
   </figure>
 </div>
 
-
 <p>clicked是分类值，表明用户有没有点击该广告。1表示点击，0表示未点击。而country,day,ad_type则是对应的特征。对于这种categorical特征，一般都是进行one-hot编码处理。</p>
-
 <p>将上面的数据进行one-hot编码以后，就变成了下面这样：</p>
-
 
 
 <div class="box">
@@ -821,36 +829,23 @@
   </figure>
 </div>
 
-
 <p>因为是categorical特征，所以经过one-hot编码以后，不可避免的样本的数据就变得很稀疏。举个非常简单的例子，假设淘宝或者京东上的item为100万，如果对item这个维度进行one-hot编码，光这一个维度数据的稀疏度就是百万分之一。由此可见，数据的稀疏性，是我们在实际应用场景中面临的一个非常常见的挑战与问题。</p>
-
 <p>one-hot编码带来的另一个问题是特征空间变大。同样以上面淘宝上的item为例，将item进行one-hot编码以后，样本空间有一个categorical变为了百万维的数值特征，特征空间一下子暴增一百万。所以大厂动不动上亿维度，就是这么来的。</p>
-
 <h3 id="对特征进行组合">对特征进行组合</h3>
-
 <p>普通的线性模型，我们都是将各个特征独立考虑的，并没有考虑到特征与特征之间的相互关系。但实际上，大量的特征之间是有关联的。最简单的以电商为例，一般女性用户看化妆品服装之类的广告比较多，而男性更青睐各种球类装备。那很明显，女性这个特征与化妆品类服装类商品有很大的关联性，男性这个特征与球类装备的关联性更为密切。如果我们能将这些有关联的特征找出来，显然是很有意义的。</p>
-
 <p>一般的线性模型为：</p>
-
-<p><span  class="math">\[
+<p>$$
 y = w_0 + \sum_{i = 1}^n w_i x_i
-\]</span></p>
-
+$$</p>
 <p>从上面的式子很容易看出，一般的线性模型压根没有考虑特征间的关联。为了表述特征间的相关性，我们采用多项式模型。在多项式模型中，特征xi与xj的组合用xixj表示。为了简单起见，我们讨论二阶多项式模型。具体的模型表达式如下：</p>
-
-<p><span  class="math">\[
+<p>$$
 y = w_0 + \sum_{i = 1}^n w_i x_i + \sum_{i = 1}^{n - 1} \sum_{j = i + 1}^n w_{ij} x_i x_j
-\]</span></p>
-
+$$</p>
 <p>上式中，n表示样本的特征数量,xi表示第i个特征。
 与线性模型相比，FM的模型就多了后面特征组合的部分。</p>
-
 <h3 id="fm求解">FM求解</h3>
-
-<p>从上面的式子可以很容易看出，组合部分的特征相关参数共有n(n−1)/2个。但是如第二部分所分析，在数据很稀疏的情况下，满足$x_i$，$x<em>j$都不为0的情况非常少，这样将导致$w</em>{ij}$无法通过训练得出。</p>
-
+<p>从上面的式子可以很容易看出，组合部分的特征相关参数共有n(n−1)/2个。但是如第二部分所分析，在数据很稀疏的情况下，满足$x_i$，$x_j$都不为0的情况非常少，这样将导致$w_{ij}$无法通过训练得出。</p>
 <p>为了求出ωij，我们对每一个特征分量xi引入辅助向量Vi=(vi1,vi2,⋯,vik)。然后，利用vivj^T对ωij进行求解。</p>
-
 
 
 <div class="box">
@@ -863,9 +858,7 @@ y = w_0 + \sum_{i = 1}^n w_i x_i + \sum_{i = 1}^{n - 1} \sum_{j = i + 1}^n w_{ij
   </figure>
 </div>
 
-
 <p>那么ωij组成的矩阵可以表示为:</p>
-
 
 
 <div class="box">
@@ -878,9 +871,7 @@ y = w_0 + \sum_{i = 1}^n w_i x_i + \sum_{i = 1}^{n - 1} \sum_{j = i + 1}^n w_{ij
   </figure>
 </div>
 
-
 <p>那么，如何求解vi和vj呢？主要采用了公式：</p>
-
 
 
 <div class="box">
@@ -893,9 +884,7 @@ y = w_0 + \sum_{i = 1}^n w_i x_i + \sum_{i = 1}^{n - 1} \sum_{j = i + 1}^n w_{ij
   </figure>
 </div>
 
-
 <p>具体过程如下：</p>
-
 
 
 <div class="box">
@@ -907,7 +896,6 @@ y = w_0 + \sum_{i = 1}^n w_i x_i + \sum_{i = 1}^{n - 1} \sum_{j = i + 1}^n w_{ij
     <a href="/image/23-Recommendation/006.webp" itemprop="contentUrl"></a>
   </figure>
 </div>
-
 
 <p>经过这样的分解之后，我们就可以通过随机梯度下降SGD进行求解。基于上述思想，即用向量$v$来表示参数$w$。</p>
 

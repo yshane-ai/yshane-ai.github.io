@@ -10,48 +10,55 @@
   
   <url>
     <loc>https://yshane-ai.github.io/categories/</loc>
-    <lastmod>2022-04-02T16:01:23+08:00</lastmod>
+    <lastmod>2022-04-08T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://yshane-ai.github.io/tags/ml/</loc>
-    <lastmod>2022-04-02T16:01:23+08:00</lastmod>
+    <lastmod>2022-04-08T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://yshane-ai.github.io/categories/ml/</loc>
-    <lastmod>2022-04-02T16:01:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://yshane-ai.github.io/post/72-pointer-network/</loc>
-    <lastmod>2022-04-02T16:01:23+08:00</lastmod>
+    <lastmod>2022-04-08T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://yshane-ai.github.io/post/</loc>
-    <lastmod>2022-04-02T16:01:23+08:00</lastmod>
+    <lastmod>2022-04-08T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://yshane-ai.github.io/tags/</loc>
-    <lastmod>2022-04-02T16:01:23+08:00</lastmod>
+    <lastmod>2022-04-08T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/</loc>
+    <lastmod>2022-04-08T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://yshane-ai.github.io/</loc>
+    <lastmod>2022-04-08T16:01:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://yshane-ai.github.io/post/72-pointer-network/</loc>
     <lastmod>2022-04-02T16:01:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>

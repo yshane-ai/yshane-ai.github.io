@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E4%BA%AC%E4%B8%9Crl/" />
@@ -62,19 +62,15 @@
 <meta property="og:title" content="推荐系统之RL在京东推荐的应用" />
 <meta property="og:description" content="本文来自于paper：《Deep Reinforcement Learning for List-wise Recommendations》 1 背景 传统的大多数推荐系统应用存在两个问题： 无法建模用户兴趣的动态变" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E4%BA%AC%E4%B8%9Crl/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/35-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E4%BA%AC%E4%B8%9Crl/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-02-28T16:01:23+08:00" />
 <meta property="article:modified_time" content="2021-02-28T16:01:23+08:00" />
+
 <meta itemprop="name" content="推荐系统之RL在京东推荐的应用">
-<meta itemprop="description" content="本文来自于paper：《Deep Reinforcement Learning for List-wise Recommendations》 1 背景 传统的大多数推荐系统应用存在两个问题： 无法建模用户兴趣的动态变">
-<meta itemprop="datePublished" content="2021-02-28T16:01:23+08:00" />
+<meta itemprop="description" content="本文来自于paper：《Deep Reinforcement Learning for List-wise Recommendations》 1 背景 传统的大多数推荐系统应用存在两个问题： 无法建模用户兴趣的动态变"><meta itemprop="datePublished" content="2021-02-28T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-02-28T16:01:23+08:00" />
 <meta itemprop="wordCount" content="2587">
-
-
-
-<meta itemprop="keywords" content="Recommendation System," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="Recommendation System," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="推荐系统之RL在京东推荐的应用"/>
 <meta name="twitter:description" content="本文来自于paper：《Deep Reinforcement Learning for List-wise Recommendations》 1 背景 传统的大多数推荐系统应用存在两个问题： 无法建模用户兴趣的动态变"/>
 
@@ -260,6 +256,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
               </li>
             
               <li>
@@ -627,6 +627,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -778,35 +782,37 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-背景">1 背景</a></li>
+    <li><a href="#2-系统框架">2 系统框架</a>
+      <ul>
+        <li><a href="#21-问题描述">2.1 问题描述</a></li>
+        <li><a href="#22-线上user-agent交互仿真环境构建">2.2 线上User-Agent交互仿真环境构建</a></li>
+        <li><a href="#23-模型结构">2.3 模型结构</a></li>
+      </ul>
+    </li>
+    <li><a href="#3-实验评估">3 实验评估</a></li>
+  </ul>
+</nav>
   </div>
 </div>
 
     
     <div class="post-content">
       <p>本文来自于paper：《Deep Reinforcement Learning for List-wise Recommendations》</p>
-
 <h2 id="1-背景">1 背景</h2>
-
 <p>传统的大多数推荐系统应用存在两个问题：</p>
-
 <ol>
 <li>无法建模用户兴趣的动态变化</li>
 <li>最大化立即收益，忽略了长期受益</li>
 </ol>
-
 <p>因此，本文将推荐的过程定义为一个序列决策的问题，通过强化学习来进行 List-wise 的推荐，主要有以下几个部分。</p>
-
 <p><strong>List-wise Recommendations</strong></p>
-
 <p>本文提出的推荐是List-wise，这样更能提供给用户多样性的选择。现有的强化学习大多先计算每一个item的Q-value，然后通过排序得到最终的推荐结果，这样就忽略了推荐列表中商品本身的关联。</p>
-
 <p>而List-wise的推荐，强化学习算法计算的是一整个推荐列表的Q-value，可以充分考虑列表中物品的相关性，从而提升推荐的性能。</p>
-
 <p>Architecture Selection</p>
-
 <p>对于深度强化学习的模型，主要有下面两种结构：</p>
-
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -819,35 +825,22 @@
   </figure>
 </div>
 
-
 <p>左边的两个是经典的DQN结构，(a)这种结构只需要输入一个state，然后输出是所有动作的Q-value，当action太多时，这种结构明显的就不适用。(b)的输入时state和一个具体的action，然后模型的输出是一个具体的Q-value，但对于这个模型结构来说，时间复杂度非常高。</p>
-
 <p>因此本文选择的深度强化学习结构是(c)，即Actor-Critic结构。Actor输入一个具体的state，输出一个action，然后Critic输入这个state和Actor输出的action，得到一个Q-value，Actor根据Critic的反馈来更新自身的策略。</p>
-
 <p><strong>Online Environment Simulator</strong></p>
-
 <p>在推荐系统上线之前，需要进行线下的训练和评估，训练和评估主要基于用户的历史行为数据，但是，我们只有ground-truth的数据和相应的反馈。因此，对于整个动作空间来说(也就是所有物品的可能组合)，这是非常稀疏的。这会造成两个问题，首先只能拿到部分的state-action对进行训练，无法对所有的情况进行建模(可能造成过拟合)，其次会造成线上线下环境的不一致性。因此，需要一个仿真器来仿真没有出现过的state-action的reward值，用于训练和评估线下模型。</p>
-
 <p>仿真器的构建主要基于用户的历史数据，其基本思想是给定一个相似的state和action，不同的用户也会作出相似的feedback。</p>
-
 <p>因此，本文的贡献主要有以下三点：</p>
-
 <ol>
 <li>构建了一个线上环境仿真器，可以在线下对AC网络参数进行训练。</li>
 <li>构建了基于强化学习的List-wise推荐系统。</li>
 <li>在真实的电商环境中，本文提出的推荐系统框架的性能得到了证明。</li>
 </ol>
-
 <h2 id="2-系统框架">2 系统框架</h2>
-
 <h3 id="21-问题描述">2.1 问题描述</h3>
-
 <p>本文的推荐系统基于强化学习方法，将推荐问题定义为一个马尔可夫决策过程，它的五个元素分别是：</p>
-
 <p><strong>状态空间</strong></p>
-
 <p>状态定义为用户的历史浏览行为，即在推荐之前，用户点击或购买过的最新的N个物品。</p>
-
 
 
 <div class="box">
@@ -860,11 +853,8 @@
   </figure>
 </div>
 
-
 <p><strong>动作空间</strong></p>
-
 <p>动作定义为要推荐给用户的商品列表。</p>
-
 
 
 <div class="box">
@@ -877,11 +867,8 @@
   </figure>
 </div>
 
-
 <p><strong>奖励</strong></p>
-
 <p>agent根据当前的state，采取相应的action即推荐K个物品列表给用户之后，根据用户对推荐列表的反馈(忽略、点击或购买)来得到当前state-action的即时奖励reward。</p>
-
 
 
 <div class="box">
@@ -894,11 +881,8 @@
   </figure>
 </div>
 
-
 <p><strong>转移概率</strong></p>
-
 <p>在本文中，状态的转移定义如下定义，当前的state是用户最近浏览的N个物品，action是新推荐给用户的K个商品，如果用户忽略了全部的这些商品，那么下一个时刻的state和当前的state是一样的，如果用户点击了其中的两个物品，那么下一个时刻的state是在当前state的基础上，从前面剔除两个商品同时将点击的这两个物品放在最后得到的。</p>
-
 
 
 <div class="box">
@@ -911,9 +895,7 @@
   </figure>
 </div>
 
-
 <p><strong>折扣因子</strong></p>
-
 
 
 <div class="box">
@@ -926,13 +908,9 @@
   </figure>
 </div>
 
-
 <p>这里还需要强调的一点是，本文中将物品当作一个单词，通过embedding的方式表示每一个物品，因此每一个state和action都是通过word embedding来表示的。</p>
-
-<h3 id="22-线上useragent交互仿真环境构建">2.2 线上User-Agent交互仿真环境构建</h3>
-
+<h3 id="22-线上user-agent交互仿真环境构建">2.2 线上User-Agent交互仿真环境构建</h3>
 <p>仿真器主要基于历史数据，因此我们首先需要对历史真实数据的((state,action)-reward)对进行一个存储，这将作为仿真器的历史记忆：</p>
-
 
 
 <div class="box">
@@ -945,9 +923,7 @@
   </figure>
 </div>
 
-
 <p>有了历史记忆之后，仿真器就可以输出没有见过的(state，action)对的奖励，该(state，action)定义为pt。首先需要计算pt和历史中状态-动作对的相似性，基于如下的公式：</p>
-
 
 
 <div class="box">
@@ -960,9 +936,7 @@
   </figure>
 </div>
 
-
 <p>上式中mi代表了历史记忆中的一条状态-动作对。因此pt获得mi对应的奖励ri的可能性定义如下：</p>
-
 
 
 <div class="box">
@@ -975,17 +949,12 @@
   </figure>
 </div>
 
-
 <p>但是，这种做法计算复杂度太高了，需要计算pt和历史记忆中每条记录的相似性，为了处理这个问题，本文的做法是按照奖励序列对历史记忆进行分组，来建模pt获得某个奖励序列的可能性。</p>
-
 <p>奖励序列这里先解释一下，假设我们按一定的顺序推荐了两个商品，用户对每个商品的反馈可能有忽略／点击／下单，对应的奖励分别是0/1/5，那么我们推荐给用户这两个物品的反馈一共有九种可能的情况(0,0),(0,1),(0,5),(1,0),(1,1),(1,5),(5,0),(5,1),(5,5)。这九种情况就是我们刚才所说的奖励序列，定义为：</p>
-
-<p><span  class="math">\[
-\mathcal{U} = \{\mathcal{U}_1. \ldots, \mathcal{U}_9\}
-\]</span></p>
-
+<p>$$
+\mathcal{U} = {\mathcal{U}_1. \ldots, \mathcal{U}_9}
+$$</p>
 <p>因此，将历史记忆按照奖励序列进行分组，pt所能获得某个奖励序列的概率是：</p>
-
 
 
 <div class="box">
@@ -998,9 +967,7 @@
   </figure>
 </div>
 
-
 <p>基于上面的公式，我们只是得到了pt所能获得的奖励序列的概率，就可以进行采样得到具体的奖励序列。得到奖励序列还没完事，实际中我们的奖励都是一个具体的值，而不是一个vector，那么按照如下的公式将奖励序列转化为一个具体的奖励值：</p>
-
 
 
 <div class="box">
@@ -1013,13 +980,9 @@
   </figure>
 </div>
 
-
 <p>K是推荐列表的长度，可以看到，我们这里任务排在前面的商品，奖励的权重越高。</p>
-
 <h3 id="23-模型结构">2.3 模型结构</h3>
-
 <p>使用强化学习里的AC模型结合刚才提到的仿真器，模型框架如下所示：</p>
-
 
 
 <div class="box">
@@ -1032,23 +995,16 @@
   </figure>
 </div>
 
-
 <p><strong>Actor部分</strong></p>
-
 <p>对Actor部分来说，输入是一个具体的state，输出一个K维的向量w，K对应推荐列表的长度：</p>
-
-<p><span  class="math">\[
+<p>$$
 f_{\theta^\pi}: s_t\to w_t
-\]</span></p>
-
+$$</p>
 <p>然后，用w和每个item对应的embedding进行线性相乘，计算每个item的得分，根据得分选择k个最高的物品作为推荐结果：</p>
-
-<p><span  class="math">\[
+<p>$$
 score_i = w_t^k e_i^T
-\]</span></p>
-
+$$</p>
 <p>Actor部分的过程如下：</p>
-
 
 
 <div class="box">
@@ -1061,13 +1017,9 @@ score_i = w_t^k e_i^T
   </figure>
 </div>
 
-
 <p>推荐结果经过仿真器，计算出奖励序列和奖励值r。</p>
-
 <p><strong>Critic部分</strong></p>
-
 <p>Critic部分建模的是state-action对应的Q值，需要有Q-eval 和 Q-target来指导模型的训练，Q-eval通过Critic得到，而Q-target值通过下面的式子得到：</p>
-
 
 
 <div class="box">
@@ -1080,16 +1032,12 @@ score_i = w_t^k e_i^T
   </figure>
 </div>
 
-
 <h2 id="3-实验评估">3 实验评估</h2>
-
 <p>论文中提到的实验主要想验证两方面的内容：</p>
-
 <ol>
 <li>本文提出的框架与现有的推荐算法(如协同过滤，FM等)比，效果如何</li>
 <li>List-Wise的推荐与item-wise推荐相比，效果是否更突出。</li>
 </ol>
-
 <p>不过，文章中没有给出具体的实验结果，这部分的效果还不得而知。</p>
 
     </div>

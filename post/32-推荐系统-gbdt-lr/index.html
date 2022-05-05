@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/32-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-gbdt-lr/" />
@@ -62,19 +62,15 @@
 <meta property="og:title" content="推荐系统之GBDT&#43;LR " />
 <meta property="og:description" content="GBDT和LR的融合在广告点击率预估中算是发展比较早的算法，为什么会在这里写这么一篇呢？本来想尝试写一下阿里的深度兴趣网络(Deep Interest Net" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/32-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-gbdt-lr/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/32-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-gbdt-lr/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-01-29T16:01:23+08:00" />
 <meta property="article:modified_time" content="2021-01-29T16:01:23+08:00" />
+
 <meta itemprop="name" content="推荐系统之GBDT&#43;LR ">
-<meta itemprop="description" content="GBDT和LR的融合在广告点击率预估中算是发展比较早的算法，为什么会在这里写这么一篇呢？本来想尝试写一下阿里的深度兴趣网络(Deep Interest Net">
-<meta itemprop="datePublished" content="2021-01-29T16:01:23+08:00" />
+<meta itemprop="description" content="GBDT和LR的融合在广告点击率预估中算是发展比较早的算法，为什么会在这里写这么一篇呢？本来想尝试写一下阿里的深度兴趣网络(Deep Interest Net"><meta itemprop="datePublished" content="2021-01-29T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-01-29T16:01:23+08:00" />
 <meta itemprop="wordCount" content="2309">
-
-
-
-<meta itemprop="keywords" content="Recommendation System," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="Recommendation System," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="推荐系统之GBDT&#43;LR "/>
 <meta name="twitter:description" content="GBDT和LR的融合在广告点击率预估中算是发展比较早的算法，为什么会在这里写这么一篇呢？本来想尝试写一下阿里的深度兴趣网络(Deep Interest Net"/>
 
@@ -260,6 +256,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
               </li>
             
               <li>
@@ -627,6 +627,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -778,37 +782,37 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#背景">背景</a></li>
+        <li><a href="#gbdt和lr的融合方案">GBDT和LR的融合方案</a></li>
+        <li><a href="#gbdtlr代码实践">GBDT+LR代码实践</a></li>
+        <li><a href="#反思">反思</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
   </div>
 </div>
 
     
     <div class="post-content">
       <p>GBDT和LR的融合在广告点击率预估中算是发展比较早的算法，为什么会在这里写这么一篇呢？本来想尝试写一下阿里的深度兴趣网络(Deep Interest Network)，发现阿里之前还有一个算法MLR，然后去查找相关的资料，里面提及了树模型也就是GBDT+LR方案的缺点，恰好之前也不太清楚GBDT+LR到底是怎么做的，所以今天我们先来了解一下GBDT和LR的融合方案。</p>
-
 <h3 id="背景">背景</h3>
-
 <p>在CTR预估问题的发展初期，使用最多的方法就是逻辑回归(LR)，LR使用了Sigmoid变换将函数值映射到0~1区间，映射后的函数值就是CTR的预估值。</p>
-
 <p>LR属于线性模型，容易并行化，可以轻松处理上亿条数据，但是学习能力十分有限，需要大量的特征工程来增加模型的学习能力。但大量的特征工程耗时耗力同时并不一定会带来效果提升。因此，如何<strong>自动发现有效的特征、特征组合，弥补人工经验不足，缩短LR特征实验周期</strong>，是亟需解决的问题。</p>
-
 <p><strong>FM模型通过隐变量的方式，发现两两特征之间的组合关系，但这种特征组合仅限于两两特征之间</strong>，后来发展出来了使用深度神经网络去挖掘更高层次的特征组合关系。但其实在使用神经网络之前，<strong>GBDT也是一种经常用来发现特征组合的有效思路</strong>。</p>
-
 <p>Facebook 2014年的文章介绍了通过GBDT解决LR的特征组合问题，随后Kaggle竞赛也有实践此思路，GBDT与LR融合开始引起了业界关注。</p>
-
 <p>在介绍这个模型之前，我们先来介绍两个问题：</p>
-
 <ol>
 <li><strong>为什么要使用集成的决策树模型</strong>，而不是单棵的决策树模型：一棵树的表达能力很弱，不足以表达多个有区分性的特征组合，多棵树的表达能力更强一些。可以更好的发现有效的特征和特征组合</li>
 <li><strong>为什么建树采用GBDT而非RF</strong>：RF也是多棵树，但从效果上有实践证明不如GBDT。且GBDT前面的树，<strong>特征分裂主要体现对多数样本有区分度的特征</strong>；后面的树，主要体现的是<strong>经过前N颗树，残差仍然较大的少数样本。优先选用在整体上有区分度的特征</strong>，再选用针对少数样本有区分度的特征，思路更加合理，这应该也是用GBDT的原因。</li>
 </ol>
-
 <p>了解了为什么要用GBDT，我们就来看看到底二者是怎么融合的吧！</p>
-
 <h3 id="gbdt和lr的融合方案">GBDT和LR的融合方案</h3>
-
 <p>GBDT和LR的融合方案，FaceBook的paper中有个例子：</p>
-
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -821,114 +825,104 @@
   </figure>
 </div>
 
-
 <p>图中共有两棵树，x为一条输入样本，遍历两棵树后，x样本分别落到两颗树的叶子节点上，每个叶子节点对应LR一维特征，那么通过遍历树，就得到了该样本对应的所有LR特征。构造的新特征向量是取值0/1的。举例来说：上图有两棵树，左树有三个叶子节点，右树有两个叶子节点，最终的特征即为五维的向量。对于输入x，假设他落在左树第一个节点，编码[1,0,0]，落在右树第二个节点则编码[0,1]，所以整体的编码为[1,0,0,0,1]，这类编码作为特征，输入到LR中进行分类。</p>
-
 <p>这个方案还是很简单的吧，在继续介绍下去之前，我们先介绍一下代码实践部分。</p>
-
 <h3 id="gbdtlr代码实践">GBDT+LR代码实践</h3>
-
 <p>本文介绍的代码只是一个简单的Demo，实际中大家需要根据自己的需要进行参照或者修改。</p>
-
 <p><strong>训练GBDT模型</strong></p>
-
 <p>本文使用lightgbm包来训练我们的GBDT模型，训练共100棵树，每棵树有64个叶子结点。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">import</span> lightgbm <span style="color:#f92672">as</span> lgb
-
-<span style="color:#f92672">import</span> pandas <span style="color:#f92672">as</span> pd
-<span style="color:#f92672">import</span> numpy <span style="color:#f92672">as</span> np
-
-<span style="color:#f92672">from</span> sklearn.metrics <span style="color:#f92672">import</span> mean_squared_error
-<span style="color:#f92672">from</span> sklearn.linear_model <span style="color:#f92672">import</span> 
-
-df_train <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>read_csv(<span style="color:#e6db74">&#39;data/train.csv&#39;</span>)
-df_test <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>read_csv(<span style="color:#e6db74">&#39;data/test.csv&#39;</span>)
-
-NUMERIC_COLS <span style="color:#f92672">=</span> [
-    <span style="color:#e6db74">&#34;ps_reg_01&#34;</span>, <span style="color:#e6db74">&#34;ps_reg_02&#34;</span>, <span style="color:#e6db74">&#34;ps_reg_03&#34;</span>,
-    <span style="color:#e6db74">&#34;ps_car_12&#34;</span>, <span style="color:#e6db74">&#34;ps_car_13&#34;</span>, <span style="color:#e6db74">&#34;ps_car_14&#34;</span>, <span style="color:#e6db74">&#34;ps_car_15&#34;</span>,
-]
-
-<span style="color:#66d9ef">print</span>(df_test<span style="color:#f92672">.</span>head(<span style="color:#ae81ff">10</span>))
-
-y_train <span style="color:#f92672">=</span> df_train[<span style="color:#e6db74">&#39;target&#39;</span>]  <span style="color:#75715e"># training label</span>
-y_test <span style="color:#f92672">=</span> df_test[<span style="color:#e6db74">&#39;target&#39;</span>]  <span style="color:#75715e"># testing label</span>
-X_train <span style="color:#f92672">=</span> df_train[NUMERIC_COLS]  <span style="color:#75715e"># training dataset</span>
-X_test <span style="color:#f92672">=</span> df_test[NUMERIC_COLS]  <span style="color:#75715e"># testing dataset</span>
-
-<span style="color:#75715e"># create dataset for lightgbm</span>
-lgb_train <span style="color:#f92672">=</span> lgb<span style="color:#f92672">.</span>Dataset(X_train, y_train)
-lgb_eval <span style="color:#f92672">=</span> lgb<span style="color:#f92672">.</span>Dataset(X_test, y_test, reference<span style="color:#f92672">=</span>lgb_train)
-
-params <span style="color:#f92672">=</span> {
-    <span style="color:#e6db74">&#39;task&#39;</span>: <span style="color:#e6db74">&#39;train&#39;</span>,
-    <span style="color:#e6db74">&#39;boosting_type&#39;</span>: <span style="color:#e6db74">&#39;gbdt&#39;</span>,
-    <span style="color:#e6db74">&#39;objective&#39;</span>: <span style="color:#e6db74">&#39;binary&#39;</span>,
-    <span style="color:#e6db74">&#39;metric&#39;</span>: {<span style="color:#e6db74">&#39;binary_logloss&#39;</span>},
-    <span style="color:#e6db74">&#39;num_leaves&#39;</span>: <span style="color:#ae81ff">64</span>,
-    <span style="color:#e6db74">&#39;num_trees&#39;</span>: <span style="color:#ae81ff">100</span>,
-    <span style="color:#e6db74">&#39;learning_rate&#39;</span>: <span style="color:#ae81ff">0.01</span>,
-    <span style="color:#e6db74">&#39;feature_fraction&#39;</span>: <span style="color:#ae81ff">0.9</span>,
-    <span style="color:#e6db74">&#39;bagging_fraction&#39;</span>: <span style="color:#ae81ff">0.8</span>,
-    <span style="color:#e6db74">&#39;bagging_freq&#39;</span>: <span style="color:#ae81ff">5</span>,
-    <span style="color:#e6db74">&#39;verbose&#39;</span>: <span style="color:#ae81ff">0</span>
-}
-
-<span style="color:#75715e"># number of leaves,will be used in feature transformation</span>
-num_leaf <span style="color:#f92672">=</span> <span style="color:#ae81ff">64</span>
-
-<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;Start training...&#39;</span>)
-<span style="color:#75715e"># train</span>
-gbm <span style="color:#f92672">=</span> lgb<span style="color:#f92672">.</span>train(params,
-                lgb_train,
-                num_boost_round<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>,
-                valid_sets<span style="color:#f92672">=</span>lgb_train)
-
-<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;Save model...&#39;</span>)
-<span style="color:#75715e"># save model to file</span>
-gbm<span style="color:#f92672">.</span>save_model(<span style="color:#e6db74">&#39;model.txt&#39;</span>)
-
-<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;Start predicting...&#39;</span>)
-<span style="color:#75715e"># predict and get data on leaves, training data</span></code></pre></div>
-<p>特征转换</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">import</span> lightgbm <span style="color:#66d9ef">as</span> lgb
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> pandas <span style="color:#66d9ef">as</span> pd
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> sklearn.metrics <span style="color:#f92672">import</span> mean_squared_error
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> sklearn.linear_model <span style="color:#f92672">import</span> 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>df_train <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>read_csv(<span style="color:#e6db74">&#39;data/train.csv&#39;</span>)
+</span></span><span style="display:flex;"><span>df_test <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>read_csv(<span style="color:#e6db74">&#39;data/test.csv&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NUMERIC_COLS <span style="color:#f92672">=</span> [
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;ps_reg_01&#34;</span>, <span style="color:#e6db74">&#34;ps_reg_02&#34;</span>, <span style="color:#e6db74">&#34;ps_reg_03&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;ps_car_12&#34;</span>, <span style="color:#e6db74">&#34;ps_car_13&#34;</span>, <span style="color:#e6db74">&#34;ps_car_14&#34;</span>, <span style="color:#e6db74">&#34;ps_car_15&#34;</span>,
+</span></span><span style="display:flex;"><span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(df_test<span style="color:#f92672">.</span>head(<span style="color:#ae81ff">10</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>y_train <span style="color:#f92672">=</span> df_train[<span style="color:#e6db74">&#39;target&#39;</span>]  <span style="color:#75715e"># training label</span>
+</span></span><span style="display:flex;"><span>y_test <span style="color:#f92672">=</span> df_test[<span style="color:#e6db74">&#39;target&#39;</span>]  <span style="color:#75715e"># testing label</span>
+</span></span><span style="display:flex;"><span>X_train <span style="color:#f92672">=</span> df_train[NUMERIC_COLS]  <span style="color:#75715e"># training dataset</span>
+</span></span><span style="display:flex;"><span>X_test <span style="color:#f92672">=</span> df_test[NUMERIC_COLS]  <span style="color:#75715e"># testing dataset</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># create dataset for lightgbm</span>
+</span></span><span style="display:flex;"><span>lgb_train <span style="color:#f92672">=</span> lgb<span style="color:#f92672">.</span>Dataset(X_train, y_train)
+</span></span><span style="display:flex;"><span>lgb_eval <span style="color:#f92672">=</span> lgb<span style="color:#f92672">.</span>Dataset(X_test, y_test, reference<span style="color:#f92672">=</span>lgb_train)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>params <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;task&#39;</span>: <span style="color:#e6db74">&#39;train&#39;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;boosting_type&#39;</span>: <span style="color:#e6db74">&#39;gbdt&#39;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;objective&#39;</span>: <span style="color:#e6db74">&#39;binary&#39;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;metric&#39;</span>: {<span style="color:#e6db74">&#39;binary_logloss&#39;</span>},
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;num_leaves&#39;</span>: <span style="color:#ae81ff">64</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;num_trees&#39;</span>: <span style="color:#ae81ff">100</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;learning_rate&#39;</span>: <span style="color:#ae81ff">0.01</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;feature_fraction&#39;</span>: <span style="color:#ae81ff">0.9</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;bagging_fraction&#39;</span>: <span style="color:#ae81ff">0.8</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;bagging_freq&#39;</span>: <span style="color:#ae81ff">5</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;verbose&#39;</span>: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># number of leaves,will be used in feature transformation</span>
+</span></span><span style="display:flex;"><span>num_leaf <span style="color:#f92672">=</span> <span style="color:#ae81ff">64</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#39;Start training...&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># train</span>
+</span></span><span style="display:flex;"><span>gbm <span style="color:#f92672">=</span> lgb<span style="color:#f92672">.</span>train(params,
+</span></span><span style="display:flex;"><span>                lgb_train,
+</span></span><span style="display:flex;"><span>                num_boost_round<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>,
+</span></span><span style="display:flex;"><span>                valid_sets<span style="color:#f92672">=</span>lgb_train)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#39;Save model...&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># save model to file</span>
+</span></span><span style="display:flex;"><span>gbm<span style="color:#f92672">.</span>save_model(<span style="color:#e6db74">&#39;model.txt&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#39;Start predicting...&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># predict and get data on leaves, training data</span>
+</span></span></code></pre></div><p>特征转换</p>
 <p>在训练得到100棵树之后，我们需要得到的不是GBDT的预测结果，而是每一条训练数据落在了每棵树的哪个叶子结点上，因此需要使用下面的语句：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">y_pred <span style="color:#f92672">=</span> gbm<span style="color:#f92672">.</span>predict(X_train, pred_leaf<span style="color:#f92672">=</span>True)</code></pre></div>
-<p>打印上面结果的输出，可以看到shape是(8001,100)，即训练数据量*树的棵树</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">print</span>(np<span style="color:#f92672">.</span>array(y_pred)<span style="color:#f92672">.</span>shape)
-<span style="color:#66d9ef">print</span>(y_pred[<span style="color:#ae81ff">0</span>])
-
-(<span style="color:#ae81ff">8001</span>, <span style="color:#ae81ff">100</span>)
-[[<span style="color:#ae81ff">43</span> <span style="color:#ae81ff">26</span> <span style="color:#ae81ff">47</span> <span style="color:#ae81ff">47</span> <span style="color:#ae81ff">47</span> <span style="color:#ae81ff">19</span> <span style="color:#ae81ff">36</span> <span style="color:#ae81ff">19</span> <span style="color:#ae81ff">50</span> <span style="color:#ae81ff">52</span> <span style="color:#ae81ff">29</span>  <span style="color:#ae81ff">0</span>  <span style="color:#ae81ff">0</span>  <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">46</span> <span style="color:#ae81ff">23</span> <span style="color:#ae81ff">13</span> <span style="color:#ae81ff">27</span> <span style="color:#ae81ff">27</span> <span style="color:#ae81ff">13</span> <span style="color:#ae81ff">10</span> <span style="color:#ae81ff">22</span>  <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">10</span>
-   <span style="color:#ae81ff">4</span> <span style="color:#ae81ff">57</span> <span style="color:#ae81ff">17</span> <span style="color:#ae81ff">55</span> <span style="color:#ae81ff">54</span> <span style="color:#ae81ff">57</span> <span style="color:#ae81ff">59</span> <span style="color:#ae81ff">42</span> <span style="color:#ae81ff">22</span> <span style="color:#ae81ff">22</span> <span style="color:#ae81ff">22</span> <span style="color:#ae81ff">13</span>  <span style="color:#ae81ff">8</span>  <span style="color:#ae81ff">5</span> <span style="color:#ae81ff">27</span>  <span style="color:#ae81ff">5</span> <span style="color:#ae81ff">58</span> <span style="color:#ae81ff">23</span> <span style="color:#ae81ff">58</span> <span style="color:#ae81ff">14</span> <span style="color:#ae81ff">16</span> <span style="color:#ae81ff">16</span> <span style="color:#ae81ff">10</span> <span style="color:#ae81ff">32</span>
-  <span style="color:#ae81ff">60</span> <span style="color:#ae81ff">32</span>  <span style="color:#ae81ff">4</span>  <span style="color:#ae81ff">4</span>  <span style="color:#ae81ff">4</span>  <span style="color:#ae81ff">4</span>  <span style="color:#ae81ff">4</span> <span style="color:#ae81ff">46</span> <span style="color:#ae81ff">57</span> <span style="color:#ae81ff">48</span> <span style="color:#ae81ff">57</span> <span style="color:#ae81ff">34</span> <span style="color:#ae81ff">54</span>  <span style="color:#ae81ff">6</span> <span style="color:#ae81ff">35</span>  <span style="color:#ae81ff">6</span>  <span style="color:#ae81ff">4</span> <span style="color:#ae81ff">55</span> <span style="color:#ae81ff">13</span> <span style="color:#ae81ff">23</span> <span style="color:#ae81ff">15</span> <span style="color:#ae81ff">51</span> <span style="color:#ae81ff">40</span>  <span style="color:#ae81ff">0</span>
-  <span style="color:#ae81ff">47</span> <span style="color:#ae81ff">40</span> <span style="color:#ae81ff">10</span> <span style="color:#ae81ff">29</span> <span style="color:#ae81ff">24</span> <span style="color:#ae81ff">24</span> <span style="color:#ae81ff">31</span> <span style="color:#ae81ff">24</span> <span style="color:#ae81ff">55</span>  <span style="color:#ae81ff">3</span> <span style="color:#ae81ff">41</span>  <span style="color:#ae81ff">3</span> <span style="color:#ae81ff">22</span> <span style="color:#ae81ff">57</span>  <span style="color:#ae81ff">6</span>  <span style="color:#ae81ff">0</span>  <span style="color:#ae81ff">6</span>  <span style="color:#ae81ff">6</span> <span style="color:#ae81ff">57</span> <span style="color:#ae81ff">55</span> <span style="color:#ae81ff">57</span> <span style="color:#ae81ff">16</span> <span style="color:#ae81ff">12</span> <span style="color:#ae81ff">18</span>
-  <span style="color:#ae81ff">30</span> <span style="color:#ae81ff">15</span> <span style="color:#ae81ff">17</span> <span style="color:#ae81ff">30</span>]]</code></pre></div>
-<p>然后我们需要将每棵树的特征进行one-hot处理，如前面所说，假设第一棵树落在43号叶子结点上，那我们需要建立一个64维的向量，除43维之外全部都是0。因此用于LR训练的特征维数共num_trees * num_leaves。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;Writing transformed training data&#39;</span>)
-transformed_training_matrix <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros([len(y_pred), len(y_pred[<span style="color:#ae81ff">0</span>]) <span style="color:#f92672">*</span> num_leaf],
-                                       dtype<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>int64)  <span style="color:#75715e"># N * num_tress * num_leafs</span>
-<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, len(y_pred)):
-    temp <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>arange(len(y_pred[<span style="color:#ae81ff">0</span>])) <span style="color:#f92672">*</span> num_leaf <span style="color:#f92672">+</span> np<span style="color:#f92672">.</span>array(y_pred[I])
-    transformed_training_matrix[i][temp] <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span></code></pre></div>
-<p>当然，对于测试集也要进行同样的处理:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">y_pred <span style="color:#f92672">=</span> gbm<span style="color:#f92672">.</span>predict(X_test, pred_leaf<span style="color:#f92672">=</span>True)
-<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;Writing transformed testing data&#39;</span>)
-transformed_testing_matrix <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros([len(y_pred), len(y_pred[<span style="color:#ae81ff">0</span>]) <span style="color:#f92672">*</span> num_leaf], dtype<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>int64)
-<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, len(y_pred)):
-    temp <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>arange(len(y_pred[<span style="color:#ae81ff">0</span>])) <span style="color:#f92672">*</span> num_leaf <span style="color:#f92672">+</span> np<span style="color:#f92672">.</span>array(y_pred[I])
-    transformed_testing_matrix[i][temp] <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span></code></pre></div>
-<p>LR训练
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>y_pred <span style="color:#f92672">=</span> gbm<span style="color:#f92672">.</span>predict(X_train, pred_leaf<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span></code></pre></div><p>打印上面结果的输出，可以看到shape是(8001,100)，即训练数据量*树的棵树</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>print(np<span style="color:#f92672">.</span>array(y_pred)<span style="color:#f92672">.</span>shape)
+</span></span><span style="display:flex;"><span>print(y_pred[<span style="color:#ae81ff">0</span>])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>(<span style="color:#ae81ff">8001</span>, <span style="color:#ae81ff">100</span>)
+</span></span><span style="display:flex;"><span>[[<span style="color:#ae81ff">43</span> <span style="color:#ae81ff">26</span> <span style="color:#ae81ff">47</span> <span style="color:#ae81ff">47</span> <span style="color:#ae81ff">47</span> <span style="color:#ae81ff">19</span> <span style="color:#ae81ff">36</span> <span style="color:#ae81ff">19</span> <span style="color:#ae81ff">50</span> <span style="color:#ae81ff">52</span> <span style="color:#ae81ff">29</span>  <span style="color:#ae81ff">0</span>  <span style="color:#ae81ff">0</span>  <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">46</span> <span style="color:#ae81ff">23</span> <span style="color:#ae81ff">13</span> <span style="color:#ae81ff">27</span> <span style="color:#ae81ff">27</span> <span style="color:#ae81ff">13</span> <span style="color:#ae81ff">10</span> <span style="color:#ae81ff">22</span>  <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">4</span> <span style="color:#ae81ff">57</span> <span style="color:#ae81ff">17</span> <span style="color:#ae81ff">55</span> <span style="color:#ae81ff">54</span> <span style="color:#ae81ff">57</span> <span style="color:#ae81ff">59</span> <span style="color:#ae81ff">42</span> <span style="color:#ae81ff">22</span> <span style="color:#ae81ff">22</span> <span style="color:#ae81ff">22</span> <span style="color:#ae81ff">13</span>  <span style="color:#ae81ff">8</span>  <span style="color:#ae81ff">5</span> <span style="color:#ae81ff">27</span>  <span style="color:#ae81ff">5</span> <span style="color:#ae81ff">58</span> <span style="color:#ae81ff">23</span> <span style="color:#ae81ff">58</span> <span style="color:#ae81ff">14</span> <span style="color:#ae81ff">16</span> <span style="color:#ae81ff">16</span> <span style="color:#ae81ff">10</span> <span style="color:#ae81ff">32</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">60</span> <span style="color:#ae81ff">32</span>  <span style="color:#ae81ff">4</span>  <span style="color:#ae81ff">4</span>  <span style="color:#ae81ff">4</span>  <span style="color:#ae81ff">4</span>  <span style="color:#ae81ff">4</span> <span style="color:#ae81ff">46</span> <span style="color:#ae81ff">57</span> <span style="color:#ae81ff">48</span> <span style="color:#ae81ff">57</span> <span style="color:#ae81ff">34</span> <span style="color:#ae81ff">54</span>  <span style="color:#ae81ff">6</span> <span style="color:#ae81ff">35</span>  <span style="color:#ae81ff">6</span>  <span style="color:#ae81ff">4</span> <span style="color:#ae81ff">55</span> <span style="color:#ae81ff">13</span> <span style="color:#ae81ff">23</span> <span style="color:#ae81ff">15</span> <span style="color:#ae81ff">51</span> <span style="color:#ae81ff">40</span>  <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">47</span> <span style="color:#ae81ff">40</span> <span style="color:#ae81ff">10</span> <span style="color:#ae81ff">29</span> <span style="color:#ae81ff">24</span> <span style="color:#ae81ff">24</span> <span style="color:#ae81ff">31</span> <span style="color:#ae81ff">24</span> <span style="color:#ae81ff">55</span>  <span style="color:#ae81ff">3</span> <span style="color:#ae81ff">41</span>  <span style="color:#ae81ff">3</span> <span style="color:#ae81ff">22</span> <span style="color:#ae81ff">57</span>  <span style="color:#ae81ff">6</span>  <span style="color:#ae81ff">0</span>  <span style="color:#ae81ff">6</span>  <span style="color:#ae81ff">6</span> <span style="color:#ae81ff">57</span> <span style="color:#ae81ff">55</span> <span style="color:#ae81ff">57</span> <span style="color:#ae81ff">16</span> <span style="color:#ae81ff">12</span> <span style="color:#ae81ff">18</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">30</span> <span style="color:#ae81ff">15</span> <span style="color:#ae81ff">17</span> <span style="color:#ae81ff">30</span>]]
+</span></span></code></pre></div><p>然后我们需要将每棵树的特征进行one-hot处理，如前面所说，假设第一棵树落在43号叶子结点上，那我们需要建立一个64维的向量，除43维之外全部都是0。因此用于LR训练的特征维数共num_trees * num_leaves。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>print(<span style="color:#e6db74">&#39;Writing transformed training data&#39;</span>)
+</span></span><span style="display:flex;"><span>transformed_training_matrix <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros([len(y_pred), len(y_pred[<span style="color:#ae81ff">0</span>]) <span style="color:#f92672">*</span> num_leaf],
+</span></span><span style="display:flex;"><span>                                       dtype<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>int64)  <span style="color:#75715e"># N * num_tress * num_leafs</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, len(y_pred)):
+</span></span><span style="display:flex;"><span>    temp <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>arange(len(y_pred[<span style="color:#ae81ff">0</span>])) <span style="color:#f92672">*</span> num_leaf <span style="color:#f92672">+</span> np<span style="color:#f92672">.</span>array(y_pred[I])
+</span></span><span style="display:flex;"><span>    transformed_training_matrix[i][temp] <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+</span></span></code></pre></div><p>当然，对于测试集也要进行同样的处理:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>y_pred <span style="color:#f92672">=</span> gbm<span style="color:#f92672">.</span>predict(X_test, pred_leaf<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#39;Writing transformed testing data&#39;</span>)
+</span></span><span style="display:flex;"><span>transformed_testing_matrix <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros([len(y_pred), len(y_pred[<span style="color:#ae81ff">0</span>]) <span style="color:#f92672">*</span> num_leaf], dtype<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>int64)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, len(y_pred)):
+</span></span><span style="display:flex;"><span>    temp <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>arange(len(y_pred[<span style="color:#ae81ff">0</span>])) <span style="color:#f92672">*</span> num_leaf <span style="color:#f92672">+</span> np<span style="color:#f92672">.</span>array(y_pred[I])
+</span></span><span style="display:flex;"><span>    transformed_testing_matrix[i][temp] <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+</span></span></code></pre></div><p>LR训练
 然后我们可以用转换后的训练集特征和label训练我们的LR模型，并对测试集进行测试：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">lm <span style="color:#f92672">=</span> LogisticRegression(penalty<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;l2&#39;</span>,C<span style="color:#f92672">=</span><span style="color:#ae81ff">0.05</span>) <span style="color:#75715e"># logestic model construction</span>
-lm<span style="color:#f92672">.</span>fit(transformed_training_matrix,y_train)  <span style="color:#75715e"># fitting the data</span>
-y_pred_test <span style="color:#f92672">=</span> lm<span style="color:#f92672">.</span>predict_proba(transformed_testing_matrix)   <span style="color:#75715e"># Give the probabilty on each label</span></code></pre></div>
-<p>我们这里得到的不是简单的类别，而是每个类别的概率。</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>lm <span style="color:#f92672">=</span> LogisticRegression(penalty<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;l2&#39;</span>,C<span style="color:#f92672">=</span><span style="color:#ae81ff">0.05</span>) <span style="color:#75715e"># logestic model construction</span>
+</span></span><span style="display:flex;"><span>lm<span style="color:#f92672">.</span>fit(transformed_training_matrix,y_train)  <span style="color:#75715e"># fitting the data</span>
+</span></span><span style="display:flex;"><span>y_pred_test <span style="color:#f92672">=</span> lm<span style="color:#f92672">.</span>predict_proba(transformed_testing_matrix)   <span style="color:#75715e"># Give the probabilty on each label</span>
+</span></span></code></pre></div><p>我们这里得到的不是简单的类别，而是每个类别的概率。</p>
 <p><strong>效果评价</strong></p>
-
 <p>在Facebook的paper中，模型使用NE(Normalized Cross-Entropy)，进行评价，计算公式如下:</p>
-
 
 
 <div class="box">
@@ -941,14 +935,11 @@ y_pred_test <span style="color:#f92672">=</span> lm<span style="color:#f92672">.
   </figure>
 </div>
 
-
 <p>代码如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">NE <span style="color:#f92672">=</span> (<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) <span style="color:#f92672">/</span> len(y_pred_test) <span style="color:#f92672">*</span> sum(((<span style="color:#ae81ff">1</span><span style="color:#f92672">+</span>y_test)<span style="color:#f92672">/</span><span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> np<span style="color:#f92672">.</span>log(y_pred_test[:,<span style="color:#ae81ff">1</span>]) <span style="color:#f92672">+</span>  (<span style="color:#ae81ff">1</span><span style="color:#f92672">-</span>y_test)<span style="color:#f92672">/</span><span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> np<span style="color:#f92672">.</span>log(<span style="color:#ae81ff">1</span> <span style="color:#f92672">-</span> y_pred_test[:,<span style="color:#ae81ff">1</span>])))
-<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Normalized Cross Entropy &#34;</span> <span style="color:#f92672">+</span> str(NE))</code></pre></div>
-<h3 id="反思">反思</h3>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>NE <span style="color:#f92672">=</span> (<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) <span style="color:#f92672">/</span> len(y_pred_test) <span style="color:#f92672">*</span> sum(((<span style="color:#ae81ff">1</span><span style="color:#f92672">+</span>y_test)<span style="color:#f92672">/</span><span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> np<span style="color:#f92672">.</span>log(y_pred_test[:,<span style="color:#ae81ff">1</span>]) <span style="color:#f92672">+</span>  (<span style="color:#ae81ff">1</span><span style="color:#f92672">-</span>y_test)<span style="color:#f92672">/</span><span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> np<span style="color:#f92672">.</span>log(<span style="color:#ae81ff">1</span> <span style="color:#f92672">-</span> y_pred_test[:,<span style="color:#ae81ff">1</span>])))
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;Normalized Cross Entropy &#34;</span> <span style="color:#f92672">+</span> str(NE))
+</span></span></code></pre></div><h3 id="反思">反思</h3>
 <p>现在的GBDT和LR的融合方案真的适合现在的大多数业务数据么？现在的业务数据是什么？是大量离散特征导致的高维度离散数据。而树模型对这样的离散特征，是不能很好处理的，要说为什么，因为这容易导致过拟合。下面的一段话来自知乎：</p>
-
 
 
 <div class="box">
@@ -961,11 +952,8 @@ y_pred_test <span style="color:#f92672">=</span> lm<span style="color:#f92672">.
   </figure>
 </div>
 
-
 <p>用盖坤的话说，GBDT只是对历史的一个记忆罢了，没有推广性，或者说泛化能力。</p>
-
 <p>但这并不是说对于大规模的离散特征，GBDT和LR的方案不再适用，感兴趣的话大家可以看一下参考文献2和3，这里就不再介绍了。</p>
-
 <p>刚才提到了阿里的盖坤大神，他的团队在2017年提出了两个重要的用于CTR预估的模型，MLR和DIN，之后的系列中，我们会讲解这两种模型的理论和实战！欢迎大家继续关注！</p>
 
     </div>

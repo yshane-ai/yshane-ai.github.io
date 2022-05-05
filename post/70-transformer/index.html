@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/70-transformer/" />
@@ -62,19 +62,15 @@
 <meta property="og:title" content="Transformer详解与Pytorch实践" />
 <meta property="og:description" content="Transformer最早应用于机器翻译领域，但是现在已经席卷了整个CV、NLP和搜广推领域，虽然网上已经有很多Transformer的资料" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/70-transformer/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/70-transformer/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2022-03-23T16:01:23+08:00" />
 <meta property="article:modified_time" content="2022-03-23T16:01:23+08:00" />
+
 <meta itemprop="name" content="Transformer详解与Pytorch实践">
-<meta itemprop="description" content="Transformer最早应用于机器翻译领域，但是现在已经席卷了整个CV、NLP和搜广推领域，虽然网上已经有很多Transformer的资料">
-<meta itemprop="datePublished" content="2022-03-23T16:01:23+08:00" />
+<meta itemprop="description" content="Transformer最早应用于机器翻译领域，但是现在已经席卷了整个CV、NLP和搜广推领域，虽然网上已经有很多Transformer的资料"><meta itemprop="datePublished" content="2022-03-23T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2022-03-23T16:01:23+08:00" />
-<meta itemprop="wordCount" content="3672">
-
-
-
-<meta itemprop="keywords" content="ML," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="3736">
+<meta itemprop="keywords" content="ML," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Transformer详解与Pytorch实践"/>
 <meta name="twitter:description" content="Transformer最早应用于机器翻译领域，但是现在已经席卷了整个CV、NLP和搜广推领域，虽然网上已经有很多Transformer的资料"/>
 
@@ -260,6 +256,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
               </li>
             
               <li>
@@ -627,6 +627,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -778,7 +782,24 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-模型介绍">1 模型介绍</a>
+      <ul>
+        <li><a href="#11-embedding">1.1 Embedding</a></li>
+        <li><a href="#12-positional-encoding">1.2 Positional Encoding</a></li>
+        <li><a href="#13-mask">1.3 Mask</a></li>
+        <li><a href="#14-multi-headed-attention">1.4 Multi-Headed Attention</a></li>
+        <li><a href="#15-calculating-attention">1.5 Calculating Attention</a></li>
+        <li><a href="#16-the-feed-forward-network">1.6 The Feed-Forward Network</a></li>
+        <li><a href="#17-normalization">1.7 Normalization</a></li>
+        <li><a href="#18-putting-it-all-together">1.8 Putting it all together</a></li>
+      </ul>
+    </li>
+    <li><a href="#2-训练模型">2 训练模型</a></li>
+    <li><a href="#3-测试模型">3 测试模型</a></li>
+  </ul>
+</nav>
   </div>
 </div>
 
@@ -796,13 +817,9 @@
   </figure>
 </div>
 
-
 <p>Transformer最早应用于机器翻译领域，但是现在已经席卷了整个CV、NLP和搜广推领域，虽然网上已经有很多Transformer的资料，但是自己梳理一下并且动手实现还是非常重要的。</p>
-
 <h2 id="1-模型介绍">1 模型介绍</h2>
-
 <p>整体架构如下：</p>
-
 
 
 <div class="box">
@@ -815,9 +832,7 @@
   </figure>
 </div>
 
-
 <p>模型的输入是英文句子，输出是法语句子。要理解这个模型，需要理解下面5个点：</p>
-
 <ul>
 <li>如何对输入做embedding？</li>
 <li>如何做位置编码？</li>
@@ -825,28 +840,20 @@
 <li>为什么要有多头注意力？</li>
 <li>前向传播层在哪里用到了？</li>
 </ul>
-
 <h3 id="11-embedding">1.1 Embedding</h3>
-
 <p>Embedding是NMT（Neural Machine Translation）领域的常规操作，相比于one-hot编码方式，embedding操作可以在表达相同信息的条件下，尽可能降低输入的维度。</p>
-
 <p>Pytorch下的embedding操作如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Embedder</span>(nn<span style="color:#f92672">.</span>Module):
-  <span style="color:#66d9ef">def</span> __init__(self, vocab_size, d_model):
-    super()<span style="color:#f92672">.</span>__init__()
-    self<span style="color:#f92672">.</span>embed <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Embedding(vocab_size, d_model)
-  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
-    <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>embed(x)</code></pre></div>
-<p>当每个单词输入神经网络，这段代码会执行查表的操作，然后获取当前单词的embedding。产生的向量则会被输入到后面的神经网络中，使用梯度下降的方式进行优化。</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Embedder</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">def</span> __init__(self, vocab_size, d_model):
+</span></span><span style="display:flex;"><span>    super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>embed <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Embedding(vocab_size, d_model)
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>embed(x)
+</span></span></code></pre></div><p>当每个单词输入神经网络，这段代码会执行查表的操作，然后获取当前单词的embedding。产生的向量则会被输入到后面的神经网络中，使用梯度下降的方式进行优化。</p>
 <h3 id="12-positional-encoding">1.2 Positional Encoding</h3>
-
 <p>为了让模型理解每个句子，他需要知道了解每个单词的两个特征：这个单词的意思，还有这个单词在句子中的位置。</p>
-
 <p>上述中的embedding主要学习每个单词的意思，所以在这里我们需要让神经网络知道单词的位置。</p>
-
 <p>Vasmari et al采用正余弦编码的方式来获得每个单词的位置，如下图所示：</p>
-
 
 
 <div class="box">
@@ -861,7 +868,6 @@
 
 
 
-
 <div class="box">
 <figure  itemprop="associatedMedia"
   itemscope itemtype="http://schema.org/ImageObject" >
@@ -872,9 +878,7 @@
   </figure>
 </div>
 
-
-<p>最后获得一个二维矩阵，其中$Pos$表示在句子中的顺序，$i$表示embedding向量中的位置。因此，在输入句子中的第$Pos$个单词的embedding长度为$d<em>model$，第$2i$个位置元素是$PE</em>{(pos, 2i)}$，第$2i + 1$个位置元素是$PE_{(pos, 2i + 1)}$，计算过程如上式。</p>
-
+<p>最后获得一个二维矩阵，其中$Pos$表示在句子中的顺序，$i$表示embedding向量中的位置。因此，在输入句子中的第$Pos$个单词的embedding长度为$d_model$，第$2i$个位置元素是$PE_{(pos, 2i)}$，第$2i + 1$个位置元素是$PE_{(pos, 2i + 1)}$，计算过程如上式。</p>
 
 
 <div class="box">
@@ -890,70 +894,62 @@
   </figure>
 </div>
 
-
 <p>Positional Encoder的简易实现如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PositionalEncoder</span>(nn<span style="color:#f92672">.</span>Module):
-  <span style="color:#66d9ef">def</span> __init__(self, d_model, max_seq_len <span style="color:#f92672">=</span> <span style="color:#ae81ff">80</span>):
-    super()<span style="color:#f92672">.</span>__init__()
-    self<span style="color:#f92672">.</span>d_model <span style="color:#f92672">=</span> d_model
-
-    <span style="color:#75715e"># create constant &#39;pe&#39; matrix with values dependant on </span>
-    <span style="color:#75715e"># pos and i</span>
-    pe <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>zeros(max_seq_len, d_model)
-    <span style="color:#66d9ef">for</span> pos <span style="color:#f92672">in</span> range(max_seq_len):
-        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, d_model, <span style="color:#ae81ff">2</span>):
-            pe[pos, i] <span style="color:#f92672">=</span> \
-            math<span style="color:#f92672">.</span>sin(pos <span style="color:#f92672">/</span> (<span style="color:#ae81ff">10000</span> <span style="color:#f92672">**</span> ((<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> i)<span style="color:#f92672">/</span>d_model)))
-            pe[pos, i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> \
-            math<span style="color:#f92672">.</span>cos(pos <span style="color:#f92672">/</span> (<span style="color:#ae81ff">10000</span> <span style="color:#f92672">**</span> ((<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> (i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>))<span style="color:#f92672">/</span>d_model)))
-            
-    pe <span style="color:#f92672">=</span> pe<span style="color:#f92672">.</span>unsqueeze(<span style="color:#ae81ff">0</span>)
-    self<span style="color:#f92672">.</span>register_buffer(<span style="color:#e6db74">&#39;pe&#39;</span>, pe)
-
-  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
-    <span style="color:#75715e"># make embeddings relatively larger</span>
-    x <span style="color:#f92672">=</span> x <span style="color:#f92672">*</span> math<span style="color:#f92672">.</span>sqrt(self<span style="color:#f92672">.</span>d_model)
-    <span style="color:#75715e">#add constant to embedding</span>
-    seq_len <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">1</span>)
-    x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> Variable(self<span style="color:#f92672">.</span>pe[:,:seq_len], \
-    requires_grad<span style="color:#f92672">=</span>False)<span style="color:#f92672">.</span>cuda()
-    <span style="color:#66d9ef">return</span> x</code></pre></div>
-<p>以上代码可以帮助我们实现每个单词的embedding都加上自身的positional encoding，为模型提供更多的结构信息。</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PositionalEncoder</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">def</span> __init__(self, d_model, max_seq_len <span style="color:#f92672">=</span> <span style="color:#ae81ff">80</span>):
+</span></span><span style="display:flex;"><span>    super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>d_model <span style="color:#f92672">=</span> d_model
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># create constant &#39;pe&#39; matrix with values dependant on </span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># pos and i</span>
+</span></span><span style="display:flex;"><span>    pe <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>zeros(max_seq_len, d_model)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> pos <span style="color:#f92672">in</span> range(max_seq_len):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, d_model, <span style="color:#ae81ff">2</span>):
+</span></span><span style="display:flex;"><span>            pe[pos, i] <span style="color:#f92672">=</span> \
+</span></span><span style="display:flex;"><span>            math<span style="color:#f92672">.</span>sin(pos <span style="color:#f92672">/</span> (<span style="color:#ae81ff">10000</span> <span style="color:#f92672">**</span> ((<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> i)<span style="color:#f92672">/</span>d_model)))
+</span></span><span style="display:flex;"><span>            pe[pos, i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> \
+</span></span><span style="display:flex;"><span>            math<span style="color:#f92672">.</span>cos(pos <span style="color:#f92672">/</span> (<span style="color:#ae81ff">10000</span> <span style="color:#f92672">**</span> ((<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> (i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>))<span style="color:#f92672">/</span>d_model)))
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>    pe <span style="color:#f92672">=</span> pe<span style="color:#f92672">.</span>unsqueeze(<span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>register_buffer(<span style="color:#e6db74">&#39;pe&#39;</span>, pe)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># make embeddings relatively larger</span>
+</span></span><span style="display:flex;"><span>    x <span style="color:#f92672">=</span> x <span style="color:#f92672">*</span> math<span style="color:#f92672">.</span>sqrt(self<span style="color:#f92672">.</span>d_model)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#add constant to embedding</span>
+</span></span><span style="display:flex;"><span>    seq_len <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>    x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> Variable(self<span style="color:#f92672">.</span>pe[:,:seq_len], \
+</span></span><span style="display:flex;"><span>    requires_grad<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)<span style="color:#f92672">.</span>cuda()
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> x
+</span></span></code></pre></div><p>以上代码可以帮助我们实现每个单词的embedding都加上自身的positional encoding，为模型提供更多的结构信息。</p>
 <p>其中，我们在矩阵相加前的乘法操作是让positional encoding数值变小，从而当我们执行相加操作后不会对原embedding产生过大的影响。</p>
-
 <h3 id="13-mask">1.3 Mask</h3>
-
 <p>Masking在Transformer中扮演着重要的角色，主要是由以下两个原因：</p>
-
 <ul>
 <li>query和key有些部分是填充的，这些需要用mask屏蔽，一个简单的方法就是赋予一个很小很小的值或者直接变为0值。</li>
 <li>对于decoder的来说，我们是不能看到未来的信息的，所以对于decoder的输入，我们只能计算它和它之前输入的信息的相似度。</li>
 </ul>
-
 <p>对input生成mask也非常简单：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">batch <span style="color:#f92672">=</span> next(iter(train_iter))
-input_seq <span style="color:#f92672">=</span> batch<span style="color:#f92672">.</span>English<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1</span>)
-input_pad <span style="color:#f92672">=</span> EN_TEXT<span style="color:#f92672">.</span>vocab<span style="color:#f92672">.</span>stoi[<span style="color:#e6db74">&#39;&lt;pad&gt;&#39;</span>]
-<span style="color:#75715e"># creates mask with 0s wherever there is padding in the input</span>
-input_msk <span style="color:#f92672">=</span> (input_seq <span style="color:#f92672">!=</span> input_pad)<span style="color:#f92672">.</span>unsqueeze(<span style="color:#ae81ff">1</span>)</code></pre></div>
-<p>对于目标输出我们也执行同样的操作，但是多出来一步：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e"># create mask as before</span>
-target_seq <span style="color:#f92672">=</span> batch<span style="color:#f92672">.</span>French<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1</span>)
-target_pad <span style="color:#f92672">=</span> FR_TEXT<span style="color:#f92672">.</span>vocab<span style="color:#f92672">.</span>stoi[<span style="color:#e6db74">&#39;&lt;pad&gt;&#39;</span>]
-target_msk <span style="color:#f92672">=</span> (target_seq <span style="color:#f92672">!=</span> target_pad)<span style="color:#f92672">.</span>unsqueeze(<span style="color:#ae81ff">1</span>)
-    
-size <span style="color:#f92672">=</span> target_seq<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">1</span>) <span style="color:#75715e"># get seq_len for matrix</span>
-
-nopeak_mask <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>triu(np<span style="color:#f92672">.</span>ones(<span style="color:#ae81ff">1</span>, size, size),
-k<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>astype(<span style="color:#e6db74">&#39;uint8&#39;</span>)
-nopeak_mask <span style="color:#f92672">=</span> Variable(torch<span style="color:#f92672">.</span>from_numpy(nopeak_mask) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
-
-target_msk <span style="color:#f92672">=</span> target_msk <span style="color:#f92672">&amp;</span> nopeak_mask</code></pre></div>
-<p>decoder的输入是翻译后的目标句子（即法语），通过以上操作，可以保证decoder在翻译的时候只可以观测到encoder的输出和当前时刻已经翻译出的单词，而不包括以后和即将翻译的单词。</p>
-
-<p>因此我们需要防止decoder的当前输出利用未来的target句子信息，这里我们使用'nopeak_mask'：</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>batch <span style="color:#f92672">=</span> next(iter(train_iter))
+</span></span><span style="display:flex;"><span>input_seq <span style="color:#f92672">=</span> batch<span style="color:#f92672">.</span>English<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>input_pad <span style="color:#f92672">=</span> EN_TEXT<span style="color:#f92672">.</span>vocab<span style="color:#f92672">.</span>stoi[<span style="color:#e6db74">&#39;&lt;pad&gt;&#39;</span>]
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># creates mask with 0s wherever there is padding in the input</span>
+</span></span><span style="display:flex;"><span>input_msk <span style="color:#f92672">=</span> (input_seq <span style="color:#f92672">!=</span> input_pad)<span style="color:#f92672">.</span>unsqueeze(<span style="color:#ae81ff">1</span>)
+</span></span></code></pre></div><p>对于目标输出我们也执行同样的操作，但是多出来一步：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#75715e"># create mask as before</span>
+</span></span><span style="display:flex;"><span>target_seq <span style="color:#f92672">=</span> batch<span style="color:#f92672">.</span>French<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>target_pad <span style="color:#f92672">=</span> FR_TEXT<span style="color:#f92672">.</span>vocab<span style="color:#f92672">.</span>stoi[<span style="color:#e6db74">&#39;&lt;pad&gt;&#39;</span>]
+</span></span><span style="display:flex;"><span>target_msk <span style="color:#f92672">=</span> (target_seq <span style="color:#f92672">!=</span> target_pad)<span style="color:#f92672">.</span>unsqueeze(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>size <span style="color:#f92672">=</span> target_seq<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">1</span>) <span style="color:#75715e"># get seq_len for matrix</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>nopeak_mask <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>triu(np<span style="color:#f92672">.</span>ones(<span style="color:#ae81ff">1</span>, size, size),
+</span></span><span style="display:flex;"><span>k<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>astype(<span style="color:#e6db74">&#39;uint8&#39;</span>)
+</span></span><span style="display:flex;"><span>nopeak_mask <span style="color:#f92672">=</span> Variable(torch<span style="color:#f92672">.</span>from_numpy(nopeak_mask) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>target_msk <span style="color:#f92672">=</span> target_msk <span style="color:#f92672">&amp;</span> nopeak_mask
+</span></span></code></pre></div><p>decoder的输入是翻译后的目标句子（即法语），通过以上操作，可以保证decoder在翻译的时候只可以观测到encoder的输出和当前时刻已经翻译出的单词，而不包括以后和即将翻译的单词。</p>
+<p>因此我们需要防止decoder的当前输出利用未来的target句子信息，这里我们使用&rsquo;nopeak_mask&rsquo;：</p>
 
 
 <div class="box">
@@ -969,15 +965,10 @@ target_msk <span style="color:#f92672">=</span> target_msk <span style="color:#f
   </figure>
 </div>
 
-
 <p>在计算注意力得分的时候，当前时刻以后的句子贡献的权重就会被置为零。</p>
-
-<h3 id="14-multiheaded-attention">1.4 Multi-Headed Attention</h3>
-
+<h3 id="14-multi-headed-attention">1.4 Multi-Headed Attention</h3>
 <p>当获得融合位置信息（positional encoding）的单词embedding和相应的mask后，我们便可以开始搭建我们的模型：</p>
-
 <p>下图是一个多头注意力模块的流程图：</p>
-
 
 
 <div class="box">
@@ -993,54 +984,50 @@ target_msk <span style="color:#f92672">=</span> target_msk <span style="color:#f
   </figure>
 </div>
 
-
 <p>V，K和Q分别代表“key”， “value”和“query”。在encoder模块中，V，K和Q分别是embedding向量的副本，有相同的维度：$Batch_size * seq_len * d_model$。</p>
-
 <p>在多头注意力模块，我们吧embedding分成$N$个头，因此他们的维度变成$Batch_size * N * seq_len * (d_model / N)$。</p>
-
-<p>下文中我们使用$d<em>k$来表示$d</em>{model} / N$，下面是encoder部分的代码：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MultiHeadAttention</span>(nn<span style="color:#f92672">.</span>Module):
-    <span style="color:#66d9ef">def</span> __init__(self, heads, d_model, dropout <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.1</span>):
-        super()<span style="color:#f92672">.</span>__init__()
-        
-        self<span style="color:#f92672">.</span>d_model <span style="color:#f92672">=</span> d_model
-        self<span style="color:#f92672">.</span>d_k <span style="color:#f92672">=</span> d_model <span style="color:#f92672">//</span> heads
-        self<span style="color:#f92672">.</span>h <span style="color:#f92672">=</span> heads
-        
-        self<span style="color:#f92672">.</span>q_linear <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(d_model, d_model)
-        self<span style="color:#f92672">.</span>v_linear <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(d_model, d_model)
-        self<span style="color:#f92672">.</span>k_linear <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(d_model, d_model)
-        self<span style="color:#f92672">.</span>dropout <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
-        self<span style="color:#f92672">.</span>out <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(d_model, d_model)
-
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, q, k, v, mask<span style="color:#f92672">=</span>None):
-        
-        bs <span style="color:#f92672">=</span> q<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>)
-        
-        <span style="color:#75715e"># perform linear operation and split into h heads</span>
-        
-        k <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>k_linear(k)<span style="color:#f92672">.</span>view(bs, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, self<span style="color:#f92672">.</span>h, self<span style="color:#f92672">.</span>d_k)
-        q <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>q_linear(q)<span style="color:#f92672">.</span>view(bs, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, self<span style="color:#f92672">.</span>h, self<span style="color:#f92672">.</span>d_k)
-        v <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>v_linear(v)<span style="color:#f92672">.</span>view(bs, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, self<span style="color:#f92672">.</span>h, self<span style="color:#f92672">.</span>d_k)
-        
-        <span style="color:#75715e"># transpose to get dimensions bs * h * sl * d_model</span>
-       
-        k <span style="color:#f92672">=</span> k<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>)
-        q <span style="color:#f92672">=</span> q<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>)
-        v <span style="color:#f92672">=</span> v<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>)
-
-          <span style="color:#75715e"># calculate attention using function we will define next</span>
-        scores <span style="color:#f92672">=</span> attention(q, k, v, self<span style="color:#f92672">.</span>d_k, mask, self<span style="color:#f92672">.</span>dropout)
-        
-        <span style="color:#75715e"># concatenate heads and put through final linear layer</span>
-        concat <span style="color:#f92672">=</span> scores<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>)<span style="color:#f92672">.</span>contiguous()\
-        <span style="color:#f92672">.</span>view(bs, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, self<span style="color:#f92672">.</span>d_model)
-        
-        output <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>out(concat)
-    
-        <span style="color:#66d9ef">return</span> output</code></pre></div>
-<h3 id="15-calculating-attention">1.5 Calculating Attention</h3>
-
+<p>下文中我们使用$d_k$来表示$d_{model} / N$，下面是encoder部分的代码：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MultiHeadAttention</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, heads, d_model, dropout <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.1</span>):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>d_model <span style="color:#f92672">=</span> d_model
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>d_k <span style="color:#f92672">=</span> d_model <span style="color:#f92672">//</span> heads
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>h <span style="color:#f92672">=</span> heads
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>q_linear <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(d_model, d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>v_linear <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(d_model, d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>k_linear <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(d_model, d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>dropout <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>out <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(d_model, d_model)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, q, k, v, mask<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>):
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        bs <span style="color:#f92672">=</span> q<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># perform linear operation and split into h heads</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        k <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>k_linear(k)<span style="color:#f92672">.</span>view(bs, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, self<span style="color:#f92672">.</span>h, self<span style="color:#f92672">.</span>d_k)
+</span></span><span style="display:flex;"><span>        q <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>q_linear(q)<span style="color:#f92672">.</span>view(bs, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, self<span style="color:#f92672">.</span>h, self<span style="color:#f92672">.</span>d_k)
+</span></span><span style="display:flex;"><span>        v <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>v_linear(v)<span style="color:#f92672">.</span>view(bs, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, self<span style="color:#f92672">.</span>h, self<span style="color:#f92672">.</span>d_k)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># transpose to get dimensions bs * h * sl * d_model</span>
+</span></span><span style="display:flex;"><span>       
+</span></span><span style="display:flex;"><span>        k <span style="color:#f92672">=</span> k<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>        q <span style="color:#f92672">=</span> q<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>        v <span style="color:#f92672">=</span> v<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	      <span style="color:#75715e"># calculate attention using function we will define next</span>
+</span></span><span style="display:flex;"><span>        scores <span style="color:#f92672">=</span> attention(q, k, v, self<span style="color:#f92672">.</span>d_k, mask, self<span style="color:#f92672">.</span>dropout)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># concatenate heads and put through final linear layer</span>
+</span></span><span style="display:flex;"><span>        concat <span style="color:#f92672">=</span> scores<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>)<span style="color:#f92672">.</span>contiguous()\
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">.</span>view(bs, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, self<span style="color:#f92672">.</span>d_model)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        output <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>out(concat)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> output
+</span></span></code></pre></div><h3 id="15-calculating-attention">1.5 Calculating Attention</h3>
 
 
 <div class="box">
@@ -1058,7 +1045,6 @@ target_msk <span style="color:#f92672">=</span> target_msk <span style="color:#f
 
 
 
-
 <div class="box">
 <figure  itemprop="associatedMedia"
   itemscope itemtype="http://schema.org/ImageObject" >
@@ -1072,48 +1058,40 @@ target_msk <span style="color:#f92672">=</span> target_msk <span style="color:#f
   </figure>
 </div>
 
-
 <p>上图中的每个箭头都表示公式中的一次运算操作。</p>
-
 <p>首先我们计算$Q$乘以$K$的转置，然后除以$d_k$的开方做缩放操作。</p>
-
 <p>公式中没有体现的一个操作是mask操作，在执行softmax操作之前，我们先使用mask来将那些无关的注意力值置零。除此之外还要在Softmax之后执行dropout操作，最后将注意力的计算结果与$V$进行点乘操作。</p>
-
 <p>以下是attention模块的代码：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">attention</span>(q, k, v, d_k, mask<span style="color:#f92672">=</span>None, dropout<span style="color:#f92672">=</span>None):
-    
-    scores <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>matmul(q, k<span style="color:#f92672">.</span>transpose(<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)) <span style="color:#f92672">/</span>  math<span style="color:#f92672">.</span>sqrt(d_k)
-
-    <span style="color:#66d9ef">if</span> mask <span style="color:#f92672">is</span> <span style="color:#f92672">not</span> None:
-        mask <span style="color:#f92672">=</span> mask<span style="color:#f92672">.</span>unsqueeze(<span style="color:#ae81ff">1</span>)
-        scores <span style="color:#f92672">=</span> scores<span style="color:#f92672">.</span>masked_fill(mask <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1e9</span>)
-    scores <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>softmax(scores, dim<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>)
-    
-    <span style="color:#66d9ef">if</span> dropout <span style="color:#f92672">is</span> <span style="color:#f92672">not</span> None:
-        scores <span style="color:#f92672">=</span> dropout(scores)
-        
-    output <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>matmul(scores, v)
-    <span style="color:#66d9ef">return</span> output</code></pre></div>
-<h3 id="16-the-feedforward-network">1.6 The Feed-Forward Network</h3>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">attention</span>(q, k, v, d_k, mask<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, dropout<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>):
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    scores <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>matmul(q, k<span style="color:#f92672">.</span>transpose(<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)) <span style="color:#f92672">/</span>  math<span style="color:#f92672">.</span>sqrt(d_k)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> mask <span style="color:#f92672">is</span> <span style="color:#f92672">not</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        mask <span style="color:#f92672">=</span> mask<span style="color:#f92672">.</span>unsqueeze(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        scores <span style="color:#f92672">=</span> scores<span style="color:#f92672">.</span>masked_fill(mask <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1e9</span>)
+</span></span><span style="display:flex;"><span>	scores <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>softmax(scores, dim<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> dropout <span style="color:#f92672">is</span> <span style="color:#f92672">not</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        scores <span style="color:#f92672">=</span> dropout(scores)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>    output <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>matmul(scores, v)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> output
+</span></span></code></pre></div><h3 id="16-the-feed-forward-network">1.6 The Feed-Forward Network</h3>
 <p>终于到了最后前向传播模块了，也十分简单，就是两层全连接网络，同时使用了relu和dropout：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">FeedForward</span>(nn<span style="color:#f92672">.</span>Module):
-    <span style="color:#66d9ef">def</span> __init__(self, d_model, d_ff<span style="color:#f92672">=</span><span style="color:#ae81ff">2048</span>, dropout <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.1</span>):
-        super()<span style="color:#f92672">.</span>__init__() 
-        <span style="color:#75715e"># We set d_ff as a default to 2048</span>
-        self<span style="color:#f92672">.</span>linear_1 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(d_model, d_ff)
-        self<span style="color:#f92672">.</span>dropout <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
-        self<span style="color:#f92672">.</span>linear_2 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(d_ff, d_model)
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
-        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>dropout(F<span style="color:#f92672">.</span>relu(self<span style="color:#f92672">.</span>linear_1(x)))
-        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>linear_2(x)
-        <span style="color:#66d9ef">return</span> x</code></pre></div>
-<p>前向传播模块主要用于加深网络，对attention模块的输入在进行特征提取和融合操作。</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">FeedForward</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, d_model, d_ff<span style="color:#f92672">=</span><span style="color:#ae81ff">2048</span>, dropout <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.1</span>):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__() 
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># We set d_ff as a default to 2048</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>linear_1 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(d_model, d_ff)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>dropout <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>linear_2 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(d_ff, d_model)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>dropout(F<span style="color:#f92672">.</span>relu(self<span style="color:#f92672">.</span>linear_1(x)))
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>linear_2(x)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span></code></pre></div><p>前向传播模块主要用于加深网络，对attention模块的输入在进行特征提取和融合操作。</p>
 <h3 id="17-normalization">1.7 Normalization</h3>
-
 <p>在神经网络中Normalization十分常用，主要用来避免输出变化过大，进而加速稳定训练。</p>
-
 
 
 <div class="box">
@@ -1126,25 +1104,22 @@ target_msk <span style="color:#f92672">=</span> target_msk <span style="color:#f
   </figure>
 </div>
 
-
 <p>我们在每一层的输出部分都使用normalization操作：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Norm</span>(nn<span style="color:#f92672">.</span>Module):
-    <span style="color:#66d9ef">def</span> __init__(self, d_model, eps <span style="color:#f92672">=</span> <span style="color:#ae81ff">1e-6</span>):
-        super()<span style="color:#f92672">.</span>__init__()
-    
-        self<span style="color:#f92672">.</span>size <span style="color:#f92672">=</span> d_model
-        <span style="color:#75715e"># create two learnable parameters to calibrate normalisation</span>
-        self<span style="color:#f92672">.</span>alpha <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Parameter(torch<span style="color:#f92672">.</span>ones(self<span style="color:#f92672">.</span>size))
-        self<span style="color:#f92672">.</span>bias <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Parameter(torch<span style="color:#f92672">.</span>zeros(self<span style="color:#f92672">.</span>size))
-        self<span style="color:#f92672">.</span>eps <span style="color:#f92672">=</span> eps
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
-        norm <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>alpha <span style="color:#f92672">*</span> (x <span style="color:#f92672">-</span> x<span style="color:#f92672">.</span>mean(dim<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>, keepdim<span style="color:#f92672">=</span>True)) \
-        <span style="color:#f92672">/</span> (x<span style="color:#f92672">.</span>std(dim<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>, keepdim<span style="color:#f92672">=</span>True) <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>eps) <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>bias
-        <span style="color:#66d9ef">return</span> norm</code></pre></div>
-<h3 id="18-putting-it-all-together">1.8 Putting it all together</h3>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Norm</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, d_model, eps <span style="color:#f92672">=</span> <span style="color:#ae81ff">1e-6</span>):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>size <span style="color:#f92672">=</span> d_model
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># create two learnable parameters to calibrate normalisation</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>alpha <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Parameter(torch<span style="color:#f92672">.</span>ones(self<span style="color:#f92672">.</span>size))
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>bias <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Parameter(torch<span style="color:#f92672">.</span>zeros(self<span style="color:#f92672">.</span>size))
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>eps <span style="color:#f92672">=</span> eps
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        norm <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>alpha <span style="color:#f92672">*</span> (x <span style="color:#f92672">-</span> x<span style="color:#f92672">.</span>mean(dim<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>, keepdim<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)) \
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">/</span> (x<span style="color:#f92672">.</span>std(dim<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>, keepdim<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>) <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>eps) <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>bias
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> norm
+</span></span></code></pre></div><h3 id="18-putting-it-all-together">1.8 Putting it all together</h3>
 <p>把以上的部分组合在一起，我们来看整体的框架：</p>
-
 
 
 <div class="box">
@@ -1157,163 +1132,160 @@ target_msk <span style="color:#f92672">=</span> target_msk <span style="color:#f
   </figure>
 </div>
 
-
-<p><strong>最后一个变量</strong>：我们看到在encoder和decoder旁边都有一个'Nx'变量。实际上，上图中的encoder和decoder都只是表示一层，而N表示一共有N层encoder和decoder。比如说N=6，那么输入就需要经过6层上图中的encoder，然后再经过6层上图中的decoder。我们在下面的代码中展示如何构建单层encoder和decoder：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e"># build an encoder layer with one multi-head attention layer and one # feed-forward layer</span>
-<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">EncoderLayer</span>(nn<span style="color:#f92672">.</span>Module):
-    <span style="color:#66d9ef">def</span> __init__(self, d_model, heads, dropout <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.1</span>):
-        super()<span style="color:#f92672">.</span>__init__()
-        self<span style="color:#f92672">.</span>norm_1 <span style="color:#f92672">=</span> Norm(d_model)
-        self<span style="color:#f92672">.</span>norm_2 <span style="color:#f92672">=</span> Norm(d_model)
-        self<span style="color:#f92672">.</span>attn <span style="color:#f92672">=</span> MultiHeadAttention(heads, d_model)
-        self<span style="color:#f92672">.</span>ff <span style="color:#f92672">=</span> FeedForward(d_model)
-        self<span style="color:#f92672">.</span>dropout_1 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
-        self<span style="color:#f92672">.</span>dropout_2 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
-        
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x, mask):
-        x2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>norm_1(x)
-        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>dropout_1(self<span style="color:#f92672">.</span>attn(x2,x2,x2,mask))
-        x2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>norm_2(x)
-        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>dropout_2(self<span style="color:#f92672">.</span>ff(x2))
-        <span style="color:#66d9ef">return</span> x
-    
-<span style="color:#75715e"># build a decoder layer with two multi-head attention layers and</span>
-<span style="color:#75715e"># one feed-forward layer</span>
-<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">DecoderLayer</span>(nn<span style="color:#f92672">.</span>Module):
-    <span style="color:#66d9ef">def</span> __init__(self, d_model, heads, dropout<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>):
-        super()<span style="color:#f92672">.</span>__init__()
-        self<span style="color:#f92672">.</span>norm_1 <span style="color:#f92672">=</span> Norm(d_model)
-        self<span style="color:#f92672">.</span>norm_2 <span style="color:#f92672">=</span> Norm(d_model)
-        self<span style="color:#f92672">.</span>norm_3 <span style="color:#f92672">=</span> Norm(d_model)
-        
-        self<span style="color:#f92672">.</span>dropout_1 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
-        self<span style="color:#f92672">.</span>dropout_2 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
-        self<span style="color:#f92672">.</span>dropout_3 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
-        
-        self<span style="color:#f92672">.</span>attn_1 <span style="color:#f92672">=</span> MultiHeadAttention(heads, d_model)
-        self<span style="color:#f92672">.</span>attn_2 <span style="color:#f92672">=</span> MultiHeadAttention(heads, d_model)
-        self<span style="color:#f92672">.</span>ff <span style="color:#f92672">=</span> FeedForward(d_model)<span style="color:#f92672">.</span>cuda()
-<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x, e_outputs, src_mask, trg_mask):
-        x2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>norm_1(x)
-        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>dropout_1(self<span style="color:#f92672">.</span>attn_1(x2, x2, x2, trg_mask))
-        x2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>norm_2(x)
-        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>dropout_2(self<span style="color:#f92672">.</span>attn_2(x2, e_outputs, e_outputs,
-        src_mask))
-        x2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>norm_3(x)
-        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>dropout_3(self<span style="color:#f92672">.</span>ff(x2))
-        <span style="color:#66d9ef">return</span> x
-<span style="color:#75715e"># We can then build a convenient cloning function that can generate multiple layers:</span>
-<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_clones</span>(module, N):
-    <span style="color:#66d9ef">return</span> nn<span style="color:#f92672">.</span>ModuleList([copy<span style="color:#f92672">.</span>deepcopy(module) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(N)])</code></pre></div>
-<p>我们现在可以构建真正的encoder和decoder了：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Encoder</span>(nn<span style="color:#f92672">.</span>Module):
-    <span style="color:#66d9ef">def</span> __init__(self, vocab_size, d_model, N, heads):
-        super()<span style="color:#f92672">.</span>__init__()
-        self<span style="color:#f92672">.</span>N <span style="color:#f92672">=</span> N
-        self<span style="color:#f92672">.</span>embed <span style="color:#f92672">=</span> Embedder(vocab_size, d_model)
-        self<span style="color:#f92672">.</span>pe <span style="color:#f92672">=</span> PositionalEncoder(d_model)
-        self<span style="color:#f92672">.</span>layers <span style="color:#f92672">=</span> get_clones(EncoderLayer(d_model, heads), N)
-        self<span style="color:#f92672">.</span>norm <span style="color:#f92672">=</span> Norm(d_model)
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, src, mask):
-        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>embed(src)
-        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>pe(x)
-        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(N):
-            x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>layers[i](x, mask)
-        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>norm(x)
-    
-<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Decoder</span>(nn<span style="color:#f92672">.</span>Module):
-    <span style="color:#66d9ef">def</span> __init__(self, vocab_size, d_model, N, heads):
-        super()<span style="color:#f92672">.</span>__init__()
-        self<span style="color:#f92672">.</span>N <span style="color:#f92672">=</span> N
-        self<span style="color:#f92672">.</span>embed <span style="color:#f92672">=</span> Embedder(vocab_size, d_model)
-        self<span style="color:#f92672">.</span>pe <span style="color:#f92672">=</span> PositionalEncoder(d_model)
-        self<span style="color:#f92672">.</span>layers <span style="color:#f92672">=</span> get_clones(DecoderLayer(d_model, heads), N)
-        self<span style="color:#f92672">.</span>norm <span style="color:#f92672">=</span> Norm(d_model)
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, trg, e_outputs, src_mask, trg_mask):
-        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>embed(trg)
-        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>pe(x)
-        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(self<span style="color:#f92672">.</span>N):
-            x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>layers[i](x, e_outputs, src_mask, trg_mask)
-        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>norm(x)</code></pre></div>
-<p>最后，得到Transformer：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Transformer</span>(nn<span style="color:#f92672">.</span>Module):
-    <span style="color:#66d9ef">def</span> __init__(self, src_vocab, trg_vocab, d_model, N, heads):
-        super()<span style="color:#f92672">.</span>__init__()
-        self<span style="color:#f92672">.</span>encoder <span style="color:#f92672">=</span> Encoder(src_vocab, d_model, N, heads)
-        self<span style="color:#f92672">.</span>decoder <span style="color:#f92672">=</span> Decoder(trg_vocab, d_model, N, heads)
-        self<span style="color:#f92672">.</span>out <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(d_model, trg_vocab)
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, src, trg, src_mask, trg_mask):
-        e_outputs <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>encoder(src, src_mask)
-        d_output <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>decoder(trg, e_outputs, src_mask, trg_mask)
-        output <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>out(d_output)
-        <span style="color:#66d9ef">return</span> output
-<span style="color:#75715e"># we don&#39;t perform softmax on the output as this will be handled </span>
-<span style="color:#75715e"># automatically by our loss function</span></code></pre></div>
-<h2 id="2-训练模型">2 训练模型</h2>
-
+<p><strong>最后一个变量</strong>：我们看到在encoder和decoder旁边都有一个&rsquo;Nx&rsquo;变量。实际上，上图中的encoder和decoder都只是表示一层，而N表示一共有N层encoder和decoder。比如说N=6，那么输入就需要经过6层上图中的encoder，然后再经过6层上图中的decoder。我们在下面的代码中展示如何构建单层encoder和decoder：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#75715e"># build an encoder layer with one multi-head attention layer and one # feed-forward layer</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">EncoderLayer</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, d_model, heads, dropout <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.1</span>):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>norm_1 <span style="color:#f92672">=</span> Norm(d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>norm_2 <span style="color:#f92672">=</span> Norm(d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>attn <span style="color:#f92672">=</span> MultiHeadAttention(heads, d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>ff <span style="color:#f92672">=</span> FeedForward(d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>dropout_1 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>dropout_2 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x, mask):
+</span></span><span style="display:flex;"><span>        x2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>norm_1(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>dropout_1(self<span style="color:#f92672">.</span>attn(x2,x2,x2,mask))
+</span></span><span style="display:flex;"><span>        x2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>norm_2(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>dropout_2(self<span style="color:#f92672">.</span>ff(x2))
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># build a decoder layer with two multi-head attention layers and</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># one feed-forward layer</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">DecoderLayer</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, d_model, heads, dropout<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>norm_1 <span style="color:#f92672">=</span> Norm(d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>norm_2 <span style="color:#f92672">=</span> Norm(d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>norm_3 <span style="color:#f92672">=</span> Norm(d_model)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>dropout_1 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>dropout_2 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>dropout_3 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>attn_1 <span style="color:#f92672">=</span> MultiHeadAttention(heads, d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>attn_2 <span style="color:#f92672">=</span> MultiHeadAttention(heads, d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>ff <span style="color:#f92672">=</span> FeedForward(d_model)<span style="color:#f92672">.</span>cuda()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x, e_outputs, src_mask, trg_mask):
+</span></span><span style="display:flex;"><span>        x2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>norm_1(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>dropout_1(self<span style="color:#f92672">.</span>attn_1(x2, x2, x2, trg_mask))
+</span></span><span style="display:flex;"><span>        x2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>norm_2(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>dropout_2(self<span style="color:#f92672">.</span>attn_2(x2, e_outputs, e_outputs,
+</span></span><span style="display:flex;"><span>        src_mask))
+</span></span><span style="display:flex;"><span>        x2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>norm_3(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>dropout_3(self<span style="color:#f92672">.</span>ff(x2))
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># We can then build a convenient cloning function that can generate multiple layers:</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_clones</span>(module, N):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> nn<span style="color:#f92672">.</span>ModuleList([copy<span style="color:#f92672">.</span>deepcopy(module) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(N)])
+</span></span></code></pre></div><p>我们现在可以构建真正的encoder和decoder了：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Encoder</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, vocab_size, d_model, N, heads):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>N <span style="color:#f92672">=</span> N
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>embed <span style="color:#f92672">=</span> Embedder(vocab_size, d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>pe <span style="color:#f92672">=</span> PositionalEncoder(d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>layers <span style="color:#f92672">=</span> get_clones(EncoderLayer(d_model, heads), N)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>norm <span style="color:#f92672">=</span> Norm(d_model)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, src, mask):
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>embed(src)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>pe(x)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(N):
+</span></span><span style="display:flex;"><span>            x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>layers[i](x, mask)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>norm(x)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Decoder</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, vocab_size, d_model, N, heads):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>N <span style="color:#f92672">=</span> N
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>embed <span style="color:#f92672">=</span> Embedder(vocab_size, d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>pe <span style="color:#f92672">=</span> PositionalEncoder(d_model)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>layers <span style="color:#f92672">=</span> get_clones(DecoderLayer(d_model, heads), N)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>norm <span style="color:#f92672">=</span> Norm(d_model)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, trg, e_outputs, src_mask, trg_mask):
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>embed(trg)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>pe(x)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(self<span style="color:#f92672">.</span>N):
+</span></span><span style="display:flex;"><span>            x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>layers[i](x, e_outputs, src_mask, trg_mask)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>norm(x)
+</span></span></code></pre></div><p>最后，得到Transformer：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Transformer</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, src_vocab, trg_vocab, d_model, N, heads):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>encoder <span style="color:#f92672">=</span> Encoder(src_vocab, d_model, N, heads)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>decoder <span style="color:#f92672">=</span> Decoder(trg_vocab, d_model, N, heads)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>out <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(d_model, trg_vocab)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, src, trg, src_mask, trg_mask):
+</span></span><span style="display:flex;"><span>        e_outputs <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>encoder(src, src_mask)
+</span></span><span style="display:flex;"><span>        d_output <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>decoder(trg, e_outputs, src_mask, trg_mask)
+</span></span><span style="display:flex;"><span>        output <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>out(d_output)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> output
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># we don&#39;t perform softmax on the output as this will be handled </span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># automatically by our loss function</span>
+</span></span></code></pre></div><h2 id="2-训练模型">2 训练模型</h2>
 <p>构建好了模型，剩下的就是训练过程了，我们使用EuroParl数据集来训练。</p>
-
 <p>我们首先设置一些超参数：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">d_model <span style="color:#f92672">=</span> <span style="color:#ae81ff">512</span>
-heads <span style="color:#f92672">=</span> <span style="color:#ae81ff">8</span>
-N <span style="color:#f92672">=</span> <span style="color:#ae81ff">6</span>
-src_vocab <span style="color:#f92672">=</span> len(EN_TEXT<span style="color:#f92672">.</span>vocab)
-trg_vocab <span style="color:#f92672">=</span> len(FR_TEXT<span style="color:#f92672">.</span>vocab)
-model <span style="color:#f92672">=</span> Transformer(src_vocab, trg_vocab, d_model, N, heads)
-<span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> model<span style="color:#f92672">.</span>parameters():
-    <span style="color:#66d9ef">if</span> p<span style="color:#f92672">.</span>dim() <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">1</span>:
-        nn<span style="color:#f92672">.</span>init<span style="color:#f92672">.</span>xavier_uniform_(p)
-<span style="color:#75715e"># this code is very important! It initialises the parameters with a</span>
-<span style="color:#75715e"># range of values that stops the signal fading or getting too big.</span>
-<span style="color:#75715e"># See this blog for a mathematical explanation.</span>
-optim <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>optim<span style="color:#f92672">.</span>Adam(model<span style="color:#f92672">.</span>parameters(), lr<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0001</span>, betas<span style="color:#f92672">=</span>(<span style="color:#ae81ff">0.9</span>, <span style="color:#ae81ff">0.98</span>), eps<span style="color:#f92672">=</span><span style="color:#ae81ff">1e-9</span>)</code></pre></div>
-<p>现在我们可以开始训练了：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">train_model</span>(epochs, print_every<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>):
-    
-    model<span style="color:#f92672">.</span>train()
-    
-    start <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time()
-    temp <span style="color:#f92672">=</span> start
-    
-    total_loss <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
-    
-    <span style="color:#66d9ef">for</span> epoch <span style="color:#f92672">in</span> range(epochs):
-       
-        <span style="color:#66d9ef">for</span> i, batch <span style="color:#f92672">in</span> enumerate(train_iter):
-            src <span style="color:#f92672">=</span> batch<span style="color:#f92672">.</span>English<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1</span>)
-            trg <span style="color:#f92672">=</span> batch<span style="color:#f92672">.</span>French<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1</span>)
-            <span style="color:#75715e"># the French sentence we input has all words except</span>
-            <span style="color:#75715e"># the last, as it is using each word to predict the next</span>
-            
-            trg_input <span style="color:#f92672">=</span> trg[:, :<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]
-            
-            <span style="color:#75715e"># the words we are trying to predict</span>
-            
-            targets <span style="color:#f92672">=</span> trg[:, <span style="color:#ae81ff">1</span>:]<span style="color:#f92672">.</span>contiguous()<span style="color:#f92672">.</span>view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
-            
-            <span style="color:#75715e"># create function to make masks using mask code above</span>
-            
-            src_mask, trg_mask <span style="color:#f92672">=</span> create_masks(src, trg_input)
-            
-            preds <span style="color:#f92672">=</span> model(src, trg_input, src_mask, trg_mask)
-            
-            optim<span style="color:#f92672">.</span>zero_grad()
-            
-            loss <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>cross_entropy(preds<span style="color:#f92672">.</span>view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, preds<span style="color:#f92672">.</span>size(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)),
-            results, ignore_index<span style="color:#f92672">=</span>target_pad)
-            loss<span style="color:#f92672">.</span>backward()
-            optim<span style="color:#f92672">.</span>step()
-            
-            total_loss <span style="color:#f92672">+=</span> loss<span style="color:#f92672">.</span>data[<span style="color:#ae81ff">0</span>]
-            <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">%</span> print_every <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
-                loss_avg <span style="color:#f92672">=</span> total_loss <span style="color:#f92672">/</span> print_every
-                <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;time = </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">m, epoch </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">, iter = </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">, loss = </span><span style="color:#e6db74">%.3f</span><span style="color:#e6db74">,</span>
-                <span style="color:#f92672">%</span>ds per <span style="color:#f92672">%</span>d iters<span style="color:#e6db74">&#34; % ((time.time() - start) // 60,</span>
-                epoch <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, loss_avg, time<span style="color:#f92672">.</span>time() <span style="color:#f92672">-</span> temp,
-                print_every))
-                total_loss <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
-                temp <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time()</code></pre></div>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>d_model <span style="color:#f92672">=</span> <span style="color:#ae81ff">512</span>
+</span></span><span style="display:flex;"><span>heads <span style="color:#f92672">=</span> <span style="color:#ae81ff">8</span>
+</span></span><span style="display:flex;"><span>N <span style="color:#f92672">=</span> <span style="color:#ae81ff">6</span>
+</span></span><span style="display:flex;"><span>src_vocab <span style="color:#f92672">=</span> len(EN_TEXT<span style="color:#f92672">.</span>vocab)
+</span></span><span style="display:flex;"><span>trg_vocab <span style="color:#f92672">=</span> len(FR_TEXT<span style="color:#f92672">.</span>vocab)
+</span></span><span style="display:flex;"><span>model <span style="color:#f92672">=</span> Transformer(src_vocab, trg_vocab, d_model, N, heads)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> model<span style="color:#f92672">.</span>parameters():
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> p<span style="color:#f92672">.</span>dim() <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">1</span>:
+</span></span><span style="display:flex;"><span>        nn<span style="color:#f92672">.</span>init<span style="color:#f92672">.</span>xavier_uniform_(p)
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># this code is very important! It initialises the parameters with a</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># range of values that stops the signal fading or getting too big.</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># See this blog for a mathematical explanation.</span>
+</span></span><span style="display:flex;"><span>optim <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>optim<span style="color:#f92672">.</span>Adam(model<span style="color:#f92672">.</span>parameters(), lr<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0001</span>, betas<span style="color:#f92672">=</span>(<span style="color:#ae81ff">0.9</span>, <span style="color:#ae81ff">0.98</span>), eps<span style="color:#f92672">=</span><span style="color:#ae81ff">1e-9</span>)
+</span></span></code></pre></div><p>现在我们可以开始训练了：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">train_model</span>(epochs, print_every<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>):
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    model<span style="color:#f92672">.</span>train()
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    start <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time()
+</span></span><span style="display:flex;"><span>    temp <span style="color:#f92672">=</span> start
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    total_loss <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> epoch <span style="color:#f92672">in</span> range(epochs):
+</span></span><span style="display:flex;"><span>       
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> i, batch <span style="color:#f92672">in</span> enumerate(train_iter):
+</span></span><span style="display:flex;"><span>            src <span style="color:#f92672">=</span> batch<span style="color:#f92672">.</span>English<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>            trg <span style="color:#f92672">=</span> batch<span style="color:#f92672">.</span>French<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># the French sentence we input has all words except</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># the last, as it is using each word to predict the next</span>
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            trg_input <span style="color:#f92672">=</span> trg[:, :<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># the words we are trying to predict</span>
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            targets <span style="color:#f92672">=</span> trg[:, <span style="color:#ae81ff">1</span>:]<span style="color:#f92672">.</span>contiguous()<span style="color:#f92672">.</span>view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># create function to make masks using mask code above</span>
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            src_mask, trg_mask <span style="color:#f92672">=</span> create_masks(src, trg_input)
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            preds <span style="color:#f92672">=</span> model(src, trg_input, src_mask, trg_mask)
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            optim<span style="color:#f92672">.</span>zero_grad()
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            loss <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>cross_entropy(preds<span style="color:#f92672">.</span>view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, preds<span style="color:#f92672">.</span>size(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)),
+</span></span><span style="display:flex;"><span>            results, ignore_index<span style="color:#f92672">=</span>target_pad)
+</span></span><span style="display:flex;"><span>            loss<span style="color:#f92672">.</span>backward()
+</span></span><span style="display:flex;"><span>            optim<span style="color:#f92672">.</span>step()
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            total_loss <span style="color:#f92672">+=</span> loss<span style="color:#f92672">.</span>data[<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">%</span> print_every <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+</span></span><span style="display:flex;"><span>                loss_avg <span style="color:#f92672">=</span> total_loss <span style="color:#f92672">/</span> print_every
+</span></span><span style="display:flex;"><span>                print(<span style="color:#e6db74">&#34;time = </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">m, epoch </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">, iter = </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">, loss = </span><span style="color:#e6db74">%.3f</span><span style="color:#e6db74">,</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">%</span>ds per <span style="color:#f92672">%</span>d iters<span style="color:#e6db74">&#34; % ((time.time() - start) // 60,</span>
+</span></span><span style="display:flex;"><span>                epoch <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, loss_avg, time<span style="color:#f92672">.</span>time() <span style="color:#f92672">-</span> temp,
+</span></span><span style="display:flex;"><span>                print_every))
+</span></span><span style="display:flex;"><span>                total_loss <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>                temp <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time()
+</span></span></code></pre></div>
 
 <div class="box">
 <figure  itemprop="associatedMedia"
@@ -1325,43 +1297,40 @@ optim <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</s
   </figure>
 </div>
 
-
 <h2 id="3-测试模型">3 测试模型</h2>
-
 <p>我们可以使用下面的代码来测试我们的模型效果。</p>
-
-<p>我们首先对整个英文句子编码，然后向decoder输入token '<sos>'以及encoder的输出，然后decoder开始预测下一个词。然后我们将输出的词append到'<sos>'后组成新的向量输入decoder，预测出第二个词。重复以上过程，直到decoder输出'<eos>'表示翻译过程结束。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">translate</span>(model, src, max_len <span style="color:#f92672">=</span> <span style="color:#ae81ff">80</span>, custom_string<span style="color:#f92672">=</span>False):
-    
-    model<span style="color:#f92672">.</span>eval()
-    <span style="color:#66d9ef">if</span> custom_sentence <span style="color:#f92672">==</span> True:
-            src <span style="color:#f92672">=</span> tokenize_en(src)
-            sentence<span style="color:#f92672">=</span>\
-            Variable(torch<span style="color:#f92672">.</span>LongTensor([[EN_TEXT<span style="color:#f92672">.</span>vocab<span style="color:#f92672">.</span>stoi[tok] <span style="color:#66d9ef">for</span> tok
-            <span style="color:#f92672">in</span> sentence]]))<span style="color:#f92672">.</span>cuda()
-    src_mask <span style="color:#f92672">=</span> (src <span style="color:#f92672">!=</span> input_pad)<span style="color:#f92672">.</span>unsqueeze(<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>)
-        e_outputs <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>encoder(src, src_mask)
-
-        outputs <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>zeros(max_len)<span style="color:#f92672">.</span>type_as(src<span style="color:#f92672">.</span>data)
-        outputs[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>LongTensor([FR_TEXT<span style="color:#f92672">.</span>vocab<span style="color:#f92672">.</span>stoi[<span style="color:#e6db74">&#39;&lt;sos&gt;&#39;</span>]])
-            
-    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1</span>, max_len):    
-            trg_mask <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>triu(np<span style="color:#f92672">.</span>ones((<span style="color:#ae81ff">1</span>, i, i),
-            k<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>astype(<span style="color:#e6db74">&#39;uint8&#39;</span>)
-            trg_mask<span style="color:#f92672">=</span> Variable(torch<span style="color:#f92672">.</span>from_numpy(trg_mask) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)<span style="color:#f92672">.</span>cuda()
-
-            out <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>out(model<span style="color:#f92672">.</span>decoder(outputs[:i]<span style="color:#f92672">.</span>unsqueeze(<span style="color:#ae81ff">0</span>),
-            e_outputs, src_mask, trg_mask))
-            out <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>softmax(out, dim<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>)
-            val, ix <span style="color:#f92672">=</span> out[:, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]<span style="color:#f92672">.</span>data<span style="color:#f92672">.</span>topk(<span style="color:#ae81ff">1</span>)
-
-            outputs[i] <span style="color:#f92672">=</span> ix[<span style="color:#ae81ff">0</span>][<span style="color:#ae81ff">0</span>]
-            <span style="color:#66d9ef">if</span> ix[<span style="color:#ae81ff">0</span>][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">==</span> FR_TEXT<span style="color:#f92672">.</span>vocab<span style="color:#f92672">.</span>stoi[<span style="color:#e6db74">&#39;&lt;eos&gt;&#39;</span>]:
-                <span style="color:#66d9ef">break</span>
-    <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#39; &#39;</span><span style="color:#f92672">.</span>join(
-        [FR_TEXT<span style="color:#f92672">.</span>vocab<span style="color:#f92672">.</span>itos[ix] <span style="color:#66d9ef">for</span> ix <span style="color:#f92672">in</span> outputs[:i]]
-        )</code></pre></div>
-<p>完整的代码放在了我的<a href="https://github.com/yshane-ai/yangxx_ML/tree/main/Basic/Transformer">Github</a>，你也可以按照以上流程，自己动手实现一个Transformer，快动手试试吧！</p>
+<p>我们首先对整个英文句子编码，然后向decoder输入token &lsquo;<!-- raw HTML omitted -->&lsquo;以及encoder的输出，然后decoder开始预测下一个词。然后我们将输出的词append到&rsquo;<!-- raw HTML omitted -->&lsquo;后组成新的向量输入decoder，预测出第二个词。重复以上过程，直到decoder输出&rsquo;<!-- raw HTML omitted -->&lsquo;表示翻译过程结束。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">translate</span>(model, src, max_len <span style="color:#f92672">=</span> <span style="color:#ae81ff">80</span>, custom_string<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>):
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    model<span style="color:#f92672">.</span>eval()
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> custom_sentence <span style="color:#f92672">==</span> <span style="color:#66d9ef">True</span>:
+</span></span><span style="display:flex;"><span>            src <span style="color:#f92672">=</span> tokenize_en(src)
+</span></span><span style="display:flex;"><span>            sentence<span style="color:#f92672">=</span>\
+</span></span><span style="display:flex;"><span>            Variable(torch<span style="color:#f92672">.</span>LongTensor([[EN_TEXT<span style="color:#f92672">.</span>vocab<span style="color:#f92672">.</span>stoi[tok] <span style="color:#66d9ef">for</span> tok
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">in</span> sentence]]))<span style="color:#f92672">.</span>cuda()
+</span></span><span style="display:flex;"><span>    src_mask <span style="color:#f92672">=</span> (src <span style="color:#f92672">!=</span> input_pad)<span style="color:#f92672">.</span>unsqueeze(<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>        e_outputs <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>encoder(src, src_mask)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        outputs <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>zeros(max_len)<span style="color:#f92672">.</span>type_as(src<span style="color:#f92672">.</span>data)
+</span></span><span style="display:flex;"><span>        outputs[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>LongTensor([FR_TEXT<span style="color:#f92672">.</span>vocab<span style="color:#f92672">.</span>stoi[<span style="color:#e6db74">&#39;&lt;sos&gt;&#39;</span>]])
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1</span>, max_len):    
+</span></span><span style="display:flex;"><span>            trg_mask <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>triu(np<span style="color:#f92672">.</span>ones((<span style="color:#ae81ff">1</span>, i, i),
+</span></span><span style="display:flex;"><span>            k<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>astype(<span style="color:#e6db74">&#39;uint8&#39;</span>)
+</span></span><span style="display:flex;"><span>            trg_mask<span style="color:#f92672">=</span> Variable(torch<span style="color:#f92672">.</span>from_numpy(trg_mask) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)<span style="color:#f92672">.</span>cuda()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            out <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>out(model<span style="color:#f92672">.</span>decoder(outputs[:i]<span style="color:#f92672">.</span>unsqueeze(<span style="color:#ae81ff">0</span>),
+</span></span><span style="display:flex;"><span>            e_outputs, src_mask, trg_mask))
+</span></span><span style="display:flex;"><span>            out <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>softmax(out, dim<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>            val, ix <span style="color:#f92672">=</span> out[:, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]<span style="color:#f92672">.</span>data<span style="color:#f92672">.</span>topk(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            outputs[i] <span style="color:#f92672">=</span> ix[<span style="color:#ae81ff">0</span>][<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> ix[<span style="color:#ae81ff">0</span>][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">==</span> FR_TEXT<span style="color:#f92672">.</span>vocab<span style="color:#f92672">.</span>stoi[<span style="color:#e6db74">&#39;&lt;eos&gt;&#39;</span>]:
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">break</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#39; &#39;</span><span style="color:#f92672">.</span>join(
+</span></span><span style="display:flex;"><span>        [FR_TEXT<span style="color:#f92672">.</span>vocab<span style="color:#f92672">.</span>itos[ix] <span style="color:#66d9ef">for</span> ix <span style="color:#f92672">in</span> outputs[:i]]
+</span></span><span style="display:flex;"><span>        )
+</span></span></code></pre></div><p>完整的代码放在了我的<a href="https://github.com/yshane-ai/yangxx_ML/tree/main/Basic/Transformer">Github</a>，你也可以按照以上流程，自己动手实现一个Transformer，快动手试试吧！</p>
 
     </div>
 

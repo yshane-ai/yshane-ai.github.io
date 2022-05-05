@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/5-rl%E6%80%BB%E7%BB%93/" />
@@ -62,19 +62,15 @@
 <meta property="og:title" content="DRL总结：DQN，RainBow，DDPG，PPO和A3C等" />
 <meta property="og:description" content="下面我会按照这种格式去介绍算法： 这里会写上深度强化学习的子领域 XXX——算法的全称或别称顾名思义地解释此算法，并补充其他特点，帮助使用者判断" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/5-rl%E6%80%BB%E7%BB%93/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/5-rl%E6%80%BB%E7%BB%93/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-09-10T16:01:23+08:00" />
 <meta property="article:modified_time" content="2021-09-10T16:01:23+08:00" />
+
 <meta itemprop="name" content="DRL总结：DQN，RainBow，DDPG，PPO和A3C等">
-<meta itemprop="description" content="下面我会按照这种格式去介绍算法： 这里会写上深度强化学习的子领域 XXX——算法的全称或别称顾名思义地解释此算法，并补充其他特点，帮助使用者判断">
-<meta itemprop="datePublished" content="2021-09-10T16:01:23+08:00" />
+<meta itemprop="description" content="下面我会按照这种格式去介绍算法： 这里会写上深度强化学习的子领域 XXX——算法的全称或别称顾名思义地解释此算法，并补充其他特点，帮助使用者判断"><meta itemprop="datePublished" content="2021-09-10T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-09-10T16:01:23+08:00" />
-<meta itemprop="wordCount" content="7108">
-
-
-
-<meta itemprop="keywords" content="RL," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="7125">
+<meta itemprop="keywords" content="RL," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="DRL总结：DQN，RainBow，DDPG，PPO和A3C等"/>
 <meta name="twitter:description" content="下面我会按照这种格式去介绍算法： 这里会写上深度强化学习的子领域 XXX——算法的全称或别称顾名思义地解释此算法，并补充其他特点，帮助使用者判断"/>
 
@@ -260,6 +256,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
               </li>
             
               <li>
@@ -627,6 +627,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -778,23 +782,38 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#这里会写上深度强化学习的子领域">这里会写上深度强化学习的子领域</a></li>
+    <li><a href="#离散动作空间">离散动作空间</a></li>
+    <li><a href="#过渡从离散到连续动作空间的跨越">过渡：从离散到连续动作空间的跨越</a></li>
+    <li><a href="#连续的动作空间-continuous-action-space">连续的动作空间 continuous action space</a>
+      <ul>
+        <li><a href="#确定策略梯度">确定策略梯度</a></li>
+        <li><a href="#随机策略梯度">随机策略梯度</a></li>
+      </ul>
+    </li>
+    <li><a href="#混合的动作空间-hybrid-action-space">混合的动作空间 hybrid action space</a></li>
+    <li><a href="#改进经验回放以适应稀疏奖励-sparse-reward">改进经验回放，以适应稀疏奖励 sparse reward</a></li>
+    <li><a href="#多智能体算法-multiagent-rl">多智能体算法 MultiAgent RL</a></li>
+    <li><a href="#分层强化学习-hierarchical-rl">分层强化学习 Hierarchical RL</a></li>
+    <li><a href="#逆向强化学习-inverse-rl-与-模仿学习-imitation-learning">逆向强化学习 Inverse RL 与 模仿学习 Imitation Learning</a></li>
+    <li><a href="#基于模型的强化学习算法-model-based-rl重点介绍muzero">基于模型的强化学习算法 Model-based RL（重点介绍MuZero）</a></li>
+    <li><a href="#好用的强化学习算法是">好用的强化学习算法是？</a></li>
+  </ul>
+</nav>
   </div>
 </div>
 
     
     <div class="post-content">
       <p>下面我会按照这种格式去介绍算法：</p>
-
 <h2 id="这里会写上深度强化学习的子领域">这里会写上深度强化学习的子领域</h2>
-
 <ul>
 <li><strong>XXX——算法的全称或别称</strong>顾名思义地解释此算法，并补充其他特点，帮助使用者判断此算法适用领域。</li>
 <li><strong>XXX</strong>，大体上按照发表时间从早到晚排序，推荐按顺序了解排在前面的适合入门的算法，理解后，再使用靠后性能较好但复杂的算法。把连续的工作会被放在一起，如 DQN→DDQN→D3QN，按这些顺序去了解效率更高。</li>
 </ul>
-
 <h2 id="离散动作空间">离散动作空间</h2>
-
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -807,37 +826,33 @@
   </figure>
 </div>
 
-
 <p>一个离散动作空间例子：月球登陆器LunarLander-v2。它有四个引擎，每次可以开启不同方向的引擎。安全平稳降落、消耗更少燃料都会让最终得分变高。环境每一次重置 reset 都会刷新飞行器的初速度，因此需要多测几次得到的平均分才能作为给定策略的得分。</p>
-
 <ul>
 <li><strong>DQN（Deep Q Network）</strong> 可用于入门深度强化学习，使用一个Q Network来估计Q值，从而替换了 Q-table，完成从离散状态空间到连续状态空间的跨越。Q Network 会对每一个离散动作的Q值进行估计，执行的时候选择Q值最高的动作（greedy 策略）。并使用 epslion-greedy 策略进行探索（探索的时候，有很小的概率随机执行动作），来获得各种动作的训练数据。</li>
 <li><strong>DDQN（Double DQN）</strong> 更加稳定，因为最优化操作会传播高估误差，所以她同时训练两个Q network，并选择较小的Q值用于计算TD-error，降低高估误差。详见和DDQN一样采用了两个估值网络的TD3<a href="https://zhuanlan.zhihu.com/p/86297106">曾伊言：强化学习算法TD3论文的翻译与解读</a></li>
-<li><strong>Dueling DQN</strong>，Dueling DQN 使用了优势函数 advantage function（A3C也用了）：它只估计state的Q值，不考虑动作，好的策略能将state 导向一个更有优势的局面。原本DQN对一个state的Q值进行估计时，它需要等到为每个离散动作收集到数据后，才能进行准确估值。然而，在某些state下，采取不同的action并不会对Q值造成多大的影响，因此Dueling DQN 结合了 优势函数估计的Q值 与 原本DQN对不同动作估计的Q值。使得在某些state下，Dueling DQN 能在只收集到一个离散动作的数据后，直接得到准确的估值。当某些环境中，存在大量不受action影响的state，此时Dueling DQN能学得比DQN更快。
-&gt; Intuitively, the dueling architecture can learn which states are (or are not) valuable, without having to learn the effect of each action for each state. This is particularly useful in states where its actions do not affect the environment in any relevant way. ---- 来自 Dueling DQN论文 Introduction。</li>
+<li><strong>Dueling DQN</strong>，Dueling DQN 使用了优势函数 advantage function（A3C也用了）：它只估计state的Q值，不考虑动作，好的策略能将state 导向一个更有优势的局面。原本DQN对一个state的Q值进行估计时，它需要等到为每个离散动作收集到数据后，才能进行准确估值。然而，在某些state下，采取不同的action并不会对Q值造成多大的影响，因此Dueling DQN 结合了 优势函数估计的Q值 与 原本DQN对不同动作估计的Q值。使得在某些state下，Dueling DQN 能在只收集到一个离散动作的数据后，直接得到准确的估值。当某些环境中，存在大量不受action影响的state，此时Dueling DQN能学得比DQN更快。</li>
+</ul>
+<blockquote>
+<p>Intuitively, the dueling architecture can learn which states are (or are not) valuable, without having to learn the effect of each action for each state. This is particularly useful in states where its actions do not affect the environment in any relevant way. &mdash;- 来自 Dueling DQN论文 Introduction。</p>
+</blockquote>
+<ul>
 <li><strong>D3QN (Dueling Double DQN）</strong>。Dueling DQN 与Double DQN 相互兼容，一起用效果很好。简单，泛用，没有使用禁忌。任何一个刚入门的人都能独立地在前两种算法的基础上改出D3QN。在论文中使用了D3QN应该引用DuelingDQN 与 DoubleDQN的文章。</li>
 <li><strong>Noisy DQN</strong>，探索能力稍强。Noisy DQN 把噪声添加到网络的输出层之前值。原本Q值较大的动作在添加噪声后Q值变大的概率也比较大。这种探索比epslion-greedy随机选一个动作去执行更好，至少这种针对性的探索既保证了探索动作多样，也提高了探索效率。</li>
 <li><strong>Rainbow DQN</strong>，上面提及的DQN变体很多是相互兼容的，因此 David Sliver 他们整合了这些变体，称为Rainbow。</li>
 <li><strong>Ape-X DQN （Distributed Prioritized Experience Replay）</strong>，也是 David Sliver 他们做的。使用了Distributed training，用多个进程创建了多个actor去与环境交互，然后使用收集到的数据去训练同一个learner，用来加快训练速度。Prioritized Experience Replay（优先经验回放 PER 下面会讲）。Ape-X通过充分利用CPU资源，合理利用GPU，从而加快了训练速度。注意，这不等同于减少训练总步数。NVIDIA 有一个叫 Apex的库，用于加速计算。</li>
 </ul>
-
 <p>损失函数总结：</p>
-
 <ul>
-<li>DQN: <span  class="math">\(L(\omega) = E[((R_t + \gamma max_{a'}Q(s', a' | \omega^-)) - Q(s, a| \omega))^2]\)</span></li>
-<li>DDQN: <span  class="math">\(L(\omega) = E[((R_t + \gamma Q(s', \argmax_{a'}Q(s, a'| \omega) | \omega')) - Q(s, a| \omega))^2]\)</span></li>
-<li>PER: <span  class="math">\(L(\omega) = E[w_i((R_t + \gamma max_{a'}Q(s', a' | \omega^-)) - Q(s, a| \omega))^2]\)</span>，其中<span  class="math">\(w_i\)</span>表示权重，与TD-error相关。</li>
+<li>DQN: $$L(\omega) = E[((R_t + \gamma max_{a&rsquo;}Q(s&rsquo;, a&rsquo; | \omega^-)) - Q(s, a| \omega))^2]$$</li>
+<li>DDQN: $$L(\omega) = E[((R_t + \gamma Q(s&rsquo;, \argmax_{a&rsquo;}Q(s, a&rsquo;| \omega) | \omega&rsquo;)) - Q(s, a| \omega))^2]$$</li>
+<li>PER: $$L(\omega) = E[w_i((R_t + \gamma max_{a&rsquo;}Q(s&rsquo;, a&rsquo; | \omega^-)) - Q(s, a| \omega))^2]$$，其中$$w_i$$表示权重，与TD-error相关。</li>
 </ul>
-
 <h2 id="过渡从离散到连续动作空间的跨越">过渡：从离散到连续动作空间的跨越</h2>
-
 <p><strong>DQN</strong>直接训练一个Q Network 去估计每个离散动作的Q值，使用时选择Q值大的动作去执行（贪婪策略）。<strong>DDPG</strong>也训练一个 Critic Network 去估计state-action的Q值，然后把Critic Network“连在”Actor Network的后面，让Critic 为<strong>策略</strong>网络Actor 提供优化的<strong>梯度</strong>。</p>
-
 <ul>
 <li><strong>策略梯度</strong>的 Actor-Critic 与 对抗网络的 Generator-Discriminator很像，想要了解更多可看 <a href="https://zhuanlan.zhihu.com/p/162990438">曾伊言：从双层优化视角理解对抗网络GAN</a> 。</li>
 <li>Value-based Methods、Policy-based Methods、Policy Gradint、Actor-Critic Methods，想弄清楚它们的区别，可以看 <a href="https://hadovanhasselt.files.wordpress.com/2016/01/pg1.pdf">Policy Gradient - Hado van Hasselt 2016 pdf</a></li>
 </ul>
-
 
 
 <div class="box">
@@ -853,29 +868,21 @@
   </figure>
 </div>
 
-
 <h2 id="连续的动作空间-continuous-action-space">连续的动作空间 continuous action space</h2>
-
 <p>一个连续动作空间例子：LunarLanderContinuous-v2 ：它与离散动作LunarLander-v2极为相似。动作矢量是两个浮点数，符号表示喷射方向，绝对值表示喷射力度。将离散改为连续动作后，月球降落器的训练时间变长，但是收敛得分变高。</p>
-
 <h3 id="确定策略梯度">确定策略梯度</h3>
-
 <ul>
 <li><strong>DPG（Deterministic Policy Gradient 确定策略梯度）</strong>，确定策略网络只输出一个确定的action，然后加上一个人为指定的noise 去完成探索。可以跳过DPG这篇文论，直接入门DDPG。</li>
 <li><strong>DDPG（Deep DPG ）</strong>，DDPG相比于DPG借用了target net还有滑动平均方法更新behavior网络参数，可用于入门连续动作空间的DRL算法。DPG 确定策略梯度算法，直接让策略网络输出action，成功在连续动作空间任务上训练出能用的策略，但是它使用 OU-noise 这种有很多超参数的方法去探索环境，训练慢，且不稳定。</li>
-<li><strong>soft target update（软更新）</strong>，用来稳定训练的方法，非常好用，公式是<span  class="math">\(\theta^\prime = \tau\theta^\prime + (1 - \tau) \theta\)</span>，其中 theta是使用梯度进行更新的网络参数，theta' 是使用了软更新的目标网络target network参数，tau略小于1。软更新让参数的更新不至于发生剧变，从而稳定了训练。从DDPG开始就广泛使用，并且在深度学习的其他领域也能看到它的身影，如 谷歌自监督 BYOL Bootstrap Your Own Latent ，看论文的公式（1），就用了soft target update</li>
+<li><strong>soft target update（软更新）</strong>，用来稳定训练的方法，非常好用，公式是$$\theta^\prime = \tau\theta^\prime + (1 - \tau) \theta$$，其中 theta是使用梯度进行更新的网络参数，theta&rsquo; 是使用了软更新的目标网络target network参数，tau略小于1。软更新让参数的更新不至于发生剧变，从而稳定了训练。从DDPG开始就广泛使用，并且在深度学习的其他领域也能看到它的身影，如 谷歌自监督 BYOL Bootstrap Your Own Latent ，看论文的公式（1），就用了soft target update</li>
 <li><strong>TD3（TDDD，Twin Delay DDPG）</strong>，擅长调参的人才建议用，因为它影响训练的敏感超参数很多。它从Double DQN那里继承了Twin Critic，用来降低高估误差；它用来和随机策略梯度很像的方法：计算用于更新TD-error的Q值时，给action加上了噪声，用于让Critic拟合更平滑的Q值估计函数。</li>
 </ul>
-
 <p>损失函数总结：</p>
-
 <ul>
-<li>DPG: critic的损失可以表示为<span  class="math">\(L(\omega) = E[(r_t + \gamma Q(s^\prime, \mu(s^\prime|\theta)|w) - Q(s, a| \omega))^2]\)</span>, actor的损失可以表示为：<span  class="math">\(L(\theta) = -E[Q(s, \mu(s| \theta)| \omega)]\)</span>，actor的梯度可以表示为：<span  class="math">\(\nabla L(\theta) = E[\nabla_{a}Q(s, a| \omega) \nabla_\theta \mu(s| \theta)]_{a = \mu(s| \theta)}\)</span>。</li>
-<li>DDPG: critic的损失可以表示为<span  class="math">\(L(\omega) = E[(r_t + \gamma Q(s^\prime, \mu(s^\prime|\theta^\prime)|w^-) - Q(s, a| \omega))^2]\)</span>, actor的损失可以表示为：<span  class="math">\(L(\theta) = -E[Q(s, \mu(s| \theta)| \omega)]\)</span>，actor的梯度可以表示为：<span  class="math">\(\nabla L(\theta) = E[\nabla_{a}Q(s, a| \omega) \nabla_\theta \mu(s| \theta)]_{a = \mu(s| \theta)}\)</span>。</li>
+<li>DPG: critic的损失可以表示为$$L(\omega) = E[(r_t + \gamma Q(s^\prime, \mu(s^\prime|\theta)|w) - Q(s, a| \omega))^2]$$, actor的损失可以表示为：$$L(\theta) = -E[Q(s, \mu(s| \theta)| \omega)]$$，actor的梯度可以表示为：$$\nabla L(\theta) = E[\nabla_{a}Q(s, a| \omega) \nabla_\theta \mu(s| \theta)]_{a = \mu(s| \theta)}$$。</li>
+<li>DDPG: critic的损失可以表示为$$L(\omega) = E[(r_t + \gamma Q(s^\prime, \mu(s^\prime|\theta^\prime)|w^-) - Q(s, a| \omega))^2]$$, actor的损失可以表示为：$$L(\theta) = -E[Q(s, \mu(s| \theta)| \omega)]$$，actor的梯度可以表示为：$$\nabla L(\theta) = E[\nabla_{a}Q(s, a| \omega) \nabla_\theta \mu(s| \theta)]_{a = \mu(s| \theta)}$$。</li>
 </ul>
-
 <h3 id="随机策略梯度">随机策略梯度</h3>
-
 <ul>
 <li><strong>Stochastic Policy Gradient 随机策略梯度</strong>，随机策略的探索能力更好。随机策略网络会输出action的分布（通常输出高斯分布 均值 与 方差，少数任务下用其他分布），探索的噪声大小由智能体自己决定，更加灵活。但是这对算法提出了更高的要求。</li>
 <li><strong>A3C（Asynchronous Advantage Actor-Critic）</strong>，Asynchronous 指开启多个actor 在环境中探索，并异步更新。原本DDPG的Critic 是 Q(s, a)，根据state-action pair 估计Q值，优势函数只使用 state 去估计Q值，这是很好的创新：降低了随机策略梯度算法估计Q值的难度。然而优势函数有明显缺陷：不是任何时刻 action 都会影响 state的转移（详见 Dueling DQN），因此这个算法只适合入门学习「优势函数 advantage function」。如果你看到新论文还在使用A3C，那么你要怀疑其作者RL的水平。此外，A3C算法有离散动作版本，也有连续动作版本。A2C 指的是没有Asynchronous 的版本。</li>
@@ -885,7 +892,6 @@
 <li><strong>SAC（Soft Actor-Critic with maximum entropy 最大熵）</strong>，训练很快，探索能力好，但是很依赖Reward Function，不像PPO那样随便整一个Reward function 也能训练。PPO算法会计算新旧策略的差异（计算两个分布之间的距离），并让这个差异保持在信任域内，且不至于太小。SAC算法不是on-policy算法，不容易计算新旧策略的差异，所以它在优化时最大化策略的熵（动作的方差越大，策略的熵越高）。</li>
 <li><strong>DPPO</strong>，DPPO是一种同步并行PPO算法，DPPO把网络参数存在到一个服务器上，并且会在每一个gradient step后同步地更新workers的参数。DPPO的算法流程如下图所示，其中W是workers的数量；D是一个阈值，它指定更新全局网络参数时所需的workers的数量，也就是说如果有一定数量的worker的梯度是available时，就同步地更新全局网络参数，这一个全局网络参数等于各个worker的梯度的均值；M和B是在给定一把mini batch数据的条件下，更新actor和critic网络的迭代步数；T是每一个worker在参数更新之前的date points数量；K是K-steps return的数量。</li>
 </ul>
-
 
 
 <div class="box">
@@ -903,7 +909,6 @@
 
 
 
-
 <div class="box">
 <figure  itemprop="associatedMedia"
   itemscope itemtype="http://schema.org/ImageObject" >
@@ -917,16 +922,12 @@
   </figure>
 </div>
 
-
 <p>损失函数总结：</p>
-
 <ul>
-<li>SPG: <span  class="math">\(J(\theta) = E[R(\tau)]\)</span>，策略梯度可以表示为<span  class="math">\(\nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau) = \int \nabla_\theta \rho_\tau R(\tau) = \int \rho_\tau \nabla_\theta \log\rho_\tau R(\tau)\)</span> <span  class="math">\(= E[\nabla_\theta \log\rho_\tau R(\tau)] = E[\sum_t\nabla_\theta \log[\pi_\theta(a_t| s_t)] A(s_t, a_t)]\)</span></li>
-<li>PPO: <span  class="math">\(L(\theta) = E[\min(\frac{\pi_{\theta_k} (a_t| s_t)}{\pi_{\theta} (a_t | s_t)} A(s_t, a_t), clip (\frac{\pi_{\theta_k}(a_t| s_t)}{\pi_{\theta} (a_t|s_t)}, 1-\epsilon, 1+\epsilon)A(s_t, a_t))]\)</span></li>
+<li>SPG: $$J(\theta) = E[R(\tau)]$$，策略梯度可以表示为$$\nabla_\theta J(\theta) = \nabla_\theta \int \rho_\tau R(\tau) = \int \nabla_\theta \rho_\tau R(\tau) = \int \rho_\tau \nabla_\theta \log\rho_\tau R(\tau)$$ $$= E[\nabla_\theta \log\rho_\tau R(\tau)] = E[\sum_t\nabla_\theta \log[\pi_\theta(a_t| s_t)] A(s_t, a_t)]$$</li>
+<li>PPO: $$L(\theta) = E[\min(\frac{\pi_{\theta_k} (a_t| s_t)}{\pi_{\theta} (a_t | s_t)} A(s_t, a_t), clip (\frac{\pi_{\theta_k}(a_t| s_t)}{\pi_{\theta} (a_t|s_t)}, 1-\epsilon, 1+\epsilon)A(s_t, a_t))]$$</li>
 </ul>
-
 <h2 id="混合的动作空间-hybrid-action-space">混合的动作空间 hybrid action space</h2>
-
 
 
 <div class="box">
@@ -942,34 +943,24 @@
   </figure>
 </div>
 
-
 <p>在实际任务中，混合动作的需求经常出现：如王者荣耀游戏既需要离散动作（选择技能），又需要连续动作（移动角色）。只要入门了强化学习，就很容易独立地想出以下这些方法，所以我没有把它们放在前面：</p>
-
 <ul>
-<li><strong>强行使用DQN类算法，把连续动作分成多个离散动作</strong>：不建议这么做，这破坏了连续动作的优势。一个良性的神经网络会是一个平滑的函数（k-Lipschitz 连续），相近的输入会有相似的输出。在连续的动作空间开区间中，智能体会在学了-1，+1两个样本后，猜测0的样本可能介于 -1，+1 之间。而强行将拆分为离散动作 -1，0，+1之后（无论拆分多么精细），它都猜不出 0的样本，一定要收集到 0的样本才能学习。此外，精细的拆分会增加离散动作个数，尽管更加逼近连续动作，但会增加训练成本。</li>
+<li><strong>强行使用DQN类算法，把连续动作分成多个离散动作</strong>：不建议这么做，这破坏了连续动作的优势。一个良性的神经网络会是一个平滑的函数（k-Lipschitz 连续），相近的输入会有相似的输出。在连续的动作空间开区间[-1, +1]中，智能体会在学了-1，+1两个样本后，猜测0的样本可能介于 -1，+1 之间。而强行将拆分为离散动作 -1，0，+1之后（无论拆分多么精细），它都猜不出 0的样本，一定要收集到 0的样本才能学习。此外，精细的拆分会增加离散动作个数，尽管更加逼近连续动作，但会增加训练成本。</li>
 </ul>
-
 <h2 id="改进经验回放以适应稀疏奖励-sparse-reward">改进经验回放，以适应稀疏奖励 sparse reward</h2>
-
 <p>训练LunarLander安全降落，它的奖励reward 在降落后+200，坠毁-100。当它还在空中时做任何动作都不会得到绝对值这么大的奖励。这样的奖励是稀疏的。一些算法（（其实它的奖励函数会根据飞行器在空中的稳定程度、燃料消耗给出一个很小的reward，在这种）</p>
-
 <ul>
 <li><a href="https://arxiv.org/pdf/1511.05952.pdf">PER</a><strong>（优先经验回放 Prioritized Experience Replay）</strong> 使用不同顺序的样本进行对网络进行训练，并将不同顺序对应的Q值差异保存下来，以此为依据调整样本更新顺序，用于加速训练。</li>
 <li><a href="https://papers.nips.cc/paper/2017/file/453fadbd8a1a3af50a9df4df899537b5-Paper.pdf">HER</a><strong>（后见经验回放 Hindsight Experience Replay）</strong> 构建可以把失败经验也利用起来的经验池，提高稀疏奖励下对各种失败探索经验的利用效率。</li>
 </ul>
-
 <p>这种操作需要消耗CPU算力去完成。在奖励不稀疏的环境下，用了不会明显提升。在一些环境中，上面这类算法必不可少。例如 Gym 基于收费MuJoCo 的机械臂环境 Robotics Fetch*** ，以及 基于开源PyBullet的机械臂 KukaBulletEnv-v0 。如果不用这类算法，那么我们需要花费更多精力去设计Reward function。</p>
-
 <h2 id="多智能体算法-multiagent-rl">多智能体算法 MultiAgent RL</h2>
-
 <p>我认为，多智能体强化学习算法在2021年前，只有<strong>QMix（基于Q值分解+DQN）和MAPPO（基于MADDPG提出的CTDE框架+PPO）</strong> 这两个算法可信。其他MARL算法我只能当它们不存在。</p>
-
 <ul>
 <li><strong>IQL（independent Q-learning）</strong> 就是非常暴力的给每个智能体执行一个Q-learning算法，因为共享环境，并且环境随着每个智能体策略、状态发生改变，对每个智能体来说，环境是动态不稳定的，因此这个算法也无法收敛，但是在部分应用中也具有较好的效果。</li>
-<li><strong>VDN（value decomposition networks）</strong>，VDN是通过将每一个智能体用自己的观测数据学习到的action-value 函数相加得到的：<span  class="math">\(Q_{tot} = \sum_i Q_i(\tau_i, a_i|\theta_i)\)</span>。这种方法缺点是太简单了，Q的表达能力有限。</li>
+<li><strong>VDN（value decomposition networks）</strong>，VDN是通过将每一个智能体用自己的观测数据学习到的action-value 函数相加得到的：$$Q_{tot} = \sum_i Q_i(\tau_i, a_i|\theta_i)$$。这种方法缺点是太简单了，Q的表达能力有限。</li>
 <li><strong>QMix</strong>，与VDN直接求和不同，QMIX设计一个神经网络来整合每个智能体的局部值函数而得到联合动作值函数。QMix基于前提：每个智能体对全局价值的影响都是正向的，每个智能体采取最优动作时，全局的Q值也达到最大，如下所示</li>
 </ul>
-
 
 
 <div class="box">
@@ -984,7 +975,6 @@
 
 
 
-
 <div class="box">
 <figure  itemprop="associatedMedia"
   itemscope itemtype="http://schema.org/ImageObject" >
@@ -995,63 +985,44 @@
   </figure>
 </div>
 
-
 <ul>
 <li><strong>MAPPO</strong>，每个局部智能体接收一个局部的观察obs，输出一个动作概率，所有的actor智能体都采用一个actor网络。critic网络接收所有智能体的观测obs，输出为一个V值，这个V值用于actor的更新。详见：<a href="https://zhuanlan.zhihu.com/p/386559032">小小何先生——MAPPO算法详解</a></li>
 </ul>
-
 <p>损失函数总结：</p>
-
 <ul>
-<li>QMix: <span  class="math">\(L(\theta) = \sum_i[(y_i^{tot} - Q(\tau, u, s|\theta))^2]\)</span></li>
+<li>QMix: $$L(\theta) = \sum_i[(y_i^{tot} - Q(\tau, u, s|\theta))^2]$$</li>
 </ul>
-
 <h2 id="分层强化学习-hierarchical-rl">分层强化学习 Hierarchical RL</h2>
-
 <h2 id="逆向强化学习-inverse-rl-与-模仿学习-imitation-learning">逆向强化学习 Inverse RL 与 模仿学习 Imitation Learning</h2>
-
 <p>强化学习会在回报函数 Reward function的指导下探索训练环境，并使用未来的期望收益来强化当前动作，试图求出更优的策略。然而，现实中不容易找到需要既懂任务又懂RL的人类去手动设计Reward function。</p>
-
 <blockquote>
 <p>以 LunarLander为例子：降落+200 坠毁-100，消耗燃料会扣0~100。其实只有这些我们也能用很长的时间训练得到能安全降落的飞行器。但实际上，我们还可以根据飞行器的平稳程度给它每步一位数的奖惩，根据飞行器距离降落点的距离给他额外的奖励。这些很细节的调整可以减少智能体的训练时间。所以我前面建议：如果训练环境 Reward function 都是初学者写的，那就用PPO。等到 Reward function 设计得更合理之后，才适合用SAC。</p>
 </blockquote>
-
 <ul>
 <li>强化学习：训练环境+DRL算法+Reward Function = 搜索出好的策略</li>
 <li>逆向强化学习：训练环境+IRL算法+好的策略 = 逆向得到Reward Function</li>
 </ul>
-
-<h2 id="基于模型的强化学习算法-modelbased-rl重点介绍muzero">基于模型的强化学习算法 Model-based RL（重点介绍MuZero）</h2>
-
+<h2 id="基于模型的强化学习算法-model-based-rl重点介绍muzero">基于模型的强化学习算法 Model-based RL（重点介绍MuZero）</h2>
 <p>这里的「模型」指：状态转移模型。离散状态空间下的状态转移模型可以用 状态转移矩阵去描述。基于模型的算法需要将状态转移模型探索出来（或由人类提供），而 无模型算法 model-free RL 不需要探索出模型，它仅依靠智能体在环境中探索 rollout 得到的一条条 trajectory 中记录的 environment transition (s, a, r, next state) 即可对策略进行更新。</p>
-
 <p><strong>近年来受到最多圈外人关注的 model-based RL 是 MuZero</strong>。在下棋、雅达利游戏这种状态转移模型相对容易拟合的离散动作空间任务中，MuZero取得了非常不错的表现。它有三个网络：</p>
-
 <ul>
 <li><strong>编码器</strong>：输入连续观测到的几个state，将其编码成 latent state。为何非要使用 latent state 而不直接使用 state？ 在当前state 下做出action 后，并不会转移到某个确切的状态，next state 是一个不容易直接描述的分布。因此接下来的生成器不会（也无法）直接预测 next state，只能预测 latent state。</li>
 <li><strong>预测器</strong>：输入当前观测到的state，生成执行每个动作的概率，并预测执行每个动作的value （Q值，我不反对将它粗略地理解为DQN的 Q Network）。</li>
 <li><strong>生成器</strong>：输入当前观测到的state，生成 执行每个离散动作后会转移到的 latent state 以及对应的 Reward（这是单步的Reward，不是累加得到的Q值）。生成器就是MuZero 这个model-based RL算法 学到的状态转移模型。</li>
 </ul>
-
 <p>如果离散动作的数量很多（如围棋），那么MuZero 会使用MCTS（<a href="https://yshane-ai.github.io/post/alpha-go/">Monte Carlo tree search 蒙特卡洛树搜索</a>），剪除低概率的分支并估计Q值（论文里用u），具体剪去多少分支要看有多少算力和时间。</p>
-
 <blockquote>
 <p>剪枝：蒸馏学习的 Weight Pruning 权重剪枝，消除权重中不必要的值。在MCTS中的剪枝是不计算执行概率过低的动作分支。</p>
 </blockquote>
-
 <p>model-based RL 学到状态转移模型之后，就能在探索环境之前想象出接下来几步的变化，然后基于环境模型做规划，减少与环境的交互次数。</p>
-
 <h2 id="好用的强化学习算法是">好用的强化学习算法是？</h2>
-
 <ul>
 <li>没有很多需要调整的超参数。D3QN、SAC超参数较少，且SAC可自行调整超参数$\alpha$</li>
 <li>超参数很容易调整或确定。SAC的 reward scaling 可以在训练前直接推算出来。PPO超参数的细微改变不会极大地影响训练</li>
 <li>训练快，收敛稳、得分高。</li>
 </ul>
-
 <hr>
-
-<p>待续...</p>
+<p>待续&hellip;</p>
 
     </div>
 

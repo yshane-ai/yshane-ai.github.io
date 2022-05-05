@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/61-cs285-mbrl-1/" />
@@ -62,19 +62,15 @@
 <meta property="og:title" content="CS285(11)之Model-Based RL" />
 <meta property="og:description" content="在上节中我们介绍了有model的时候如何进行planning，在这节则是介绍如何学习model并利用它来进行learning。 1 Naive model and Replan 1.1 Naive" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/61-cs285-mbrl-1/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/61-cs285-mbrl-1/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-10-26T16:01:23+08:00" />
 <meta property="article:modified_time" content="2021-10-26T16:01:23+08:00" />
+
 <meta itemprop="name" content="CS285(11)之Model-Based RL">
-<meta itemprop="description" content="在上节中我们介绍了有model的时候如何进行planning，在这节则是介绍如何学习model并利用它来进行learning。 1 Naive model and Replan 1.1 Naive">
-<meta itemprop="datePublished" content="2021-10-26T16:01:23+08:00" />
+<meta itemprop="description" content="在上节中我们介绍了有model的时候如何进行planning，在这节则是介绍如何学习model并利用它来进行learning。 1 Naive model and Replan 1.1 Naive"><meta itemprop="datePublished" content="2021-10-26T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-10-26T16:01:23+08:00" />
-<meta itemprop="wordCount" content="5192">
-
-
-
-<meta itemprop="keywords" content="CS285," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="5195">
+<meta itemprop="keywords" content="CS285," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="CS285(11)之Model-Based RL"/>
 <meta name="twitter:description" content="在上节中我们介绍了有model的时候如何进行planning，在这节则是介绍如何学习model并利用它来进行learning。 1 Naive model and Replan 1.1 Naive"/>
 
@@ -260,6 +256,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
               </li>
             
               <li>
@@ -627,6 +627,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -778,7 +782,31 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#11-naive-model">1.1 Naive model</a></li>
+    <li><a href="#12-replan">1.2 Replan</a></li>
+    <li><a href="#2-uncertainty">2 Uncertainty</a>
+      <ul>
+        <li><a href="#21-intuition">2.1 Intuition</a></li>
+      </ul>
+    </li>
+    <li><a href="#22-idea">2.2 Idea</a>
+      <ul>
+        <li><a href="#221-two-types-of-uncertainty">2.2.1 Two types of uncertainty</a></li>
+        <li><a href="#use-output-entropy">Use output entropy</a></li>
+        <li><a href="#estimate-model-uncertainty">Estimate model uncertainty</a></li>
+        <li><a href="#23-model">2.3 Model</a></li>
+      </ul>
+    </li>
+    <li><a href="#3-latent-space-models">3 Latent space models</a>
+      <ul>
+        <li><a href="#31-latent-space-models">3.1 Latent space models</a></li>
+        <li><a href="#32-mbrl-with-latent-space-models">3.2 MBRL with latent space models</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
   </div>
 </div>
 
@@ -796,15 +824,10 @@
   </figure>
 </div>
 
-
 <p>在上节中我们介绍了有model的时候如何进行planning，在这节则是介绍如何学习model并利用它来进行learning。</p>
-
 <h1 id="1-naive-model-and-replan">1 Naive model and Replan</h1>
-
 <h2 id="11-naive-model">1.1 Naive model</h2>
-
 <p>首先介绍最直观的思路：首先运行policy，通过与environment交互获得数据，利用它们去拟合模型model，基于模型，利用上个lecture的planning方法选择action，作出决策。具体流程如下图，这里使用L2 loss去进行model的学习。</p>
-
 
 
 <div class="box">
@@ -817,11 +840,8 @@
   </figure>
 </div>
 
-
 <p>这也是在传统机器人领域做system identification的方法，如果能够有精心设计的dynamics representation以及好的base policy，将大大有助于提高学习速度。</p>
-
 <p>而这种简单方法的缺点也跟前面做imitation learning中一样，同样会出现distribution mismatch的问题，具体如下这张图，黄色是真实的reward function，base policy的探索局限在前面一段，这时候获得数据的distribution与实际的distribution的差距则会变得很大，算法会学习越往右边走reward越大，但实际却是前半段上升，后半段下降的：</p>
-
 
 
 <div class="box">
@@ -834,9 +854,7 @@
   </figure>
 </div>
 
-
 <p>在imitation learning中碰到distribution mismatch问题引入了DAgger算法，通过人工对新的数据进行再标记，从而修正这种问题。在这里同样可以采用这样的思路，前面是数据的label不准确，这里是model不准确，那么就根据实时返回的新数据进行model的更新，保证数据的正确性：</p>
-
 
 
 <div class="box">
@@ -849,9 +867,7 @@
   </figure>
 </div>
 
-
 <p>而这还是存在一个问题，这里通常是通过model进行完整个planning的过程，将所有action执行完才进行下次的fitting，根据前面的分类，这是open-loop planning的操作模式，而由于model存在误差，则会导致planning的误差累计，从而使得planning的后段数据质量变差。</p>
-
 
 
 <div class="box">
@@ -864,11 +880,8 @@
   </figure>
 </div>
 
-
 <h2 id="12-replan">1.2 Replan</h2>
-
 <p>基于上面的问题，引入replan，每次planning的结果只选择第一个acion执行，然后重新进行planning：</p>
-
 
 
 <div class="box">
@@ -881,15 +894,10 @@
   </figure>
 </div>
 
-
 <p>这里的重点就在第三步，在第四步执行了首个action后，将数据添加到buffer中，就可以进行下一次的planning。Replan进行得越多，对于model以及单次planning的perfect程度要求就更小。在很多时候，即使只是random sampling都可以达到不错的效果。</p>
-
 <h2 id="2-uncertainty">2 Uncertainty</h2>
-
 <h3 id="21-intuition">2.1 Intuition</h3>
-
 <p>前面引入了replan版的MBRL算法，看起来似乎是很完美，而在实际试验中会发现它往往效果都比较差，如下图：</p>
-
 
 
 <div class="box">
@@ -902,9 +910,7 @@
   </figure>
 </div>
 
-
 <p>这是一个在Cheetah环境上跑的结果，前面绿色是纯model-based的结果，它已经陷入了局部最优，而经过distillation之后训练一个model-free的模型，会发现它其实比纯model-free效果要好，说明它其实是有学习的潜力在里面的。但是为什么会stuck在这个点呢？一个解释是，在前面的planning中由于model存在误差，而由于planning的时候都是在最大化reward，这往往会使得模型倾向于乐观估计，这个也类似于DQN的over-estimation的原理，从而许多时候会作出相对错误的决策。</p>
-
 
 
 <div class="box">
@@ -917,9 +923,7 @@
   </figure>
 </div>
 
-
 <p>如何求解这个问题？后面的主要方法整体而言是基于这样一个观察：对于同一个点（reward的理论均值一样），variance比较高的prediction的样本期望reward都比较低。例如下图中，假设目标点处在悬崖边上，对于两个predictor来说，理论上做action的mean reward都是一样的，但是对于方差高的predictor，那么它会更有可能掉入悬崖中，获得比较低的reward，从而样本期望reward会比较低。因此在同一个点，max reward是可能一样的，但是mean reward大则代表variance比较小。</p>
-
 
 
 <div class="box">
@@ -932,17 +936,11 @@
   </figure>
 </div>
 
-
 <p>故而将uncertainty纳入考虑中，利用mean reward替代max reward更有利于降低variance，既不过于乐观，也不过于悲观。</p>
-
 <h2 id="22-idea">2.2 Idea</h2>
-
 <p>上面一节讨论了引入uncertainty的意义，并确定使用mean reward作为优化的目标。但是基于此，是否能够设计出合理的结构来辅助学习呢？这个也就是这节的主要内容。</p>
-
 <h3 id="221-two-types-of-uncertainty">2.2.1 Two types of uncertainty</h3>
-
 <p>在介绍具体的idea之前，首先介绍两种形式的uncertainty：statistical uncertainty和model uncertainty。</p>
-
 
 
 <div class="box">
@@ -955,13 +953,9 @@
   </figure>
 </div>
 
-
 <p>前者通常是描述由于数据的统计指标上的问题导致model的uncertainty，例如如果数据本身noise比较大，对于一个自变量它的因变量variance很大，那么学习到的model对点的prediction就会存在很大的uncertainty。</p>
-
 <p>而model uncertainty则是形容model对自己预测的确信程度，它通常从model本身的性质得到的，例如Grussian process就是通过在接触过某个区域的点的数量来得到这个区域的uncertainty。在诸如神经网络之类的模型中通常是没有这一项的。</p>
-
 <p>例如在上面的悬崖的例子中，如果使用神经网络来输出，那么它的statistical uncertainty可能会比较小，也就是说它更倾向于乐观估计，选择迈向终点。但是如果在探索次数比较少的情况下，它的model uncertainty其实会是非常大的。</p>
-
 
 
 <div class="box">
@@ -974,11 +968,8 @@
   </figure>
 </div>
 
-
 <h3 id="use-output-entropy">Use output entropy</h3>
-
 <p>第一种idea就是通过判断output的entropy，也就是描述output的不确定程度：</p>
-
 
 
 <div class="box">
@@ -991,21 +982,14 @@
   </figure>
 </div>
 
-
 <p>这个其实就是在描述statistical uncertainty，通过上面的描述也知道，仅仅刻画这种uncertainty是不够的，所以需要找到方法刻画model uncertainty，并将两者结合：</p>
-
 <h3 id="estimate-model-uncertainty">Estimate model uncertainty</h3>
-
 <p>一般情况下，我们做估计其实是为了达到这么一个目的：</p>
-
-<p><span  class="math">\[
+<p>$$
 \argmax_\theta \log p(\theta|\mathcal{D}) = \argmax_\theta \log p(\mathcal{D}|\theta)
-\]</span></p>
-
+$$</p>
 <p>也就是说参数和数据可以相互生成，给定一批数据，一定可以导出某个参数，给出这个参数，则一定可以生成对应的一批数据，也就是数据与它的分布一一对应。从RL的角度来看，可以理解做closed-loop的过程中，通过policy与env交互得到数据，利用这些数据修正policy，这分别就是右左两遍的式子，最终网络收敛，也就是数据与参数都趋于稳定，最终等号也就成立了。</p>
-
 <p>在这里，如果希望考量model uncertainty，那么可以将前面一部分摘出来，估计利用数据生成一批parameter（也就是一个新的model）的概率，这也就是model uncertainty。</p>
-
 
 
 <div class="box">
@@ -1018,23 +1002,15 @@
   </figure>
 </div>
 
-
 <p>然后将它与statistical uncertainty结合在一起，得到model在不同的parameter下的expected probability：</p>
-
-<p><span  class="math">\[
+<p>$$
 \int p(s_{t + 1}|s_t, a_t, \theta) p(\theta|\mathcal{D})d\theta
-\]</span></p>
-
+$$</p>
 <p>这也就是将两种uncertainty结合的方法：</p>
-
 <h3 id="23-model">2.3 Model</h3>
-
 <p>接下来就介绍两种实现上面idea的model。</p>
-
 <h4 id="231-bayesian-neural-networks">2.3.1 Bayesian neural networks</h4>
-
 <p>首先就是BNN，在常规的NN中，节点之间相邻的边都是通过weight进行连接的，它是一个数值。而在BNN中则是通过distribution进行相连，每过一条边相当于过一个分布，利用分布的方差，就可以衡量variance：</p>
-
 
 
 <div class="box">
@@ -1047,9 +1023,7 @@
   </figure>
 </div>
 
-
 <p>通常而言，其中做的approximation就是引入某种分布，并利用分布输出的乘积表征model uncertainty，如下图中分布的mean表示的就是expected weight，variance表征的就是关于weight的uncertainty。</p>
-
 
 
 <div class="box">
@@ -1062,11 +1036,8 @@
   </figure>
 </div>
 
-
 <h4 id="232-bootstrap-ensembles">2.3.2 Bootstrap ensembles</h4>
-
 <p>第二种方法则是引入machine learning中常见的ensembles方法：</p>
-
 
 
 <div class="box">
@@ -1079,9 +1050,7 @@
   </figure>
 </div>
 
-
 <p>通过多个model进行加权，从而减少方差，因此model uncertainty就可以描述为多个predict的mean：</p>
-
 
 
 <div class="box">
@@ -1094,9 +1063,7 @@
   </figure>
 </div>
 
-
 <p>而整体刻画也即是output的mean：</p>
-
 
 
 <div class="box">
@@ -1109,13 +1076,9 @@
   </figure>
 </div>
 
-
 <p>它需要注意的是不同的model之间是要独立的，故而数据也是要独立的，在传统方法中通常用sampled with replacement的方式，也就是有放回重采样的方式保证independent。而在神经网络中，由于随机初始化，以及SGD本身的随机性，所以model就以及足够独立的，因此也可以忽略此步。</p>
-
 <h4 id="233-planning-with-uncertainty">2.3.3 Planning with uncertainty</h4>
-
 <p>在上面提到的两类模型中，都是经过N个部分的平均得到最终结果，故而整体而言的目标函数转化成了：</p>
-
 
 
 <div class="box">
@@ -1128,9 +1091,7 @@
   </figure>
 </div>
 
-
 <p>因此整体的流程也就可以描述成如下的形式：</p>
-
 
 
 <div class="box">
@@ -1143,13 +1104,9 @@
   </figure>
 </div>
 
-
 <p>首先从data生成parameter的分布中采样出一组分布，通过model得到transition，相乘得到probability，计算累积reward，经过多次迭代得到平均累积reward。</p>
-
 <h2 id="3-latent-space-models">3 Latent space models</h2>
-
 <p>在前面通过uncertainty的角度来提高算法的表达能力，但是通常就直接假设dynamics的learning是能够做得比较好的，但是在复杂场景中的dynamics学习实际是比较困难的：environment可能是partial observability的，state可能是高维且存在较多冗余的。</p>
-
 
 
 <div class="box">
@@ -1162,11 +1119,8 @@
   </figure>
 </div>
 
-
 <p>所以在这节中则是会考虑如何从结构设计的角度使得model的学习变得更加容易。</p>
-
 <h3 id="31-latent-space-models">3.1 Latent space models</h3>
-
 
 
 <div class="box">
@@ -1179,11 +1133,8 @@
   </figure>
 </div>
 
-
 <p>在partial observability的环境中，agent从environment中获取到的observation后，如果需要建模model，首先要处理得到的信息，需要学习observation model，也就是如何从observation中得到与decision相关的state，这个部分是一个高维到低维的映射。接着基于这个observation model进一步学习dynamics model，得到关于environment如何产生transition的过程，并同时学习reward model，得到关于reward的信息。</p>
-
 <p>在上面的描述中，其实可以看出它的核心步骤是如何做从observation到state的mapping，这个也就是latent space model的名称由来，latent space就是表示state space。从model fitting的目标函数来看，最基本的方式就是对sample得到的transition做maximum likelihood estimation：</p>
-
 
 
 <div class="box">
@@ -1196,9 +1147,7 @@
   </figure>
 </div>
 
-
 <p>而在latent space models中，将原始的dynamics拆分成observation model与dynamics model，所以这里需要MLE的是两者的乘积：</p>
-
 
 
 <div class="box">
@@ -1211,19 +1160,12 @@
   </figure>
 </div>
 
-
-<p>这里的expectation是针对这个分布的：$(s<em>t, s</em>{t+1})\sim p(s<em>t, s</em>{t+1}|o_{1:T}, a_{1:T})$，如何理解这个sample，它其实就相当于是首先从所有的action和observation中学习到一个关于transition的分布，然后利用这个进行sample。</p>
-
+<p>这里的expectation是针对这个分布的：$(s_t, s_{t+1})\sim p(s_t, s_{t+1}|o_{1:T}, a_{1:T})$，如何理解这个sample，它其实就相当于是首先从所有的action和observation中学习到一个关于transition的分布，然后利用这个进行sample。</p>
 <h3 id="32-mbrl-with-latent-space-models">3.2 MBRL with latent space models</h3>
-
 <h4 id="321-latent-space-mbrl-with-dynamic">3.2.1 Latent space MBRL with dynamic</h4>
-
-<p>针对上面提到的目标函数来看，它的重点在于如何学习这个分布$(s<em>t, s</em>{t+1})\sim p(s<em>t, s</em>{t+1}|o_{1:T}, a_{1:T})$，在常规模式中，通常是学习一个approximate posterior $q\psi (s<em>t|o</em>{1:t}, a_{1:t})$作为一个encoder。</p>
-
+<p>针对上面提到的目标函数来看，它的重点在于如何学习这个分布$(s_t, s_{t+1})\sim p(s_t, s_{t+1}|o_{1:T}, a_{1:T})$，在常规模式中，通常是学习一个approximate posterior $q\psi (s_t|o_{1:t}, a_{1:t})$作为一个encoder。</p>
 <p>第一个点是学习到这个encoder是怎么用到它的？假设现在有t+1步之前的sample，那么就可以用t步前的sample得到state t，从t-1步前的sample得到state t+1，从而得到同一套的state transition，从而能够近似上面的分布。</p>
-
-<p>第二个点是这个posterior的形式，是否需要condition on这么多输入？这个其实也是类似MC与TD的争议，使用越多的输入，信息越多，自然就越准确，但是学习起来就会比较复杂。在本节中处于简单考虑，我们都假设仅仅使用当前的observation作为输入，从而expectation的对象就变成这种形式：$s<em>t \sim q</em>\psi(s_t|o<em>t), s</em>{t+1}\sim q_\psi(s_{t+1}|o_{t+1})$</p>
-
+<p>第二个点是这个posterior的形式，是否需要condition on这么多输入？这个其实也是类似MC与TD的争议，使用越多的输入，信息越多，自然就越准确，但是学习起来就会比较复杂。在本节中处于简单考虑，我们都假设仅仅使用当前的observation作为输入，从而expectation的对象就变成这种形式：$s_t \sim q_\psi(s_t|o_t), s_{t+1}\sim q_\psi(s_{t+1}|o_{t+1})$</p>
 
 
 <div class="box">
@@ -1236,9 +1178,7 @@
   </figure>
 </div>
 
-
 <p>讨论完它的形式以及如何使用它，接下来就讨论如何如何学习它。同样也是为了简化讨论，这里假设observation model是deterministic的，也就是observation与state是一一对应的，因此encoder就可以直接转化为function的形式，在lecture14中会具体讨论stochastic case的情况。</p>
-
 
 
 <div class="box">
@@ -1251,9 +1191,7 @@
   </figure>
 </div>
 
-
 <p>故而目标函数也就转化为，其中的每个部分都是differentiable的，这也就可以直接用BP来训练。</p>
-
 
 
 <div class="box">
@@ -1266,13 +1204,9 @@
   </figure>
 </div>
 
-
 <p>其中第一部分是通过transition进行约束，第二部分则是通过reconstruction的约束保证映射过程可逆，通常其实可以提高学习的稳定性。</p>
-
 <h4 id="322-latent-space-mbrl-with-reward-model">3.2.2 Latent space MBRL with reward model</h4>
-
 <p>在上节中，利用approximate posterior将MDP做了简化，得到了新的目标函数：</p>
-
 
 
 <div class="box">
@@ -1285,9 +1219,7 @@
   </figure>
 </div>
 
-
 <p>在这节中，则是考虑引入reward model相关的信息，其实也就是在目标中加了reward model相关的学习：</p>
-
 
 
 <div class="box">
@@ -1299,7 +1231,6 @@
     <a href="/image/60-cs285/068.png" itemprop="contentUrl"></a>
   </figure>
 </div>
-
 
 <p>将它嵌入前面的model-based RL的流程中，这节其实就是考虑到observation的复杂性，利用latent space的方法，将步骤二的fit model变得更容易学习了：</p>
 

@@ -7,14 +7,23 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Xinxin Yang</copyright>
-    <lastBuildDate>Sat, 02 Apr 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/ml/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 08 Apr 2022 16:01:23 +0800</lastBuildDate><atom:link href="https://yshane-ai.github.io/categories/ml/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>XGBoost和LightGBM详细对比与Python实践</title>
+      <link>https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/</link>
+      <pubDate>Fri, 08 Apr 2022 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/</guid>
+      <description>在做kaggle比赛时，XGBoost和LightGBM成为了大众竞赛者的首选方案，但他们有什么不同呢？其实从各方面来看。LightGBM都</description>
+    </item>
+    
     <item>
       <title>Pointer Network详解与Pytorch实践</title>
       <link>https://yshane-ai.github.io/post/72-pointer-network/</link>
       <pubDate>Sat, 02 Apr 2022 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/post/72-pointer-network/</guid>
-      <description>Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。在旅行商问题（trav</description>
+      <description>**Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。**在旅行商问题（tr</description>
     </item>
     
     <item>

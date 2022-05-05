@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.80.0" />
+<meta name="generator" content="Hugo 0.93.2" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/" />
@@ -62,19 +62,15 @@
 <meta property="og:title" content="Offline RL梳理" />
 <meta property="og:description" content="本质上Offline RL需要从固定的数据集中获得对MDP的理解，并构造一个策略，以在实际交互中获得最多的累计奖励。但是有如下局限： 数据集本身" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/20-offline-rl%E6%A2%B3%E7%90%86/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-11-10T16:01:23+08:00" />
 <meta property="article:modified_time" content="2021-11-10T16:01:23+08:00" />
+
 <meta itemprop="name" content="Offline RL梳理">
-<meta itemprop="description" content="本质上Offline RL需要从固定的数据集中获得对MDP的理解，并构造一个策略，以在实际交互中获得最多的累计奖励。但是有如下局限： 数据集本身">
-<meta itemprop="datePublished" content="2021-11-10T16:01:23+08:00" />
+<meta itemprop="description" content="本质上Offline RL需要从固定的数据集中获得对MDP的理解，并构造一个策略，以在实际交互中获得最多的累计奖励。但是有如下局限： 数据集本身"><meta itemprop="datePublished" content="2021-11-10T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-10T16:01:23+08:00" />
 <meta itemprop="wordCount" content="2369">
-
-
-
-<meta itemprop="keywords" content="RL," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="RL," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Offline RL梳理"/>
 <meta name="twitter:description" content="本质上Offline RL需要从固定的数据集中获得对MDP的理解，并构造一个策略，以在实际交互中获得最多的累计奖励。但是有如下局限： 数据集本身"/>
 
@@ -260,6 +256,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/70-transformer/">Transformer详解与Pytorch实践</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
               </li>
             
               <li>
@@ -627,6 +627,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/">XGBoost和LightGBM详细对比与Python实践</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/9-%E5%85%B3%E4%BA%8Erl%E5%AE%9E%E8%B7%B5%E7%9A%84%E4%B8%80%E7%82%B9%E6%83%B3%E6%B3%95/">关于RL实战的一点想法</a>
               </li>
             
@@ -778,31 +782,34 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#方法1-基于重要性采样的offline-rl与离线策略评估">方法1 基于重要性采样的Offline RL与离线策略评估</a></li>
+    <li><a href="#方法2-基于动态规划法的离线rl">方法2 基于动态规划法的离线RL</a>
+      <ul>
+        <li><a href="#使用线性函数估计q函数">使用线性函数估计Q函数</a></li>
+        <li><a href="#方法三基于模型的离线强化学习-offline-model-based-rl">方法三：基于模型的离线强化学习 (Offline Model-Based RL)</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
   </div>
 </div>
 
     
     <div class="post-content">
       <p>本质上Offline RL需要从固定的数据集中获得对MDP的理解，并构造一个策略，以在实际交互中获得最多的累计奖励。但是有如下局限：</p>
-
 <ol>
 <li>数据集本身的缺陷。既然称作数据集，那么他必然存在一定局限性，要么数据不充分，某些状态没有被访问过，那么真实的模型由该如何学习。</li>
 <li>强化学习的经验并不是独立同分布的，例如两个随机初始化的策略，在和环境交互时，产生的交易轨迹并不相同，而自身产生的交互轨迹往往对自己模型的提高时更有用的，其他的轨迹则可能带偏自己的学习路线，例如两个性格不同的人，引导他们学习的方式也应该不同。</li>
 </ol>
-
 <p>一些简单的思路：</p>
-
 <ol>
 <li>限制目标策略$\pi(a|s)$和行为策略$\pi_\beta(a|s)$的差异度。</li>
 </ol>
-
 <h2 id="方法1-基于重要性采样的offline-rl与离线策略评估">方法1 基于重要性采样的Offline RL与离线策略评估</h2>
-
 <p>事实上所有的off-policy算法都可以改为offline方法，最直接的方法之一就是重要性采样，利用从$\pi_\beta(\tau)$中采样出的轨迹来估计$J(\pi)$。</p>
-
 <p>但是这种方法受到高方差的困扰。下面是一些改进方法：一个是per-decision importance sampling estimator，通过减少importance weight的乘积项，从而减少variance。</p>
-
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -815,11 +822,8 @@
   </figure>
 </div>
 
-
 <p>这个是在step t的时候可以忽略 t 之后的importance weight。</p>
-
-<p>另一个是把累计的<span  class="math">\( r(s, a) \)</span>加入一个baseline来增加稳定性，所以引入一个approximate的Q-value，改写为</p>
-
+<p>另一个是把累计的$$ r(s, a) $$加入一个baseline来增加稳定性，所以引入一个approximate的Q-value，改写为</p>
 
 
 <div class="box">
@@ -832,9 +836,7 @@
   </figure>
 </div>
 
-
 <p>还可以限制让$\pi_\theta$和$\pi_\beta$尽可能相似，可加上一个constraint</p>
-
 
 
 <div class="box">
@@ -847,35 +849,25 @@
   </figure>
 </div>
 
-
 <p>不过这种基于策略梯度的方法还是很少在offline的场景进行利用，主要应用于off-policy的场景。主要是以下几点原因：</p>
-
 <ul>
 <li>Importance sampling 已经有很高的variance了，并且时序下累积，那么这个variance就会exponential blowup. 因此这个最适合当policy之和behavior policy相差不大的情况.</li>
 <li>Behavior policy是suboptimal.</li>
 <li>State action space 的高维度 (上述最高效的方法需要估计 value function或者state-marginal density ratio via dynamic programming)</li>
 <li>The effective horizon of the task. (步长越长，累积误差越大，可以证明当和不同的时候，误差随着步长平方增长)。</li>
 </ul>
-
 <h2 id="方法2-基于动态规划法的离线rl">方法2 基于动态规划法的离线RL</h2>
-
 <p>这类方法本质上就分为两步，第一步是从Dataset中学出一个Q函数，第二部是通过Q函数来做策略提升。所以首先讲一下传统offline RL是如何用线性函数估计Q函数并且做策略提升的，然后讲一下针对核心问题提出来的一系列改进。</p>
-
 <h3 id="使用线性函数估计q函数">使用线性函数估计Q函数</h3>
-
 <p>动态规划法就要估计一个Q函数。因此分布偏移
 (distributional shift)是这类最大的弊病，因为Q函数是通过
 获得的数据集来学的，他的state distribution和action distribution和自己用学出来的所采样出来的state和action的分布是不一样的，因此直接按照上面做实验中往往效果不佳。
 下面我们具体分析一下到底是哪个分布出现了偏移。
 如果我们把distribution shift分为训练阶段和测试阶段，那么在test的过程中state和action的分布都shift了，而在训练的时候，state的分布没偏移，因为用到的state数据只有采出来的数据，而action的分布偏移了，因为训练时自己学的action是通过最大化Q来得到的，因此可能不在中, 那么Q的估计就不准，在不断的训练迭代中累积误差。所以解决action distribution shift是非常关键的。</p>
-
 <p>一种减少这种分布偏差的方法是让学的$\pi$和behavior policy $\pi_\beta$差距尽量小。</p>
-
 <p>施加一些对于学到的的限制，一个基本思路就是要让尽可能接近于。
 有两个地方可以施加这种约束，第一个地方就是把约束施加在actor上，称作策略约束(policy constraint)；第二个地方就是施加在reward function或者target-Q value上，这就叫做策略惩罚(policy penalty)</p>
-
 <p>策略约束 所有策略约束的方法都可以化归为下面的目标函数。</p>
-
 
 
 <div class="box">
@@ -888,11 +880,8 @@
   </figure>
 </div>
 
-
 <p>其中$D(\pi, \pi_\beta)$是表示$\pi$和$\pi_\beta$的距离。</p>
-
 <p>策略惩罚 直接把惩罚加到reward或者Q上。还可以避免当前action使得将来的policy偏离$\pi_\beta$。 因此从这个意义上来说应该还比策略约束更高明。策略惩罚可以归纳为下式：</p>
-
 
 
 <div class="box">
@@ -907,7 +896,6 @@
 
 
 
-
 <div class="box">
 <figure  itemprop="associatedMedia"
   itemscope itemtype="http://schema.org/ImageObject" >
@@ -918,14 +906,10 @@
   </figure>
 </div>
 
-
 <p>这里直接把$D(\pi, \pi_\beta)$这一项施加到了Q函数上，那么这样学出来的Q本身就会倾向于当action偏离$\pi_\beta$时就只有比较小的值。 接下来分析不同$D(\pi, \pi_\beta)$的表达形式</p>
-
 <p>上述方法缺点：直接限制并非最好的方法。
 举个例子，如果本身就是均匀采样，也就是样本空间已经覆盖了所有可能的action，那么估计的Qfunction在训练过程中就不存在extrapolation error，此时就不应该和尽可能相似，因为这样会让的分布不尖锐，而我们希望的分布应该是一个尖锐的的子集。</p>
-
-<h3 id="方法三基于模型的离线强化学习-offline-modelbased-rl">方法三：基于模型的离线强化学习 (Offline Model-Based RL)</h3>
-
+<h3 id="方法三基于模型的离线强化学习-offline-model-based-rl">方法三：基于模型的离线强化学习 (Offline Model-Based RL)</h3>
 <p>Online的Model-based RL已经有许多文章研究，主流方法是从数据集中先学习一个状态转移模型，然后可以直接通过planning来生成action，或者直接训练一个policy函数。但其中一个核心问题仍然是，数据集学出来的状态转移模型是对于的，并非对应于plan的或者学到的策略，所以核心问题仍然是distributional shift。目前极少工作探讨offline model-based RL，所以如何解决model-based RL中的distributional shift 是一个公开问题。
 同时，就算是online的model-based RL也有自身的挑战，主要是高维的observation和long horizon的问题。</p>
 
