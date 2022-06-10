@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.93.2" />
+<meta name="generator" content="Hugo 0.80.0" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-deepfm/" />
@@ -62,15 +62,19 @@
 <meta property="og:title" content="推荐系统之DeepFM" />
 <meta property="og:description" content="背景 特征组合的挑战 对于一个基于CTR预估的推荐系统，最重要的是学习到用户点击行为背后隐含的特征组合。在不同的推荐场景中，低阶组合特征或者高阶" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-deepfm/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-deepfm/" />
 <meta property="article:published_time" content="2020-12-26T16:01:23+08:00" />
 <meta property="article:modified_time" content="2020-12-26T16:01:23+08:00" />
-
 <meta itemprop="name" content="推荐系统之DeepFM">
-<meta itemprop="description" content="背景 特征组合的挑战 对于一个基于CTR预估的推荐系统，最重要的是学习到用户点击行为背后隐含的特征组合。在不同的推荐场景中，低阶组合特征或者高阶"><meta itemprop="datePublished" content="2020-12-26T16:01:23+08:00" />
+<meta itemprop="description" content="背景 特征组合的挑战 对于一个基于CTR预估的推荐系统，最重要的是学习到用户点击行为背后隐含的特征组合。在不同的推荐场景中，低阶组合特征或者高阶">
+<meta itemprop="datePublished" content="2020-12-26T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2020-12-26T16:01:23+08:00" />
-<meta itemprop="wordCount" content="3019">
-<meta itemprop="keywords" content="Recommendation System," /><meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="2994">
+
+
+
+<meta itemprop="keywords" content="Recommendation System," />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="推荐系统之DeepFM"/>
 <meta name="twitter:description" content="背景 特征组合的挑战 对于一个基于CTR预估的推荐系统，最重要的是学习到用户点击行为背后隐含的特征组合。在不同的推荐场景中，低阶组合特征或者高阶"/>
 
@@ -224,6 +228,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/">Python中的断言assert和异常exception处理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/">Python在训练时保存日志信息</a>
               </li>
             
               <li>
@@ -595,6 +603,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/">Python在训练时保存日志信息</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/3-pythondict/">Python的字典dict原理</a>
               </li>
             
@@ -782,30 +794,28 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    <nav id="TableOfContents">
-  <ul>
-    <li>
-      <ul>
-        <li><a href="#背景">背景</a></li>
-        <li><a href="#相关知识">相关知识</a></li>
-        <li><a href="#代码解析">代码解析</a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
+    
   </div>
 </div>
 
     
     <div class="post-content">
       <h3 id="背景">背景</h3>
+
 <p><strong>特征组合的挑战</strong></p>
+
 <p>对于一个基于CTR预估的推荐系统，最重要的是学习到用户点击行为背后隐含的特征组合。在不同的推荐场景中，低阶组合特征或者高阶组合特征可能都会对最终的CTR产生影响。</p>
+
 <p>之前介绍的因子分解机(Factorization Machines, FM)通过对于每一维特征的隐变量内积来提取特征组合。最终的结果也非常好。但是，虽然理论上来讲FM可以对高阶特征组合进行建模，但实际上因为计算复杂度的原因一般都只用到了二阶特征组合。</p>
+
 <p>那么对于高阶的特征组合来说，我们很自然的想法，通过多层的神经网络即DNN去解决。</p>
+
 <p><strong>DNN的局限</strong></p>
+
 <p>下面的图片来自于张俊林教授在AI大会上所使用的PPT。</p>
+
 <p>我们之前也介绍过了，对于离散特征的处理，我们使用的是将特征转换成为one-hot的形式，但是将One-hot类型的特征输入到DNN中，会导致网络参数太多：</p>
+
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -818,7 +828,9 @@
   </figure>
 </div>
 
+
 <p>如何解决这个问题呢，类似于FFM中的思想，将特征分为不同的field：</p>
+
 
 
 <div class="box">
@@ -831,7 +843,9 @@
   </figure>
 </div>
 
+
 <p>再加两层的全连接层，让Dense Vector进行组合，那么高阶特征的组合就出来了</p>
+
 
 
 <div class="box">
@@ -844,7 +858,9 @@
   </figure>
 </div>
 
+
 <p>但是低阶和高阶特征组合隐含地体现在隐藏层中，如果我们希望把低阶特征组合单独建模，然后融合高阶特征组合。</p>
+
 
 
 <div class="box">
@@ -857,7 +873,9 @@
   </figure>
 </div>
 
+
 <p>即将DNN与FM进行一个合理的融合：</p>
+
 
 
 <div class="box">
@@ -870,7 +888,9 @@
   </figure>
 </div>
 
+
 <p>二者的融合总的来说有两种形式，一是串行结构，二是并行结构</p>
+
 
 
 <div class="box">
@@ -885,6 +905,7 @@
 
 
 
+
 <div class="box">
 <figure  itemprop="associatedMedia"
   itemscope itemtype="http://schema.org/ImageObject" >
@@ -895,8 +916,11 @@
   </figure>
 </div>
 
+
 <p>而我们今天要讲到的DeepFM，就是并行结构中的一种典型代表。</p>
+
 <p>我们先来看一下DeepFM的模型结构：</p>
+
 
 
 <div class="box">
@@ -909,12 +933,17 @@
   </figure>
 </div>
 
+
 <p>DeepFM包含两部分：神经网络部分与因子分解机部分，分别负责低阶特征的提取和高阶特征的提取。这两部分共享同样的输入。DeepFM的预测结果可以写为：</p>
-<p>$$
+
+<p><span  class="math">\[
 \hat y = sigmoid(y_{FM} + y_{DNN})
-$$</p>
+\]</span></p>
+
 <p><strong>FM部分</strong></p>
+
 <p>FM部分的详细结构如下：</p>
+
 
 
 <div class="box">
@@ -927,12 +956,17 @@ $$</p>
   </figure>
 </div>
 
+
 <p>FM部分是一个因子分解机。关于因子分解机可以参阅文章[Rendle, 2010] Steffen Rendle. Factorization machines. In ICDM, 2010.。因为引入了隐变量的原因，对于几乎不出现或者很少出现的隐变量，FM也可以很好的学习。</p>
+
 <p>FM的输出公式为：</p>
-<p>$$
-y_{FM} = &lt;w,x&gt; + \sum_{j_1 = 1}^{d} \sum_{j_2 = j_1 + 1}^d \langle v_{i}, v_{j} /rangle x_{j_1} x_{j_2}
-$$</p>
+
+<p><span  class="math">\[
+y_{FM} = <w,x> + \sum_{j_1 = 1}^{d} \sum_{j_2 = j_1 + 1}^d \langle v_{i}, v_{j} /rangle x_{j_1} x_{j_2}
+\]</span></p>
+
 <p><strong>深度部分</strong></p>
+
 
 
 <div class="box">
@@ -945,7 +979,9 @@ $$</p>
   </figure>
 </div>
 
+
 <p>深度部分是一个前馈神经网络。与图像或者语音这类输入不同，图像语音的输入一般是连续而且密集的，然而用于CTR的输入一般是及其稀疏的。因此需要重新设计网络结构。具体实现中为，在第一层隐含层之前，引入一个嵌入层来完成将输入向量压缩到低维稠密向量。</p>
+
 
 
 <div class="box">
@@ -958,19 +994,28 @@ $$</p>
   </figure>
 </div>
 
+
 <p>嵌入层(embedding layer)的结构如上图所示。当前网络结构有两个有趣的特性，1）尽管不同field的输入长度不同，但是embedding之后向量的长度均为K。2)在FM里得到的隐变量Vik现在作为了嵌入层网络的权重。</p>
+
 <p>这里的第二点如何理解呢，假设我们的k=5，首先，对于输入的一条记录，同一个field 只有一个位置是1，那么在由输入得到dense vector的过程中，输入层只有一个神经元起作用，得到的dense vector其实就是输入层到embedding层该神经元相连的五条线的权重，即vi1，vi2，vi3，vi4，vi5。这五个值组合起来就是我们在FM中所提到的Vi。在FM部分和DNN部分，这一块是共享权重的，对同一个特征来说，得到的Vi是相同的。</p>
+
 <p>因此，嵌入层的权重是不经过DNN训练得到的，而是通过FM分解得到，DNN只是优化DNN上层预测的部分权重。</p>
+
 <h3 id="相关知识">相关知识</h3>
+
 <p>我们先来讲两个代码中会用到的相关知识吧，代码是参考的github上星数最多的DeepFM实现代码。</p>
+
 <p><strong>Gini Normalization</strong></p>
+
 <p>代码中将CTR预估问题设定为一个二分类问题，绘制了Gini Normalization来评价不同模型的效果。这个是什么东西，不太懂，百度了很多，发现了一个比较通俗易懂的介绍。</p>
+
 <p>假设我们有下面两组结果，分别表示预测值和实际值：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>predictions <span style="color:#f92672">=</span> [<span style="color:#ae81ff">0.9</span>, <span style="color:#ae81ff">0.3</span>, <span style="color:#ae81ff">0.8</span>, <span style="color:#ae81ff">0.75</span>, <span style="color:#ae81ff">0.65</span>, <span style="color:#ae81ff">0.6</span>, <span style="color:#ae81ff">0.78</span>, <span style="color:#ae81ff">0.7</span>, <span style="color:#ae81ff">0.05</span>, <span style="color:#ae81ff">0.4</span>, <span style="color:#ae81ff">0.4</span>, <span style="color:#ae81ff">0.05</span>, <span style="color:#ae81ff">0.5</span>, <span style="color:#ae81ff">0.1</span>, <span style="color:#ae81ff">0.1</span>]
-</span></span><span style="display:flex;"><span>actual <span style="color:#f92672">=</span> [<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>]
-</span></span></code></pre></div><p>然后我们将预测值按照从小到大排列，并根据索引序对实际值进行排序：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>Sorted Actual Values [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>]
-</span></span></code></pre></div><p>然后，我们可以画出如下的图片：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">predictions <span style="color:#f92672">=</span> [<span style="color:#ae81ff">0.9</span>, <span style="color:#ae81ff">0.3</span>, <span style="color:#ae81ff">0.8</span>, <span style="color:#ae81ff">0.75</span>, <span style="color:#ae81ff">0.65</span>, <span style="color:#ae81ff">0.6</span>, <span style="color:#ae81ff">0.78</span>, <span style="color:#ae81ff">0.7</span>, <span style="color:#ae81ff">0.05</span>, <span style="color:#ae81ff">0.4</span>, <span style="color:#ae81ff">0.4</span>, <span style="color:#ae81ff">0.05</span>, <span style="color:#ae81ff">0.5</span>, <span style="color:#ae81ff">0.1</span>, <span style="color:#ae81ff">0.1</span>]
+actual <span style="color:#f92672">=</span> [<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>]</code></pre></div>
+<p>然后我们将预测值按照从小到大排列，并根据索引序对实际值进行排序：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">Sorted Actual Values [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>]</code></pre></div>
+<p>然后，我们可以画出如下的图片：</p>
+
 
 
 <div class="box">
@@ -983,7 +1028,9 @@ $$</p>
   </figure>
 </div>
 
+
 <p>接下来我们将数据Normalization到0，1之间。并画出45度线。</p>
+
 
 
 <div class="box">
@@ -996,10 +1043,14 @@ $$</p>
   </figure>
 </div>
 
+
 <p>橙色区域的面积，就是我们得到的Normalization的Gini系数。</p>
+
 <p>这里，由于我们是将预测概率从小到大排的，所以我们希望实际值中的0尽可能出现在前面，因此Normalization的Gini系数越大，分类效果越好。</p>
+
 <p>embedding_lookup
 在tensorflow中有个embedding_lookup函数，我们可以直接根据一个序号来得到一个词或者一个特征的embedding值，那么他内部其实是包含一个网络结构的，如下图所示：</p>
+
 
 
 <div class="box">
@@ -1012,41 +1063,55 @@ $$</p>
   </figure>
 </div>
 
+
 <p>假设我们想要找到2的embedding值，这个值其实是输入层第二个神经元与embedding层连线的权重值。</p>
+
 <p>之前有大佬跟我探讨word2vec输入的问题，现在也算是有个比较明确的答案，输入其实就是one-hot Embedding，而word2vec要学习的是new Embedding。</p>
+
 <h3 id="代码解析">代码解析</h3>
+
 <p>好，一贯的风格，先来介绍几个地址：</p>
+
 <p>原代码地址：<a href="https://github.com/ChenglongChen/tensorflow-DeepFM">https://github.com/ChenglongChen/tensorflow-DeepFM</a></p>
+
 <p>数据下载地址：<a href="https://www.kaggle.com/c/porto-seguro-safe-driver-prediction">https://www.kaggle.com/c/porto-seguro-safe-driver-prediction</a></p>
+
 <p><strong>模型输入</strong></p>
+
 <p>模型的输入主要有下面几个部分：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>self<span style="color:#f92672">.</span>feat_index <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>placeholder(tf<span style="color:#f92672">.</span>int32,
-</span></span><span style="display:flex;"><span>                                 shape<span style="color:#f92672">=</span>[<span style="color:#66d9ef">None</span>,<span style="color:#66d9ef">None</span>],
-</span></span><span style="display:flex;"><span>                                 name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;feat_index&#39;</span>)
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>feat_value <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>placeholder(tf<span style="color:#f92672">.</span>float32,
-</span></span><span style="display:flex;"><span>                               shape<span style="color:#f92672">=</span>[<span style="color:#66d9ef">None</span>,<span style="color:#66d9ef">None</span>],
-</span></span><span style="display:flex;"><span>                               name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;feat_value&#39;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>label <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>placeholder(tf<span style="color:#f92672">.</span>float32,shape<span style="color:#f92672">=</span>[<span style="color:#66d9ef">None</span>,<span style="color:#ae81ff">1</span>],name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;label&#39;</span>)
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>dropout_keep_fm <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>placeholder(tf<span style="color:#f92672">.</span>float32,shape<span style="color:#f92672">=</span>[<span style="color:#66d9ef">None</span>],name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;dropout_keep_fm&#39;</span>)
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>dropout_keep_deep <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>placeholder(tf<span style="color:#f92672">.</span>float32,shape<span style="color:#f92672">=</span>[<span style="color:#66d9ef">None</span>],name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;dropout_deep_deep&#39;</span>)
-</span></span></code></pre></div><p><strong>权重构建</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">self<span style="color:#f92672">.</span>feat_index <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>placeholder(tf<span style="color:#f92672">.</span>int32,
+                                 shape<span style="color:#f92672">=</span>[None,None],
+                                 name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;feat_index&#39;</span>)
+self<span style="color:#f92672">.</span>feat_value <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>placeholder(tf<span style="color:#f92672">.</span>float32,
+                               shape<span style="color:#f92672">=</span>[None,None],
+                               name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;feat_value&#39;</span>)
+
+self<span style="color:#f92672">.</span>label <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>placeholder(tf<span style="color:#f92672">.</span>float32,shape<span style="color:#f92672">=</span>[None,<span style="color:#ae81ff">1</span>],name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;label&#39;</span>)
+self<span style="color:#f92672">.</span>dropout_keep_fm <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>placeholder(tf<span style="color:#f92672">.</span>float32,shape<span style="color:#f92672">=</span>[None],name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;dropout_keep_fm&#39;</span>)
+self<span style="color:#f92672">.</span>dropout_keep_deep <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>placeholder(tf<span style="color:#f92672">.</span>float32,shape<span style="color:#f92672">=</span>[None],name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;dropout_deep_deep&#39;</span>)</code></pre></div>
+<p><strong>权重构建</strong></p>
+
 <p>权重的设定主要有两部分，第一部分是从输入到embedding中的权重，其实也就是我们的dense vector。另一部分就是深度神经网络每一层的权重。第二部分很好理解，我们主要来看看第一部分：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#75715e">#embeddings</span>
-</span></span><span style="display:flex;"><span>weights[<span style="color:#e6db74">&#39;feature_embeddings&#39;</span>] <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>Variable(
-</span></span><span style="display:flex;"><span>    tf<span style="color:#f92672">.</span>random_normal([self<span style="color:#f92672">.</span>feature_size,self<span style="color:#f92672">.</span>embedding_size],<span style="color:#ae81ff">0.0</span>,<span style="color:#ae81ff">0.01</span>),
-</span></span><span style="display:flex;"><span>    name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;feature_embeddings&#39;</span>)
-</span></span><span style="display:flex;"><span>weights[<span style="color:#e6db74">&#39;feature_bias&#39;</span>] <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>Variable(tf<span style="color:#f92672">.</span>random_normal([self<span style="color:#f92672">.</span>feature_size,<span style="color:#ae81ff">1</span>],<span style="color:#ae81ff">0.0</span>,<span style="color:#ae81ff">1.0</span>),name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;feature_bias&#39;</span>)
-</span></span></code></pre></div><p>weights[&lsquo;feature_embeddings&rsquo;] 存放的每一个值其实就是FM中的vik，所以它是F * K的。其中，F代表feture的大小(将离散特征转换成one-hot之后的特征总量),K代表dense vector的大小。</p>
-<p>weights[&lsquo;feature_bias&rsquo;]是FM中的一次项的权重。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e">#embeddings</span>
+weights[<span style="color:#e6db74">&#39;feature_embeddings&#39;</span>] <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>Variable(
+    tf<span style="color:#f92672">.</span>random_normal([self<span style="color:#f92672">.</span>feature_size,self<span style="color:#f92672">.</span>embedding_size],<span style="color:#ae81ff">0.0</span>,<span style="color:#ae81ff">0.01</span>),
+    name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;feature_embeddings&#39;</span>)
+weights[<span style="color:#e6db74">&#39;feature_bias&#39;</span>] <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>Variable(tf<span style="color:#f92672">.</span>random_normal([self<span style="color:#f92672">.</span>feature_size,<span style="color:#ae81ff">1</span>],<span style="color:#ae81ff">0.0</span>,<span style="color:#ae81ff">1.0</span>),name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;feature_bias&#39;</span>)</code></pre></div>
+<p>weights['feature_embeddings'] 存放的每一个值其实就是FM中的vik，所以它是F * K的。其中，F代表feture的大小(将离散特征转换成one-hot之后的特征总量),K代表dense vector的大小。</p>
+
+<p>weights['feature_bias']是FM中的一次项的权重。</p>
+
 <p><strong>Embedding part</strong></p>
-<p>这个部分很简单啦，是根据feat_index选择对应的weights[&lsquo;feature_embeddings&rsquo;]中的embedding值，然后再与对应的feat_value相乘就可以了：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#75715e"># model</span>
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>embeddings <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>embedding_lookup(self<span style="color:#f92672">.</span>weights[<span style="color:#e6db74">&#39;feature_embeddings&#39;</span>],self<span style="color:#f92672">.</span>feat_index) <span style="color:#75715e"># N * F * K</span>
-</span></span><span style="display:flex;"><span>feat_value <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>reshape(self<span style="color:#f92672">.</span>feat_value,shape<span style="color:#f92672">=</span>[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>,self<span style="color:#f92672">.</span>field_size,<span style="color:#ae81ff">1</span>])
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>embeddings <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>multiply(self<span style="color:#f92672">.</span>embeddings,feat_value)
-</span></span></code></pre></div><p><strong>FM part</strong></p>
+
+<p>这个部分很简单啦，是根据feat_index选择对应的weights['feature_embeddings']中的embedding值，然后再与对应的feat_value相乘就可以了：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e"># model</span>
+self<span style="color:#f92672">.</span>embeddings <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>embedding_lookup(self<span style="color:#f92672">.</span>weights[<span style="color:#e6db74">&#39;feature_embeddings&#39;</span>],self<span style="color:#f92672">.</span>feat_index) <span style="color:#75715e"># N * F * K</span>
+feat_value <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>reshape(self<span style="color:#f92672">.</span>feat_value,shape<span style="color:#f92672">=</span>[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>,self<span style="color:#f92672">.</span>field_size,<span style="color:#ae81ff">1</span>])
+self<span style="color:#f92672">.</span>embeddings <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>multiply(self<span style="color:#f92672">.</span>embeddings,feat_value)</code></pre></div>
+<p><strong>FM part</strong></p>
+
 <p>首先来回顾一下我们之前对FM的化简公式</p>
+
 
 
 <div class="box">
@@ -1059,67 +1124,72 @@ $$</p>
   </figure>
 </div>
 
+
 <p>所以我们的二次项可以根据化简公式轻松的得到，再加上我们的一次项，FM的part就算完了。同时更为方便的是，由于权重共享，我们这里可以直接用Embedding part计算出的embeddings来得到我们的二次项：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#75715e"># first order term</span>
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>y_first_order <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>embedding_lookup(self<span style="color:#f92672">.</span>weights[<span style="color:#e6db74">&#39;feature_bias&#39;</span>],self<span style="color:#f92672">.</span>feat_index)
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>y_first_order <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>reduce_sum(tf<span style="color:#f92672">.</span>multiply(self<span style="color:#f92672">.</span>y_first_order,feat_value),<span style="color:#ae81ff">2</span>)
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>y_first_order <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>dropout(self<span style="color:#f92672">.</span>y_first_order,self<span style="color:#f92672">.</span>dropout_keep_fm[<span style="color:#ae81ff">0</span>])
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># second order term</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># sum-square-part</span>
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>summed_features_emb <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>reduce_sum(self<span style="color:#f92672">.</span>embeddings,<span style="color:#ae81ff">1</span>) <span style="color:#75715e"># None * k</span>
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>summed_features_emb_square <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>square(self<span style="color:#f92672">.</span>summed_features_emb) <span style="color:#75715e"># None * K</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># squre-sum-part</span>
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>squared_features_emb <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>square(self<span style="color:#f92672">.</span>embeddings)
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>squared_sum_features_emb <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>reduce_sum(self<span style="color:#f92672">.</span>squared_features_emb, <span style="color:#ae81ff">1</span>)  <span style="color:#75715e"># None * K</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#second order</span>
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>y_second_order <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.5</span> <span style="color:#f92672">*</span> tf<span style="color:#f92672">.</span>subtract(self<span style="color:#f92672">.</span>summed_features_emb_square,self<span style="color:#f92672">.</span>squared_sum_features_emb)
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>y_second_order <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>dropout(self<span style="color:#f92672">.</span>y_second_order,self<span style="color:#f92672">.</span>dropout_keep_fm[<span style="color:#ae81ff">1</span>])
-</span></span></code></pre></div><p><strong>DNN part</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e"># first order term</span>
+self<span style="color:#f92672">.</span>y_first_order <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>embedding_lookup(self<span style="color:#f92672">.</span>weights[<span style="color:#e6db74">&#39;feature_bias&#39;</span>],self<span style="color:#f92672">.</span>feat_index)
+self<span style="color:#f92672">.</span>y_first_order <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>reduce_sum(tf<span style="color:#f92672">.</span>multiply(self<span style="color:#f92672">.</span>y_first_order,feat_value),<span style="color:#ae81ff">2</span>)
+self<span style="color:#f92672">.</span>y_first_order <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>dropout(self<span style="color:#f92672">.</span>y_first_order,self<span style="color:#f92672">.</span>dropout_keep_fm[<span style="color:#ae81ff">0</span>])
+
+<span style="color:#75715e"># second order term</span>
+<span style="color:#75715e"># sum-square-part</span>
+self<span style="color:#f92672">.</span>summed_features_emb <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>reduce_sum(self<span style="color:#f92672">.</span>embeddings,<span style="color:#ae81ff">1</span>) <span style="color:#75715e"># None * k</span>
+self<span style="color:#f92672">.</span>summed_features_emb_square <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>square(self<span style="color:#f92672">.</span>summed_features_emb) <span style="color:#75715e"># None * K</span>
+
+<span style="color:#75715e"># squre-sum-part</span>
+self<span style="color:#f92672">.</span>squared_features_emb <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>square(self<span style="color:#f92672">.</span>embeddings)
+self<span style="color:#f92672">.</span>squared_sum_features_emb <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>reduce_sum(self<span style="color:#f92672">.</span>squared_features_emb, <span style="color:#ae81ff">1</span>)  <span style="color:#75715e"># None * K</span>
+
+<span style="color:#75715e">#second order</span>
+self<span style="color:#f92672">.</span>y_second_order <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.5</span> <span style="color:#f92672">*</span> tf<span style="color:#f92672">.</span>subtract(self<span style="color:#f92672">.</span>summed_features_emb_square,self<span style="color:#f92672">.</span>squared_sum_features_emb)
+self<span style="color:#f92672">.</span>y_second_order <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>dropout(self<span style="color:#f92672">.</span>y_second_order,self<span style="color:#f92672">.</span>dropout_keep_fm[<span style="color:#ae81ff">1</span>])</code></pre></div>
+<p><strong>DNN part</strong></p>
+
 <p>DNNpart的话，就是将Embedding part的输出再经过几层全链接层：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#75715e"># Deep component</span>
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>y_deep <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>reshape(self<span style="color:#f92672">.</span>embeddings,shape<span style="color:#f92672">=</span>[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>,self<span style="color:#f92672">.</span>field_size <span style="color:#f92672">*</span> self<span style="color:#f92672">.</span>embedding_size])
-</span></span><span style="display:flex;"><span>self<span style="color:#f92672">.</span>y_deep <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>dropout(self<span style="color:#f92672">.</span>y_deep,self<span style="color:#f92672">.</span>dropout_keep_deep[<span style="color:#ae81ff">0</span>])
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>,len(self<span style="color:#f92672">.</span>deep_layers)):
-</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>y_deep <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>add(tf<span style="color:#f92672">.</span>matmul(self<span style="color:#f92672">.</span>y_deep,self<span style="color:#f92672">.</span>weights[<span style="color:#e6db74">&#34;layer_</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span>i]), self<span style="color:#f92672">.</span>weights[<span style="color:#e6db74">&#34;bias_</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">%</span>I])
-</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>y_deep <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>deep_layers_activation(self<span style="color:#f92672">.</span>y_deep)
-</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>y_deep <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>dropout(self<span style="color:#f92672">.</span>y_deep,self<span style="color:#f92672">.</span>dropout_keep_deep[i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>])
-</span></span></code></pre></div><p>最后，我们要将DNN和FM两部分的输出进行结合：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>concat_input <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>concat([self<span style="color:#f92672">.</span>y_first_order, self<span style="color:#f92672">.</span>y_second_order, self<span style="color:#f92672">.</span>y_deep], axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
-</span></span></code></pre></div><p><strong>损失及优化器</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e"># Deep component</span>
+self<span style="color:#f92672">.</span>y_deep <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>reshape(self<span style="color:#f92672">.</span>embeddings,shape<span style="color:#f92672">=</span>[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>,self<span style="color:#f92672">.</span>field_size <span style="color:#f92672">*</span> self<span style="color:#f92672">.</span>embedding_size])
+self<span style="color:#f92672">.</span>y_deep <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>dropout(self<span style="color:#f92672">.</span>y_deep,self<span style="color:#f92672">.</span>dropout_keep_deep[<span style="color:#ae81ff">0</span>])
+
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>,len(self<span style="color:#f92672">.</span>deep_layers)):
+    self<span style="color:#f92672">.</span>y_deep <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>add(tf<span style="color:#f92672">.</span>matmul(self<span style="color:#f92672">.</span>y_deep,self<span style="color:#f92672">.</span>weights[<span style="color:#e6db74">&#34;layer_</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span>i]), self<span style="color:#f92672">.</span>weights[<span style="color:#e6db74">&#34;bias_</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">%</span>I])
+    self<span style="color:#f92672">.</span>y_deep <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>deep_layers_activation(self<span style="color:#f92672">.</span>y_deep)
+    self<span style="color:#f92672">.</span>y_deep <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>dropout(self<span style="color:#f92672">.</span>y_deep,self<span style="color:#f92672">.</span>dropout_keep_deep[i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>])</code></pre></div>
+<p>最后，我们要将DNN和FM两部分的输出进行结合：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">concat_input <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>concat([self<span style="color:#f92672">.</span>y_first_order, self<span style="color:#f92672">.</span>y_second_order, self<span style="color:#f92672">.</span>y_deep], axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)</code></pre></div>
+<p><strong>损失及优化器</strong></p>
+
 <p>我们可以使用logloss(如果定义为分类问题)，或者mse(如果定义为预测问题)，以及多种的优化器去进行尝试，这些根据不同的参数设定得到：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#75715e"># loss</span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>loss_type <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;logloss&#34;</span>:
-</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>out <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>sigmoid(self<span style="color:#f92672">.</span>out)
-</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>loss <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>losses<span style="color:#f92672">.</span>log_loss(self<span style="color:#f92672">.</span>label, self<span style="color:#f92672">.</span>out)
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">elif</span> self<span style="color:#f92672">.</span>loss_type <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;mse&#34;</span>:
-</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>loss <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>l2_loss(tf<span style="color:#f92672">.</span>subtract(self<span style="color:#f92672">.</span>label, self<span style="color:#f92672">.</span>out))
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># l2 regularization on weights</span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>l2_reg <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>:
-</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>loss <span style="color:#f92672">+=</span> tf<span style="color:#f92672">.</span>contrib<span style="color:#f92672">.</span>layers<span style="color:#f92672">.</span>l2_regularizer(
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>l2_reg)(self<span style="color:#f92672">.</span>weights[<span style="color:#e6db74">&#34;concat_projection&#34;</span>])
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>use_deep:
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(len(self<span style="color:#f92672">.</span>deep_layers)):
-</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>loss <span style="color:#f92672">+=</span> tf<span style="color:#f92672">.</span>contrib<span style="color:#f92672">.</span>layers<span style="color:#f92672">.</span>l2_regularizer(
-</span></span><span style="display:flex;"><span>                self<span style="color:#f92672">.</span>l2_reg)(self<span style="color:#f92672">.</span>weights[<span style="color:#e6db74">&#34;layer_</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> I])
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>optimizer_type <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;adam&#34;</span>:
-</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>optimizer <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>train<span style="color:#f92672">.</span>AdamOptimizer(learning_rate<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>learning_rate, beta1<span style="color:#f92672">=</span><span style="color:#ae81ff">0.9</span>, beta2<span style="color:#f92672">=</span><span style="color:#ae81ff">0.999</span>,
-</span></span><span style="display:flex;"><span>                                            epsilon<span style="color:#f92672">=</span><span style="color:#ae81ff">1e-8</span>)<span style="color:#f92672">.</span>minimize(self<span style="color:#f92672">.</span>loss)
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">elif</span> self<span style="color:#f92672">.</span>optimizer_type <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;adagrad&#34;</span>:
-</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>optimizer <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>train<span style="color:#f92672">.</span>AdagradOptimizer(learning_rate<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>learning_rate,
-</span></span><span style="display:flex;"><span>                                               initial_accumulator_value<span style="color:#f92672">=</span><span style="color:#ae81ff">1e-8</span>)<span style="color:#f92672">.</span>minimize(self<span style="color:#f92672">.</span>loss)
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">elif</span> self<span style="color:#f92672">.</span>optimizer_type <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;gd&#34;</span>:
-</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>optimizer <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>train<span style="color:#f92672">.</span>GradientDescentOptimizer(learning_rate<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>learning_rate)<span style="color:#f92672">.</span>minimize(self<span style="color:#f92672">.</span>loss)
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">elif</span> self<span style="color:#f92672">.</span>optimizer_type <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;momentum&#34;</span>:
-</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>optimizer <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>train<span style="color:#f92672">.</span>MomentumOptimizer(learning_rate<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>learning_rate, momentum<span style="color:#f92672">=</span><span style="color:#ae81ff">0.95</span>)<span style="color:#f92672">.</span>minimize(
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>loss)
-</span></span></code></pre></div><p><strong>模型效果</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e"># loss</span>
+<span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>loss_type <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;logloss&#34;</span>:
+    self<span style="color:#f92672">.</span>out <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>sigmoid(self<span style="color:#f92672">.</span>out)
+    self<span style="color:#f92672">.</span>loss <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>losses<span style="color:#f92672">.</span>log_loss(self<span style="color:#f92672">.</span>label, self<span style="color:#f92672">.</span>out)
+<span style="color:#66d9ef">elif</span> self<span style="color:#f92672">.</span>loss_type <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;mse&#34;</span>:
+    self<span style="color:#f92672">.</span>loss <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>l2_loss(tf<span style="color:#f92672">.</span>subtract(self<span style="color:#f92672">.</span>label, self<span style="color:#f92672">.</span>out))
+<span style="color:#75715e"># l2 regularization on weights</span>
+<span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>l2_reg <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>:
+    self<span style="color:#f92672">.</span>loss <span style="color:#f92672">+=</span> tf<span style="color:#f92672">.</span>contrib<span style="color:#f92672">.</span>layers<span style="color:#f92672">.</span>l2_regularizer(
+        self<span style="color:#f92672">.</span>l2_reg)(self<span style="color:#f92672">.</span>weights[<span style="color:#e6db74">&#34;concat_projection&#34;</span>])
+    <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>use_deep:
+        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(len(self<span style="color:#f92672">.</span>deep_layers)):
+            self<span style="color:#f92672">.</span>loss <span style="color:#f92672">+=</span> tf<span style="color:#f92672">.</span>contrib<span style="color:#f92672">.</span>layers<span style="color:#f92672">.</span>l2_regularizer(
+                self<span style="color:#f92672">.</span>l2_reg)(self<span style="color:#f92672">.</span>weights[<span style="color:#e6db74">&#34;layer_</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> I])
+
+
+<span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>optimizer_type <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;adam&#34;</span>:
+    self<span style="color:#f92672">.</span>optimizer <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>train<span style="color:#f92672">.</span>AdamOptimizer(learning_rate<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>learning_rate, beta1<span style="color:#f92672">=</span><span style="color:#ae81ff">0.9</span>, beta2<span style="color:#f92672">=</span><span style="color:#ae81ff">0.999</span>,
+                                            epsilon<span style="color:#f92672">=</span><span style="color:#ae81ff">1e-8</span>)<span style="color:#f92672">.</span>minimize(self<span style="color:#f92672">.</span>loss)
+<span style="color:#66d9ef">elif</span> self<span style="color:#f92672">.</span>optimizer_type <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;adagrad&#34;</span>:
+    self<span style="color:#f92672">.</span>optimizer <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>train<span style="color:#f92672">.</span>AdagradOptimizer(learning_rate<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>learning_rate,
+                                               initial_accumulator_value<span style="color:#f92672">=</span><span style="color:#ae81ff">1e-8</span>)<span style="color:#f92672">.</span>minimize(self<span style="color:#f92672">.</span>loss)
+<span style="color:#66d9ef">elif</span> self<span style="color:#f92672">.</span>optimizer_type <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;gd&#34;</span>:
+    self<span style="color:#f92672">.</span>optimizer <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>train<span style="color:#f92672">.</span>GradientDescentOptimizer(learning_rate<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>learning_rate)<span style="color:#f92672">.</span>minimize(self<span style="color:#f92672">.</span>loss)
+<span style="color:#66d9ef">elif</span> self<span style="color:#f92672">.</span>optimizer_type <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;momentum&#34;</span>:
+    self<span style="color:#f92672">.</span>optimizer <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>train<span style="color:#f92672">.</span>MomentumOptimizer(learning_rate<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>learning_rate, momentum<span style="color:#f92672">=</span><span style="color:#ae81ff">0.95</span>)<span style="color:#f92672">.</span>minimize(
+        self<span style="color:#f92672">.</span>loss)</code></pre></div>
+<p><strong>模型效果</strong></p>
+
 <p>前面提到了，我们用logloss作为损失函数去进行模型的参数更新，但是代码中输出了模型的 Normalization 的 Gini值来进行模型评价，我们可以对比一下(记住，Gini值越大越好呦)：</p>
+
 
 
 <div class="box">

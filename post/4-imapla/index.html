@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="原文链接 Espeholt, Lasse, et al. &amp;ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&amp;rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、" />
+  <meta name="description" content="原文链接 Espeholt, Lasse, et al. &amp;quot;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&amp;quot; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、" />
 
   <meta name="keywords" content="RL, ML, " />
 
@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.93.2" />
+<meta name="generator" content="Hugo 0.80.0" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/4-imapla/" />
@@ -60,19 +60,23 @@
 
 
 <meta property="og:title" content="IMPALA" />
-<meta property="og:description" content="原文链接 Espeholt, Lasse, et al. &ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、" />
+<meta property="og:description" content="原文链接 Espeholt, Lasse, et al. &quot;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&quot; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/4-imapla/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/4-imapla/" />
 <meta property="article:published_time" content="2021-05-13T16:01:23+08:00" />
 <meta property="article:modified_time" content="2021-05-13T16:01:23+08:00" />
-
 <meta itemprop="name" content="IMPALA">
-<meta itemprop="description" content="原文链接 Espeholt, Lasse, et al. &ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、"><meta itemprop="datePublished" content="2021-05-13T16:01:23+08:00" />
+<meta itemprop="description" content="原文链接 Espeholt, Lasse, et al. &quot;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&quot; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、">
+<meta itemprop="datePublished" content="2021-05-13T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-05-13T16:01:23+08:00" />
 <meta itemprop="wordCount" content="1994">
-<meta itemprop="keywords" content="RL," /><meta name="twitter:card" content="summary"/>
+
+
+
+<meta itemprop="keywords" content="RL," />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="IMPALA"/>
-<meta name="twitter:description" content="原文链接 Espeholt, Lasse, et al. &ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&rdquo; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、"/>
+<meta name="twitter:description" content="原文链接 Espeholt, Lasse, et al. &quot;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&quot; arXiv preprint arXiv:1802.01561 (2018). 背景 IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -224,6 +228,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/">Python中的断言assert和异常exception处理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/">Python在训练时保存日志信息</a>
               </li>
             
               <li>
@@ -595,6 +603,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/">Python在训练时保存日志信息</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/3-pythondict/">Python的字典dict原理</a>
               </li>
             
@@ -782,31 +794,24 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#原文链接">原文链接</a></li>
-    <li><a href="#背景">背景</a></li>
-    <li><a href="#过程">过程</a>
-      <ul>
-        <li><a href="#1-impala">1. IMPALA</a></li>
-        <li><a href="#2-v-trace">2. V-trace</a></li>
-        <li><a href="#3-actor-critic">3. Actor-critic</a></li>
-      </ul>
-    </li>
-    <li><a href="#实验结果">实验结果</a></li>
-  </ul>
-</nav>
+    
   </div>
 </div>
 
     
     <div class="post-content">
       <h2 id="原文链接">原文链接</h2>
-<p><a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/1802.01561">Espeholt, Lasse, et al. &ldquo;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&rdquo; arXiv preprint arXiv:1802.01561 (2018).</a></p>
+
+<p><a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/1802.01561">Espeholt, Lasse, et al. &quot;Impala: Scalable distributed deep-rl with importance weighted actor-learner architectures.&quot; arXiv preprint arXiv:1802.01561 (2018).</a></p>
+
 <h2 id="背景">背景</h2>
+
 <p>IMPLALA是一个大规模强化学习训练的框架，具有较高的性能（high throughput）、较好的扩展性（scalability）和较高的效率（data-efficiency）。在大规模计算的框架下，采样和策略更新会有一些错位（不再是完全的on-policy），在这种情况下，文章通过V-trace技术来完成地使用off-policy样本进行训练。</p>
+
 <h2 id="过程">过程</h2>
+
 <h3 id="1-impala">1. IMPALA</h3>
+
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -819,9 +824,13 @@
   </figure>
 </div>
 
+
 <p>首先，我们来看一个single learner的模式。learner的主要作用是通过获取actor得到的轨迹来做SGD来更新各个神经网络的参数，神经网络训练本身可并行的特性，learner使用的是一块GPU。actor定期从learner获取最新的神经网络参数，并且每个actor起一个模拟环境，来使用自己能获得的最新策略去采样，并且把获取到的${x_t, a_t, r_t, \mu(a_t|x_t)}$传回供learner去更新各个神经网络参数。由于模拟环境的运行通常不方便做并行，actor一般使用CPU。由于actor上的策略$\mu$可能不是learner中最新的策略$\pi$，因此这里使用了不同的符号来表示。</p>
+
 <p>下一步，当训练规模扩大的时候，可以考虑使用多个learner（多块GPU）并且每块GPU配套多个actor（CPU）。每个learner只从自己的actor们中获取样本进行更新，learner之间定期交换gradient并且更新网络参数，actor也定期从任意learner上获取并更新神经网络参数。</p>
+
 <p>IMPALA中actor和learner相互异步工作，极大提高了时间利用率。文章还与与batched A2C做了对比，如下图所示。a图中，正向传播和反向传播都想凑一批来做（可能是给到GPU来算），因此每一步都需要同步，而模拟环境各步所需时间方差很大，这样浪费了大量的等待时间；b图中，只把耗时较长的反向传播凑一批来做，正向传播就给各个actor自己做；而c图中的IMPALA则完全把actor和learner分开异步进行，这样actor不用去等待别的actor，可以尽可能多的做采样，相应地，所作出的牺牲就是每次更新得到的样本变为了off-policy样本。接下来本文提出了V-trace对于off-policy样本做修正。</p>
+
 
 
 <div class="box">
@@ -834,9 +843,13 @@
   </figure>
 </div>
 
-<h3 id="2-v-trace">2. V-trace</h3>
+
+<h3 id="2-vtrace">2. V-trace</h3>
+
 <p>算法中需要根据采样到的样本来维护一个状态价值函数$V_theta(x)$。V-trace的目的是根据采样到的${x_t, a_t, r_t, \mu(a_t|x_t)}$和当前状态价值函数网络来给出当前状态价值函数的一个更好的估计$v_s$（$s$下标表示它是其中的一个样本），这样价值神经网络就可以把它作为一个更新的目标来更新权重。</p>
+
 <p>我们直接写出$v_s$的表达形式。</p>
+
 
 
 <div class="box">
@@ -849,7 +862,9 @@
   </figure>
 </div>
 
+
 <p>非常复杂，看不懂，有没有？看看里面一些变量的定义是什么：</p>
+
 
 
 <div class="box">
@@ -862,22 +877,33 @@
   </figure>
 </div>
 
+
 <p>括号里的表达式是Temporal Difference，然而外面的$\rho_t$是什么含义了？</p>
-<p>$$
+
+<p><span  class="math">\[
 \rho_t = \min(\overline\rho, \frac{\pi(a_t|x_t)}{\mu(a_t|x_t)})
-$$</p>
+\]</span></p>
+
 <p>还有其他变量的定义：</p>
-<p>$$
+
+<p><span  class="math">\[
 c_i = \min(\overline c, \frac{\pi(a_i|x_i)}{\mu(a_i|x_i)})
-$$</p>
-<p>$$
+\]</span></p>
+
+<p><span  class="math">\[
 \overline\rho \geq \overline c
-$$</p>
+\]</span></p>
+
 <p>看到$\rho_t$和$c_i$的表达式，是不是联想起什么了？这就是Importance Sampling。从策略$mu$中采样，更新当前的策略$\pi$。只不过加上了最大值的限制，不能超过$\overline\rho$和$\overline c$，也就是说进行了截断处理，一般情况下这两个值可以设置成1啦。</p>
-<h3 id="3-actor-critic">3. Actor-critic</h3>
+
+<h3 id="3-actorcritic">3. Actor-critic</h3>
+
 <p>IMPALA中需要维护两个神经网络，一个是策略神经网络（用作actor），一个是状态价值函数网络（用作critic）。前面提到，V-trace技术就是根据采样到的${x_t, a_t, r_t, \mu(a_t|x_t)}$和当前状态价值函数网络来给出当前状态价值函数的一个更好的估计$v_s$。</p>
+
 <h4 id="31-critic的更新">3.1 Critic的更新</h4>
+
 <p>Critic的更新方式为最小化拟合的价值函数 [公式] 相对于目标价值函数 [公式] 的均方误差，即朝如下方向更新</p>
+
 
 
 <div class="box">
@@ -890,8 +916,11 @@ $$</p>
   </figure>
 </div>
 
+
 <h4 id="32-actor的更新">3.2 Actor的更新</h4>
+
 <p>Actor朝着off-policy policy gradient给出的梯度方向更新。</p>
+
 
 
 <div class="box">
@@ -904,10 +933,15 @@ $$</p>
   </figure>
 </div>
 
+
 <h4 id="33-熵">3.3 熵</h4>
+
 <p>前两项再加上对于熵的激励，就可以得到最后的算法更新公式。</p>
+
 <h2 id="实验结果">实验结果</h2>
+
 <p>实验主要说明了以下几点：</p>
+
 <ul>
 <li>相比于A3C和batched A2C，具有更好的高性能计算性能；</li>
 <li>单任务训练上相比于分布式A3C、单机A3C和batched A2C有更好的性能，并且对于超参数更稳定；</li>

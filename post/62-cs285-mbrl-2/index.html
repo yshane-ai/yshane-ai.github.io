@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.93.2" />
+<meta name="generator" content="Hugo 0.80.0" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/62-cs285-mbrl-2/" />
@@ -62,15 +62,19 @@
 <meta property="og:title" content="CS285(12)之Model-Based RL" />
 <meta property="og:description" content="在上个lecture中讨论了如何学习model并利用它来做planning，并引入了latent model去加速学习。 但是可以留意到在这个流" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/62-cs285-mbrl-2/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/62-cs285-mbrl-2/" />
 <meta property="article:published_time" content="2021-11-02T16:01:23+08:00" />
 <meta property="article:modified_time" content="2021-11-02T16:01:23+08:00" />
-
 <meta itemprop="name" content="CS285(12)之Model-Based RL">
-<meta itemprop="description" content="在上个lecture中讨论了如何学习model并利用它来做planning，并引入了latent model去加速学习。 但是可以留意到在这个流"><meta itemprop="datePublished" content="2021-11-02T16:01:23+08:00" />
+<meta itemprop="description" content="在上个lecture中讨论了如何学习model并利用它来做planning，并引入了latent model去加速学习。 但是可以留意到在这个流">
+<meta itemprop="datePublished" content="2021-11-02T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-02T16:01:23+08:00" />
 <meta itemprop="wordCount" content="5044">
-<meta itemprop="keywords" content="CS285," /><meta name="twitter:card" content="summary"/>
+
+
+
+<meta itemprop="keywords" content="CS285," />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="CS285(12)之Model-Based RL"/>
 <meta name="twitter:description" content="在上个lecture中讨论了如何学习model并利用它来做planning，并引入了latent model去加速学习。 但是可以留意到在这个流"/>
 
@@ -224,6 +228,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/">Python中的断言assert和异常exception处理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/">Python在训练时保存日志信息</a>
               </li>
             
               <li>
@@ -595,6 +603,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/">Python在训练时保存日志信息</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/3-pythondict/">Python的字典dict原理</a>
               </li>
             
@@ -782,42 +794,14 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#1-backpropagate-into-the-policy">1 Backpropagate into the policy</a>
-      <ul>
-        <li><a href="#11-backpropagate-into-the-policy">1.1 Backpropagate into the policy</a></li>
-        <li><a href="#12-problems-and-solutions">1.2 Problems and solutions</a></li>
-      </ul>
-    </li>
-    <li><a href="#2-model-free-rl-with-model">2 Model-free RL with model</a>
-      <ul>
-        <li><a href="#21-dyna">2.1 Dyna</a></li>
-        <li><a href="#22-general-dyna-style-model">2.2 General Dyna-style model</a></li>
-      </ul>
-    </li>
-    <li><a href="#3-lqr-flm-fitted-local-models">3 LQR-FLM (Fitted Local Models)</a>
-      <ul>
-        <li><a href="#31-local-models">3.1 Local models</a></li>
-        <li><a href="#32-fit-the-models">3.2 Fit the models</a></li>
-        <li><a href="#33-execute-actions">3.3 Execute actions</a></li>
-        <li><a href="#34-dynamics-not-linear">3.4 Dynamics not linear？</a></li>
-      </ul>
-    </li>
-    <li><a href="#4-combine-local-policies-into-global-policies">4 Combine local policies into global policies</a>
-      <ul>
-        <li><a href="#41-guided-policy-search">4.1 Guided policy search</a></li>
-        <li><a href="#42-distillation">4.2 Distillation</a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
+    
   </div>
 </div>
 
     
     <div class="post-content">
       <p>在上个lecture中讨论了如何学习model并利用它来做planning，并引入了latent model去加速学习。</p>
+
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -830,10 +814,15 @@
   </figure>
 </div>
 
+
 <p>但是可以留意到在这个流程中实际并没有显式地学习policy，所以在这个lecture中讨论在model-based的框架下如何直接利用model学习polcy。</p>
+
 <h2 id="1-backpropagate-into-the-policy">1 Backpropagate into the policy</h2>
+
 <h3 id="11-backpropagate-into-the-policy">1.1 Backpropagate into the policy</h3>
+
 <p>从RL的整个框架来看，agent接收到state，根据policy得到action，environment利用dynamic来state和action得到next state。很直观的，如果学习得到了dynamic model，那么就可以直接通过BP来计算得到dynamic关于policy的gradient，从而利用gradient descent进行policy更新：</p>
+
 
 
 <div class="box">
@@ -846,7 +835,9 @@
   </figure>
 </div>
 
+
 <p>从而新的model-based RL的算法流程都可以表达为如下的模式，重点在于第三步的BP：</p>
+
 
 
 <div class="box">
@@ -859,8 +850,11 @@
   </figure>
 </div>
 
+
 <h3 id="12-problems-and-solutions">1.2 Problems and solutions</h3>
+
 <p>这种方法存在的问题主要可以分为两个方面，首先是由于policy是global policy，policy的微小改变的影响是全局的，它不再与time steps相关，参数敏感度比较强，所以会存在和shooting methods相类似的问题，随着误差会不断累积：</p>
+
 
 
 <div class="box">
@@ -873,10 +867,15 @@
   </figure>
 </div>
 
+
 <p>另外则是可能存在gradient vanish以及explode的问题，问题来源类似RNNs，是gradient在多个steps之间累积导致的。而相对而言，RNNs可以利用LSTM的特殊结构进行求解，而这里的dynamics是由environment决定的，这取决于问题本身，无法像RNNs一样解决。</p>
+
 <p>这个lecture则是主要引入两种方法来缓解这些问题。第一个则是避免derivative操作，从根本上规避vanish以及explode的问题，使用model生成数据，利用model-free方法求解。第二个则是别使用神经网络这样的global policies，仅仅学习简单的local policies，从而规避参数敏感性的问题，例如带learned models的LQR，并可以利用supervised learning将这些合并到global policies中。</p>
-<h2 id="2-model-free-rl-with-model">2 Model-free RL with model</h2>
+
+<h2 id="2-modelfree-rl-with-model">2 Model-free RL with model</h2>
+
 <p>这里进入第一种解决方案：利用derivative-free(model-free) RL algorithms，为什么说它会有效，简单举个例子：对比一下上面的方法和policy gradient方法。</p>
+
 
 
 <div class="box">
@@ -889,9 +888,13 @@
   </figure>
 </div>
 
+
 <p>在policy gradient中，如果样本足够，它是可以足够稳定的，主要是因为它不像Backprop方法那样需要按照time-steps进行gradient的累乘。其他各种model-free的方法也同样能够规避这个问题。</p>
+
 <h3 id="21-dyna">2.1 Dyna</h3>
+
 <p>这里首先介绍Dyna方法，它是利用model加速Q-learning学习的算法，一方面它会与environment进行交互获得真实的数据，另一方面它会根据model去做隐式/显式的数据生成，下图是经典Dyna方法的流程图：</p>
+
 
 
 <div class="box">
@@ -904,9 +907,13 @@
   </figure>
 </div>
 
+
 <p>其中，表现出对model利用的主要是在两个红框处的expectation，在前面Q-learning部分提到，由于model不存在，所以会使用sample进行替代，但是在这里则可以直接利用model得到每个sample的概率，从而提高了算法效率。</p>
-<h3 id="22-general-dyna-style-model">2.2 General Dyna-style model</h3>
+
+<h3 id="22-general-dynastyle-model">2.2 General Dyna-style model</h3>
+
 <p>上面介绍了具体的Dyna算法，在这里给出general Dyna-style的model-based方法的流程：</p>
+
 
 
 <div class="box">
@@ -919,8 +926,11 @@
   </figure>
 </div>
 
+
 <p>在上面Dyna中，由于Q-learning需要expectation，所以model正好提供了这个工具，但是很多model-free算法可能用不上expectation，所以这里更加general的方式是利用model来生成sample，用于model-free的学习。</p>
+
 <p>这个框架在近几年也不断有新的发展，衍生出MBA，MVE，MBPO等算法，它们也是基于类似的流程进行求解：</p>
+
 
 
 <div class="box">
@@ -933,12 +943,19 @@
   </figure>
 </div>
 
+
 <p>将model结合到model-free方法中能够极大加速model-free方法的训练，同时也能够使算法见到更加diverse的states，从而也可以提高算法的上限，但是目前而言总体还是学习model ，这也成为了算法的一个短板。</p>
+
 <p>另外速度上的提高也与model进行simulation的长度有关，simulation越长，则算法需要的迭代次数越少，但是由于model的准确性，也可能导致算法效果变差。上面两张图中的红色箭头就是对比，第二张图的前进数量更多，在需要时候的确容易更快地靠近黑色箭头处的目标，但是却也容易产生较大的误差。归根结底还是model fitting的准确性问题。</p>
-<h2 id="3-lqr-flm-fitted-local-models">3 LQR-FLM (Fitted Local Models)</h2>
+
+<h2 id="3-lqrflm-fitted-local-models">3 LQR-FLM (Fitted Local Models)</h2>
+
 <p>第二节介绍完利用derivative-free (model-free) RL algorithm解决Backprop gradient方法存在的gradient vanish和explode问题，这节则着重于利用local policies去解决parameter sensitivity的问题。</p>
+
 <h3 id="31-local-models">3.1 Local models</h3>
+
 <p>回顾在lecture10关于optimal control中给出的问题，使用control的观点看待rl，将reward替换为cost function，action看作是u，从而得到如下的无约束优化目标：</p>
+
 
 
 <div class="box">
@@ -951,7 +968,9 @@
   </figure>
 </div>
 
+
 <p>彼时我们引入LQR，对model做了linear假设，cost function做了quadratic假设，以求梯度优化的方式，将信息前后传播，从而求解这个最优化问题。</p>
+
 
 
 <div class="box">
@@ -964,8 +983,11 @@
   </figure>
 </div>
 
+
 <p>而同样的道理，是否可以将这种方式应用到这里呢？考察一下，此时相对lecture10的差异仅仅在于这时候model是通过学习的方式得到的，而前面LQR中是model是已知的，并且假设是线性的。故而如果能够弥补这个差异，也可以将LQR的方法使用到这里。</p>
+
 <p>在LQR中，由于假设了model和cost function的形式，它们关于state和action求导比较简单，从而可以比较轻松地进行优化：</p>
+
 
 
 <div class="box">
@@ -978,7 +1000,9 @@
   </figure>
 </div>
 
+
 <p>而在这里，由于model f是通过学习得到的，如果假定某个固定形式：例如就是二次形式，自然也可以利用LQR相似的思路求解。但是既然是通过学习得到的，那么为何不简单一些，直接学习model在当前policy下关于c和u的梯度，然后基于这两个梯度得到model：</p>
+
 
 
 <div class="box">
@@ -991,7 +1015,9 @@
   </figure>
 </div>
 
+
 <p>在这里，同样我们也假设这些生成的trajectory是局部线性的，也就是说它可以被如下的形式表达：</p>
+
 
 
 <div class="box">
@@ -1004,7 +1030,9 @@
   </figure>
 </div>
 
+
 <p>其中</p>
+
 
 
 <div class="box">
@@ -1017,7 +1045,9 @@
   </figure>
 </div>
 
+
 <p>此时如果是stochastic dynamic，则可以使用gaussian的形式表示dynamic(lecture10 4.1.6 Stochastic dynamics):</p>
+
 
 
 <div class="box">
@@ -1030,7 +1060,9 @@
   </figure>
 </div>
 
+
 <p>从而整体的执行流程可以表示为下图的循环：运行policy，采集数据，fit A&amp;B，然后运行LQR提高controller。</p>
+
 
 
 <div class="box">
@@ -1043,9 +1075,13 @@
   </figure>
 </div>
 
+
 <p>所以接下来就介绍两种拟合这个model的方法。</p>
+
 <h3 id="32-fit-the-models">3.2 Fit the models</h3>
+
 <p>最基本的形式，可以直接利用linear regression拟合与真实值的差异，进行A与B的求解：</p>
+
 
 
 <div class="box">
@@ -1058,8 +1094,11 @@
   </figure>
 </div>
 
+
 <p>这种方式的问题就是LR的学习需要的样本是与state的维度相关的，实际应用不太适合。</p>
+
 <p>基于此，提出的改进是可以首先学习一个global policy，将它作为Bayesian linear regression的prior，由于这个global policy中学习的信息是可以一直存储的，故而能够提高样本利用率，从而更高效地学习。</p>
+
 
 
 <div class="box">
@@ -1072,8 +1111,11 @@
   </figure>
 </div>
 
+
 <h3 id="33-execute-actions">3.3 Execute actions</h3>
+
 <p>在上面学习到dynamic之后，如何基于它去执行action呢？前面提到，我们在这里可以引入LQR的流程，如下是iLQR中，基于上一步的各种信息，forward，backward得到K&amp;k，然后给予K&amp;k去得到新的action，从而提高controller的能力：</p>
+
 
 
 <div class="box">
@@ -1086,7 +1128,9 @@
   </figure>
 </div>
 
+
 <p>那么在采集数据的时候可以怎么做呢？最简单的版本就是基于当前步的u，直接执行它：</p>
+
 
 
 <div class="box">
@@ -1099,8 +1143,11 @@
   </figure>
 </div>
 
+
 <p>相比前面提到的LQR中使用的是给定的model，这是model是学习得到的，它存在误差，而由于LQR是open-loop的前向，故而可能导致误差累积，state误差越大，u的误差也就越大。</p>
+
 <p>故而第二种方法就是利用之前求的的K&amp;k对u进行修正，由于K学习的目的是为了能够使controller稳定在trajectory的线性区域内，所以使用它也就可以帮助单条轨迹变得更加稳定：</p>
+
 
 
 <div class="box">
@@ -1113,7 +1160,9 @@
   </figure>
 </div>
 
+
 <p>基于此，进一步提高的方法则是在单条轨迹稳定的基础上变得更多样化：过于单调的数据不利于学习。故而在上面的方法的基础可以在上面添加一些噪声，由lecture10的推导可知，这个噪声对LQR的学习并没有影响：</p>
+
 
 
 <div class="box">
@@ -1126,9 +1175,13 @@
   </figure>
 </div>
 
+
 <p>上面也就是学习到了model之后如何进行action选择的方法了。</p>
+
 <h3 id="34-dynamics-not-linear">3.4 Dynamics not linear？</h3>
+
 <p>前面都是假设model可以被如下的形式局部线性表示：</p>
+
 
 
 <div class="box">
@@ -1141,7 +1194,9 @@
   </figure>
 </div>
 
+
 <p>但是如果实际并不是这样的呢？例如下图中，如果实际的dynamic是绿色的形式，而由于我们的local linear假设，所以实际生成的是蓝色的dynamic。这也就使得dynamic的学习效果变得很差，此时如果运行LQR，那么就可能得到类似红色这种偏差特别大的trajectory，从而导致LQR的提高效果特别差。</p>
+
 
 
 <div class="box">
@@ -1154,7 +1209,9 @@
   </figure>
 </div>
 
+
 <p>这其实是很熟悉的问题，很容易联想到前面学习的model-free中policy gradient中学习波动大，导致trajectory波动比较大的问题。当时在引入TRPO中，对于前后policy生成trajectory的KL divergence做了约束，从而保证dynamics足够近，故而这里可以使用同样的方式，对相邻两个controller生成trajectory对概率进行约束：</p>
+
 
 
 <div class="box">
@@ -1167,7 +1224,9 @@
   </figure>
 </div>
 
+
 <p>它们分别表示LQR前后的controller生成trajectory的概率，其中：</p>
+
 
 
 <div class="box">
@@ -1180,11 +1239,17 @@
   </figure>
 </div>
 
+
 <p>相对policy gradient中KL divergence比较难解的问题，由于这里是做了linear assumption，故而这个KL divergence是比较容易求解的。</p>
+
 <h2 id="4-combine-local-policies-into-global-policies">4 Combine local policies into global policies</h2>
+
 <p>前面分别提到global policies和local policies的方法，并缓解了前面提到的部分问题。在最后一节则是尝试将它们结合起来，利用local policy去辅助global policy的学习，介绍一些常见方法的主要思想。</p>
+
 <h3 id="41-guided-policy-search">4.1 Guided policy search</h3>
+
 <p>首先是Guided policy search，这里的guided就是表示利用local policies去guide global policy的学习，从而加快学习效率。它的核心思想是从不同的initial state学习多个LQR模型，然后基于这些模型生成数据，并利用这些数据去监督学习一个global model，汇总这些LQR模型的效果：</p>
+
 
 
 <div class="box">
@@ -1197,11 +1262,17 @@
   </figure>
 </div>
 
+
 <p>在伪代码中，第一步是学习local policy，生成数据。第二步则是基于生成的数据去对global policy进行监督学习。第三步则是根据SL模型对每个LQR学习的效果进行对LQR的cost function进行反馈，提高SL与LQR模型的一致性，这样做的目的是避免不同的LQR模型差异过大，导致SL模型学习出现问题，所以强制让LQR模型往SL模型靠拢。</p>
+
 <p>GPS中引入了LQR，利用model生成了更高质量sample，从而往往可以给model-free方法做一个比较好的初始化，提高agent在学习初期的探索效率。</p>
+
 <h3 id="42-distillation">4.2 Distillation</h3>
+
 <p>关于GPS对local model的利用，它的一个很核心的过程就是把多个policy合并成一个policy。Ensemble是一种十分常见的方式，它通过训练多个模型，并将它们的预测结果去平均，从而得到更加robust的结果，这是在许多竞赛中非常常见的方法，它的缺点是需要训练多个模型。那么是否能够只训练一个模型呢？</p>
+
 <p>Distillation是满足这个要求的一种方法，它将多个模型的预测结果做了softmax作为label去训练一个最终的模型，背后的intuition是softmax相比max能够容纳更多信息（前者是连续值，后者是离散值），从而可以更好的将信息汇总到一个模型中：</p>
+
 
 
 <div class="box">
@@ -1214,7 +1285,9 @@
   </figure>
 </div>
 
+
 <p>在RL常见的multi-task设置中，也可以使用类似的方式，在每个task上都训练一个模型，然后distillation得到一个总模型：</p>
+
 
 
 <div class="box">
@@ -1227,8 +1300,11 @@
   </figure>
 </div>
 
+
 <p>其中的loss function就是给予监督学习同时学习多个task上的policy的label。</p>
+
 <p>基于distillation的思路，可以将GPS的思路进一步拓宽，例如可以将一个big task拆分成多个small skill，然后每个skill都学一个local skill policies，进而distillation得到一个global policy，这也就是Divide and Conquer Reinforcement Learning的思想。</p>
+
 
 
 <div class="box">
@@ -1240,6 +1316,7 @@
     <a href="/image/60-cs285/099.jpg" itemprop="contentUrl"></a>
   </figure>
 </div>
+
 
 <p>以上，便是本节的所有内容了。</p>
 

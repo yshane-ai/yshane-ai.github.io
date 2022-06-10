@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="**Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。**在旅行商问题（tr" />
+  <meta name="description" content="Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。在旅行商问题（trav" />
 
   <meta name="keywords" content="RL, ML, " />
 
@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.93.2" />
+<meta name="generator" content="Hugo 0.80.0" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/72-pointer-network/" />
@@ -60,19 +60,23 @@
 
 
 <meta property="og:title" content="Pointer Network详解与Pytorch实践" />
-<meta property="og:description" content="**Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。**在旅行商问题（tr" />
+<meta property="og:description" content="Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。在旅行商问题（trav" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/72-pointer-network/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/72-pointer-network/" />
 <meta property="article:published_time" content="2022-04-02T16:01:23+08:00" />
 <meta property="article:modified_time" content="2022-04-02T16:01:23+08:00" />
-
 <meta itemprop="name" content="Pointer Network详解与Pytorch实践">
-<meta itemprop="description" content="**Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。**在旅行商问题（tr"><meta itemprop="datePublished" content="2022-04-02T16:01:23+08:00" />
+<meta itemprop="description" content="Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。在旅行商问题（trav">
+<meta itemprop="datePublished" content="2022-04-02T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2022-04-02T16:01:23+08:00" />
-<meta itemprop="wordCount" content="3388">
-<meta itemprop="keywords" content="ML," /><meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="3386">
+
+
+
+<meta itemprop="keywords" content="ML," />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Pointer Network详解与Pytorch实践"/>
-<meta name="twitter:description" content="**Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。**在旅行商问题（tr"/>
+<meta name="twitter:description" content="Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。在旅行商问题（trav"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -224,6 +228,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/">Python中的断言assert和异常exception处理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/">Python在训练时保存日志信息</a>
               </li>
             
               <li>
@@ -595,6 +603,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/">Python在训练时保存日志信息</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/3-pythondict/">Python的字典dict原理</a>
               </li>
             
@@ -782,49 +794,35 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#1-概述">1 概述</a></li>
-    <li><a href="#2-如何使用pointer-network">2 如何使用pointer network？</a></li>
-    <li><a href="#3-数据及制作">3 数据及制作</a>
-      <ul>
-        <li><a href="#31-数据集">3.1 数据集</a></li>
-        <li><a href="#32-预处理和标签制作">3.2 预处理和标签制作</a></li>
-        <li><a href="#33-数据清洗">3.3 数据清洗</a></li>
-      </ul>
-    </li>
-    <li><a href="#4-样本">4 样本</a></li>
-    <li><a href="#5-建模">5 建模</a>
-      <ul>
-        <li><a href="#51-word-embedder">5.1 Word Embedder</a></li>
-        <li><a href="#52-encoder">5.2 Encoder</a></li>
-        <li><a href="#53-decoder">5.3 Decoder</a></li>
-        <li><a href="#54-模型">5.4 模型</a></li>
-      </ul>
-    </li>
-    <li><a href="#6-训练结果">6 训练结果</a></li>
-  </ul>
-</nav>
+    
   </div>
 </div>
 
     
     <div class="post-content">
-      <p>**Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。**在旅行商问题（traveling salesman problem，TSP）中，给定若干城市的位置信息，旅行家需要规划途径城市的顺序来达到能遍历每个城市但总路径和最小的目的。因此，学会理解和运用pointer network是十分必要的。</p>
+      <p><strong>Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。</strong>在旅行商问题（traveling salesman problem，TSP）中，给定若干城市的位置信息，旅行家需要规划途径城市的顺序来达到能遍历每个城市但总路径和最小的目的。因此，学会理解和运用pointer network是十分必要的。</p>
+
 <h2 id="1-概述">1 概述</h2>
+
 <p>一个pointer network通常由以下三部分组成：</p>
+
 <ul>
 <li><strong>encoder模块</strong></li>
 <li><strong>decoder模块</strong></li>
 <li><strong>attention模块</strong></li>
 </ul>
+
 <p>在使用pointer network时，一个简易版本的旅行商问题可以描述为：</p>
+
 <ul>
 <li><strong>输入</strong>：一系列城市的坐标$(x, y)$</li>
 <li><strong>输出</strong>：一个城市的序列，代表着对城市的最优遍历路径</li>
 </ul>
+
 <p><strong>整体流程图如下图所示，每个城市的坐标作为一个token，我们向encoder（通常使用RNN）输入一个token的序列，获得每个token的embedding，同时获得encoder的最终隐状态。</strong></p>
+
 <p><strong>将encoder的最终隐状态输入到decoder模块中，每次产生一个向量，我们称之为query。query使用attention机制计算与encoder输出的每个embedding的注意力值，选择注意力值最大的token作为当前输出。重复以上操作，直到输出“停止”的token。</strong></p>
+
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -837,18 +835,27 @@
   </figure>
 </div>
 
+
 <p>以上基于深度学习的方法，我们可以使用较低的复杂度便可以获得对旅行商问题的的一个近似最优解。</p>
+
 <h2 id="2-如何使用pointer-network">2 如何使用pointer network？</h2>
+
 <p>现在我们使用一个例子来对pointer network进行讲解，<strong>问题是从一堆发票中提取发票开具方的公司地址</strong>。</p>
+
 <p>我们将以上问题建模为：从半结构化的文本中抽取有效的信息。什么是半结构化的文本？我们对文本进行如下的划分：</p>
+
 <ul>
 <li><strong>结构化文本</strong>：给定了一个模板，我们可以根据模板定位想要的信息的位置，例如某种简历模板，所有使用该模板的应聘者姓名，性别等信息都在同一位置</li>
 <li><strong>无结构文本</strong>：信息杂乱无序，例如写一篇文章来对自己进行介绍</li>
 <li><strong>本结构化文本</strong>：文本采用结构化的方式，但是模板不清楚，无法对信息直接进行定位，例如不同的简历模板，名字的位置也不相同，有的在左上角，有的在中上部分</li>
 </ul>
+
 <p>基于以上原因，我们希望使用模型提取半结构化文本中的信息时，需要使模型同时捕捉词条的语义和位置信息。</p>
+
 <p>通过使用OCR提取出一系列的目标文本后，我们向pointer network输入这些词条以及他们的2D位置信息，然后获得我们想要得到的输出。</p>
+
 <p>比如说，如下所示，<strong>我们希望可以找到以下发票中发票开具方公司地址信息</strong>：</p>
+
 
 
 <div class="box">
@@ -861,7 +868,9 @@
   </figure>
 </div>
 
+
 <p>首先，<strong>我们向网络的encoder模块输入一个token的序列</strong>：</p>
+
 
 
 <div class="box">
@@ -874,8 +883,11 @@
   </figure>
 </div>
 
+
 <p><strong>当把整个序列输入到encoder模块后，我们得到最终的隐状态向量，并把它作为decoder模块的第一个输入。借用最普通的attention思想，每一步decoder产生一个输出并计算与输入序列中token的距离，选择距离最近的token作为输出。</strong></p>
+
 <p>然后，我们将这个token的embedding当作下一步decoder的输入，计算下一步的输出。</p>
+
 
 
 <div class="box">
@@ -888,44 +900,59 @@
   </figure>
 </div>
 
+
 <p>重复以上过程，我们可以得到一条完整的输出序列，通过比较其和正确输出序列的误差，利用反向传播的方式去优化pointer network，我们可以获得最终的模型。</p>
+
 <h2 id="3-数据及制作">3 数据及制作</h2>
+
 <h3 id="31-数据集">3.1 数据集</h3>
+
 <p>我们面临的任务是需要从一堆使用不同模板的发票中抽取信息。为了产生稍复杂同时也很真实的数据，我们使用了python的Faker包来随机产生一些地址和文本。</p>
+
 <p>数据集的信息包括：</p>
+
 <ul>
 <li>发票接收方的公司的名字和地址</li>
 <li>发票的一些元信息，例如日期和id号码</li>
 <li>发票开具方公司的地址，电话，电子邮箱地址和名称</li>
 <li>发票的内容，例如描述，发票金额和数量等</li>
 </ul>
+
 <p>数据集中只包含了1000份文本，对机器学习和深度学习方法而言相对小了一些。</p>
+
 <h3 id="32-预处理和标签制作">3.2 预处理和标签制作</h3>
+
 <p>通常使用机器学习方式，都需要对数据进行预处理。在这个任务中，我们需要从一堆发票图片中提取出相关的文字内容。**我们可以使用一项名为Tesseract的OCR技术来做文字提取。
 **
 我们可以知道文本中的地址的位置，但是我们需要先将其转换为序号标签，方便pointer network的训练。</p>
+
 <p><strong>我们将真个数据集按照6:2:2的比例划分为训练/验证/测试集</strong>。也就是说，我们使用600条样本用来做训练，200条用来做验证，剩下200条用来做测试。</p>
+
 <h3 id="33-数据清洗">3.3 数据清洗</h3>
+
 <p>在做NLP任务时，我们需要首先考虑使用哪种embedding技术？例如，使用预训练的技术（如word2vec或fasttext）需要使用固定的预料库，并且需要在训练NLP任务前对其预先进行训练，在训练NLP模型期间token的embedding不会再发生变化。<strong>这里我们选择使用一种端到端的架构直接同时训练embedding和目标模型，embedding会跟着模型一起更新。</strong></p>
+
 <p>考虑到OCR识别的准确率等原因，我们选用一个小的语料库，以每个字母为一个单位为每个单词产生一个token，将一个token的序列作为LSTM网络的输入，获得每个token的embedding以及LSTM的最终隐状态。</p>
+
 <h2 id="4-样本">4 样本</h2>
+
 <p>为了加速训练，我们使用大一点的batch size，这需要我们将数据转化为tensor格式再组成batch。方便进行训练，我们需要完成以下三个步骤：</p>
+
 <ol>
-<li>
-<p>对每个单词做character level的划分</p>
+<li><p>对每个单词做character level的划分</p>
+
 <ol>
 <li>0用于做padding</li>
 <li>单词的每个character都被映射为一个整数</li>
+</ol></li>
+
+<li><p>每一页上每个单词的位置使用2D表示</p></li>
+
+<li><p>训练标签是每页发票上表示地址的单词的序号，使用0做padding</p></li>
 </ol>
-</li>
-<li>
-<p>每一页上每个单词的位置使用2D表示</p>
-</li>
-<li>
-<p>训练标签是每页发票上表示地址的单词的序号，使用0做padding</p>
-</li>
-</ol>
+
 <p>综合以上想法，我们得到三个多维tensor：</p>
+
 
 
 <div class="box">
@@ -938,44 +965,50 @@
   </figure>
 </div>
 
+
 <ol>
-<li>
-<p><strong>单词</strong></p>
+<li><p><strong>单词</strong></p>
+
 <ol>
 <li>第一维表示数据集的大小</li>
 <li>第二位表示每条样本中单词的最大数量</li>
 <li>第三维表示每个单词的最大长度</li>
-</ol>
-</li>
-<li>
-<p><strong>位置</strong></p>
+</ol></li>
+
+<li><p><strong>位置</strong></p>
+
 <ol>
 <li>第一维表示数据集的大小</li>
 <li>第二位表示每条样本中单词的最大数量</li>
 <li>第三维中前两个数字$(x,y)$表示目前单词相对文本左上角在图片中的像素坐标，后两个数字$(x_, y_)$表示右下角相对于左上角在图片中的像素坐标</li>
-</ol>
-</li>
-<li>
-<p><strong>目标</strong></p>
+</ol></li>
+
+<li><p><strong>目标</strong></p>
+
 <ol>
 <li>第一维表示数据集的大小</li>
 <li>第二位表示每条样本中单词的最大数量</li>
+</ol></li>
 </ol>
-</li>
-</ol>
+
 <h2 id="5-建模">5 建模</h2>
+
 <p><strong>我们可以将整个模型拆分成以下三部分：</strong></p>
+
 <ol>
 <li><strong>Word embedder</strong></li>
 <li><strong>Encoder</strong></li>
 <li><strong>Decoder</strong></li>
 </ol>
+
 <h3 id="51-word-embedder">5.1 Word Embedder</h3>
+
 <ol>
 <li>首先构建一个embedding层对每个字母做embedding</li>
 <li>将embedding输入到LSTM网络中</li>
 <li>获得最终的隐状态，作为当前单词的embedding</li>
 </ol>
+
 
 
 <div class="box">
@@ -988,50 +1021,52 @@
   </figure>
 </div>
 
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">TokenEmbedder</span>(nn<span style="color:#f92672">.</span>Module):
-</span></span><span style="display:flex;"><span>    INIT_NORMALIZE_DENOMINATOR <span style="color:#f92672">=</span> (
-</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">1000</span>
-</span></span><span style="display:flex;"><span>    )  <span style="color:#75715e"># Same order of magnitude that the width in pixels</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, n_characters: int, embedding_dim: int, position_dim: int):
-</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>chars_embedding_layer <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Embedding(
-</span></span><span style="display:flex;"><span>            num_embeddings<span style="color:#f92672">=</span>n_characters, embedding_dim<span style="color:#f92672">=</span>embedding_dim, padding_idx<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
-</span></span><span style="display:flex;"><span>        )
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>word_embedding_layer <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>LSTM(
-</span></span><span style="display:flex;"><span>            input_size<span style="color:#f92672">=</span>embedding_dim, hidden_size<span style="color:#f92672">=</span>embedding_dim, num_layers<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span>        )
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>dropout_word_embedding <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(<span style="color:#ae81ff">0.5</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>normalize_position <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Parameter(
-</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>INIT_NORMALIZE_DENOMINATOR <span style="color:#f92672">*</span> torch<span style="color:#f92672">.</span>ones(<span style="color:#ae81ff">4</span>), requires_grad<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>
-</span></span><span style="display:flex;"><span>        )
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>position_embedding_layer <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(<span style="color:#ae81ff">4</span>, position_dim)
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>dropout_position <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(<span style="color:#ae81ff">0.5</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, words: torch<span style="color:#f92672">.</span>tensor, positions: torch<span style="color:#f92672">.</span>tensor) <span style="color:#f92672">-&gt;</span> torch<span style="color:#f92672">.</span>tensor:
-</span></span><span style="display:flex;"><span>        character_embeddings <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>chars_embedding_layer(words)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        batch_size, n_words, n_characters, dim <span style="color:#f92672">=</span> character_embeddings<span style="color:#f92672">.</span>shape
-</span></span><span style="display:flex;"><span>        character_embeddings <span style="color:#f92672">=</span> character_embeddings<span style="color:#f92672">.</span>reshape(
-</span></span><span style="display:flex;"><span>            batch_size <span style="color:#f92672">*</span> n_words, n_characters, dim
-</span></span><span style="display:flex;"><span>        )<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        _, (hn, _) <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>word_embedding_layer(character_embeddings)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        word_embeddings <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>dropout_word_embedding(hn<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>))
-</span></span><span style="display:flex;"><span>        word_embeddings <span style="color:#f92672">=</span> word_embeddings<span style="color:#f92672">.</span>reshape(batch_size, n_words, dim)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        positions <span style="color:#f92672">=</span> positions <span style="color:#f92672">/</span> self<span style="color:#f92672">.</span>normalize_position
-</span></span><span style="display:flex;"><span>        positions_embedding <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>sigmoid(self<span style="color:#f92672">.</span>position_embedding_layer(positions))
-</span></span><span style="display:flex;"><span>        positions_embedding <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>dropout_position(positions_embedding)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        raw_token_embeddings <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>cat([positions_embedding, word_embeddings], dim<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>)
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> raw_token_embeddings
-</span></span></code></pre></div><h3 id="52-encoder">5.2 Encoder</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">TokenEmbedder</span>(nn<span style="color:#f92672">.</span>Module):
+    INIT_NORMALIZE_DENOMINATOR <span style="color:#f92672">=</span> (
+        <span style="color:#ae81ff">1000</span>
+    )  <span style="color:#75715e"># Same order of magnitude that the width in pixels</span>
+
+    <span style="color:#66d9ef">def</span> __init__(self, n_characters: int, embedding_dim: int, position_dim: int):
+        super()<span style="color:#f92672">.</span>__init__()
+        self<span style="color:#f92672">.</span>chars_embedding_layer <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Embedding(
+            num_embeddings<span style="color:#f92672">=</span>n_characters, embedding_dim<span style="color:#f92672">=</span>embedding_dim, padding_idx<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+        )
+
+        self<span style="color:#f92672">.</span>word_embedding_layer <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>LSTM(
+            input_size<span style="color:#f92672">=</span>embedding_dim, hidden_size<span style="color:#f92672">=</span>embedding_dim, num_layers<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>
+        )
+
+        self<span style="color:#f92672">.</span>dropout_word_embedding <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(<span style="color:#ae81ff">0.5</span>)
+
+        self<span style="color:#f92672">.</span>normalize_position <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Parameter(
+            self<span style="color:#f92672">.</span>INIT_NORMALIZE_DENOMINATOR <span style="color:#f92672">*</span> torch<span style="color:#f92672">.</span>ones(<span style="color:#ae81ff">4</span>), requires_grad<span style="color:#f92672">=</span>True
+        )
+        self<span style="color:#f92672">.</span>position_embedding_layer <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(<span style="color:#ae81ff">4</span>, position_dim)
+        self<span style="color:#f92672">.</span>dropout_position <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(<span style="color:#ae81ff">0.5</span>)
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, words: torch<span style="color:#f92672">.</span>tensor, positions: torch<span style="color:#f92672">.</span>tensor) <span style="color:#f92672">-&gt;</span> torch<span style="color:#f92672">.</span>tensor:
+        character_embeddings <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>chars_embedding_layer(words)
+
+        batch_size, n_words, n_characters, dim <span style="color:#f92672">=</span> character_embeddings<span style="color:#f92672">.</span>shape
+        character_embeddings <span style="color:#f92672">=</span> character_embeddings<span style="color:#f92672">.</span>reshape(
+            batch_size <span style="color:#f92672">*</span> n_words, n_characters, dim
+        )<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>)
+
+        _, (hn, _) <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>word_embedding_layer(character_embeddings)
+
+        word_embeddings <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>dropout_word_embedding(hn<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>))
+        word_embeddings <span style="color:#f92672">=</span> word_embeddings<span style="color:#f92672">.</span>reshape(batch_size, n_words, dim)
+
+        positions <span style="color:#f92672">=</span> positions <span style="color:#f92672">/</span> self<span style="color:#f92672">.</span>normalize_position
+        positions_embedding <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>sigmoid(self<span style="color:#f92672">.</span>position_embedding_layer(positions))
+        positions_embedding <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>dropout_position(positions_embedding)
+
+        raw_token_embeddings <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>cat([positions_embedding, word_embeddings], dim<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>)
+        <span style="color:#66d9ef">return</span> raw_token_embeddings</code></pre></div>
+<h3 id="52-encoder">5.2 Encoder</h3>
+
 <p>Encoder的模型较为简单，就是按照阅读的顺序（从左上到右下）将每个单词的embedding和position embedding输入到LSTM网络中，每一步获得对当前单词的一个contextualized embedding，以及最终的一个隐状态作为整个文本的embedding。</p>
+
 
 
 <div class="box">
@@ -1044,32 +1079,34 @@
   </figure>
 </div>
 
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Encoder</span>(nn<span style="color:#f92672">.</span>Module):
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, embedding_dim: int, position_dim: int):
-</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>embedding_dim <span style="color:#f92672">=</span> embedding_dim
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>lstm <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>LSTM(
-</span></span><span style="display:flex;"><span>            input_size<span style="color:#f92672">=</span>embedding_dim <span style="color:#f92672">+</span> position_dim,
-</span></span><span style="display:flex;"><span>            hidden_size<span style="color:#f92672">=</span>embedding_dim,
-</span></span><span style="display:flex;"><span>            num_layers<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>,
-</span></span><span style="display:flex;"><span>            bidirectional<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>,
-</span></span><span style="display:flex;"><span>        )
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>dropout <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(<span style="color:#ae81ff">0.5</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, raw_token_embeddings: torch<span style="color:#f92672">.</span>tensor):
-</span></span><span style="display:flex;"><span>        batch_size, _, _ <span style="color:#f92672">=</span> raw_token_embeddings<span style="color:#f92672">.</span>shape
-</span></span><span style="display:flex;"><span>        token_embeddings, (encoded_document, _) <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>lstm(
-</span></span><span style="display:flex;"><span>            raw_token_embeddings<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>)
-</span></span><span style="display:flex;"><span>        )
-</span></span><span style="display:flex;"><span>        token_embeddings <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>dropout(token_embeddings<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>))
-</span></span><span style="display:flex;"><span>        encoded_document <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>dropout(
-</span></span><span style="display:flex;"><span>            encoded_document<span style="color:#f92672">.</span>reshape(batch_size, <span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> self<span style="color:#f92672">.</span>embedding_dim)
-</span></span><span style="display:flex;"><span>        )
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> token_embeddings, encoded_document
-</span></span></code></pre></div><h3 id="53-decoder">5.3 Decoder</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Encoder</span>(nn<span style="color:#f92672">.</span>Module):
+    <span style="color:#66d9ef">def</span> __init__(self, embedding_dim: int, position_dim: int):
+        super()<span style="color:#f92672">.</span>__init__()
+
+        self<span style="color:#f92672">.</span>embedding_dim <span style="color:#f92672">=</span> embedding_dim
+
+        self<span style="color:#f92672">.</span>lstm <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>LSTM(
+            input_size<span style="color:#f92672">=</span>embedding_dim <span style="color:#f92672">+</span> position_dim,
+            hidden_size<span style="color:#f92672">=</span>embedding_dim,
+            num_layers<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>,
+            bidirectional<span style="color:#f92672">=</span>True,
+        )
+        self<span style="color:#f92672">.</span>dropout <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(<span style="color:#ae81ff">0.5</span>)
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, raw_token_embeddings: torch<span style="color:#f92672">.</span>tensor):
+        batch_size, _, _ <span style="color:#f92672">=</span> raw_token_embeddings<span style="color:#f92672">.</span>shape
+        token_embeddings, (encoded_document, _) <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>lstm(
+            raw_token_embeddings<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>)
+        )
+        token_embeddings <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>dropout(token_embeddings<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>))
+        encoded_document <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>dropout(
+            encoded_document<span style="color:#f92672">.</span>reshape(batch_size, <span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> self<span style="color:#f92672">.</span>embedding_dim)
+        )
+        <span style="color:#66d9ef">return</span> token_embeddings, encoded_document</code></pre></div>
+<h3 id="53-decoder">5.3 Decoder</h3>
+
 <p>我们对最终的隐状态做展开，并将输出的隐状态和之前每个单词获得的contextualized embedding进行比较，选择最相像的token作为当前步的输出。</p>
+
 
 
 <div class="box">
@@ -1082,67 +1119,70 @@
   </figure>
 </div>
 
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PointerNetwork</span>(nn<span style="color:#f92672">.</span>Module):
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, embedding_dim: int, max_seq_len: int):
-</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>embedding_dim <span style="color:#f92672">=</span> embedding_dim
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>max_seq_len <span style="color:#f92672">=</span> max_seq_len
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>lstm_cell <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>LSTMCell(
-</span></span><span style="display:flex;"><span>            input_size<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> embedding_dim, hidden_size<span style="color:#f92672">=</span>embedding_dim
-</span></span><span style="display:flex;"><span>        )
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>dropout <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(<span style="color:#ae81ff">0.5</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>reference <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(embedding_dim, <span style="color:#ae81ff">1</span>)
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>decoder_weights <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(embedding_dim, embedding_dim)
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>encoder_weights <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> embedding_dim, embedding_dim)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">attention</span>(
-</span></span><span style="display:flex;"><span>        self, token_embeddings: torch<span style="color:#f92672">.</span>tensor, hx: torch<span style="color:#f92672">.</span>tensor
-</span></span><span style="display:flex;"><span>    ) <span style="color:#f92672">-&gt;</span> torch<span style="color:#f92672">.</span>tensor:
-</span></span><span style="display:flex;"><span>        batch_size, n_tokens, hidden_dim <span style="color:#f92672">=</span> token_embeddings<span style="color:#f92672">.</span>shape
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        decoder_query <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>decoder_weights(hx)
-</span></span><span style="display:flex;"><span>        token_embeddings <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>encoder_weights(token_embeddings)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        decoder_query <span style="color:#f92672">=</span> decoder_query<span style="color:#f92672">.</span>repeat(
-</span></span><span style="display:flex;"><span>            n_tokens, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span>        )  <span style="color:#75715e"># n_token x batch_size x embedding_dim</span>
-</span></span><span style="display:flex;"><span>        decoder_query <span style="color:#f92672">=</span> decoder_query<span style="color:#f92672">.</span>transpose(
-</span></span><span style="display:flex;"><span>            <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span>        )  <span style="color:#75715e"># batch_size x n_token x embedding_dim</span>
-</span></span><span style="display:flex;"><span>        comparison <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>tanh(decoder_query <span style="color:#f92672">+</span> token_embeddings)
-</span></span><span style="display:flex;"><span>        probabilities <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>log_softmax(
-</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>reference(comparison)<span style="color:#f92672">.</span>reshape(batch_size, n_tokens), <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span>        )
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> probabilities
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(
-</span></span><span style="display:flex;"><span>        self, token_embeddings: torch<span style="color:#f92672">.</span>tensor, encoded_document: torch<span style="color:#f92672">.</span>tensor
-</span></span><span style="display:flex;"><span>    ) <span style="color:#f92672">-&gt;</span> Tuple[torch<span style="color:#f92672">.</span>tensor, List[int]]:
-</span></span><span style="display:flex;"><span>        batch_size, _, _ <span style="color:#f92672">=</span> token_embeddings<span style="color:#f92672">.</span>shape
-</span></span><span style="display:flex;"><span>        overall_probabilities <span style="color:#f92672">=</span> []
-</span></span><span style="display:flex;"><span>        batch_identifier <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>arange(batch_size)<span style="color:#f92672">.</span>type(torch<span style="color:#f92672">.</span>LongTensor)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        peak_indices <span style="color:#f92672">=</span> []
-</span></span><span style="display:flex;"><span>        decoder_input <span style="color:#f92672">=</span> encoded_document
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> step <span style="color:#f92672">in</span> range(self<span style="color:#f92672">.</span>max_seq_len):
-</span></span><span style="display:flex;"><span>            hx, cx <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>lstm_cell(decoder_input)
-</span></span><span style="display:flex;"><span>            hx <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>dropout(hx)
-</span></span><span style="display:flex;"><span>            probabilities <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>attention(token_embeddings, hx)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>            _, peak_idx <span style="color:#f92672">=</span> probabilities<span style="color:#f92672">.</span>max(dim<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
-</span></span><span style="display:flex;"><span>            decoder_input <span style="color:#f92672">=</span> token_embeddings[batch_identifier, peak_idx, :]
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>            overall_probabilities<span style="color:#f92672">.</span>append(probabilities)
-</span></span><span style="display:flex;"><span>            peak_indices<span style="color:#f92672">.</span>append(peak_idx)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        overall_probabilities <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>stack(overall_probabilities)<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>)
-</span></span><span style="display:flex;"><span>        peak_indices <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>stack(peak_indices)<span style="color:#f92672">.</span>t()
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> overall_probabilities, peak_indices
-</span></span></code></pre></div><h3 id="54-模型">5.4 模型</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PointerNetwork</span>(nn<span style="color:#f92672">.</span>Module):
+    <span style="color:#66d9ef">def</span> __init__(self, embedding_dim: int, max_seq_len: int):
+        super()<span style="color:#f92672">.</span>__init__()
+        self<span style="color:#f92672">.</span>embedding_dim <span style="color:#f92672">=</span> embedding_dim
+        self<span style="color:#f92672">.</span>max_seq_len <span style="color:#f92672">=</span> max_seq_len
+
+        self<span style="color:#f92672">.</span>lstm_cell <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>LSTMCell(
+            input_size<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> embedding_dim, hidden_size<span style="color:#f92672">=</span>embedding_dim
+        )
+        self<span style="color:#f92672">.</span>dropout <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(<span style="color:#ae81ff">0.5</span>)
+
+        self<span style="color:#f92672">.</span>reference <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(embedding_dim, <span style="color:#ae81ff">1</span>)
+        self<span style="color:#f92672">.</span>decoder_weights <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(embedding_dim, embedding_dim)
+        self<span style="color:#f92672">.</span>encoder_weights <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> embedding_dim, embedding_dim)
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">attention</span>(
+        self, token_embeddings: torch<span style="color:#f92672">.</span>tensor, hx: torch<span style="color:#f92672">.</span>tensor
+    ) <span style="color:#f92672">-&gt;</span> torch<span style="color:#f92672">.</span>tensor:
+        batch_size, n_tokens, hidden_dim <span style="color:#f92672">=</span> token_embeddings<span style="color:#f92672">.</span>shape
+
+        decoder_query <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>decoder_weights(hx)
+        token_embeddings <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>encoder_weights(token_embeddings)
+
+        decoder_query <span style="color:#f92672">=</span> decoder_query<span style="color:#f92672">.</span>repeat(
+            n_tokens, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>
+        )  <span style="color:#75715e"># n_token x batch_size x embedding_dim</span>
+        decoder_query <span style="color:#f92672">=</span> decoder_query<span style="color:#f92672">.</span>transpose(
+            <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>
+        )  <span style="color:#75715e"># batch_size x n_token x embedding_dim</span>
+        comparison <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>tanh(decoder_query <span style="color:#f92672">+</span> token_embeddings)
+        probabilities <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>log_softmax(
+            self<span style="color:#f92672">.</span>reference(comparison)<span style="color:#f92672">.</span>reshape(batch_size, n_tokens), <span style="color:#ae81ff">1</span>
+        )
+        <span style="color:#66d9ef">return</span> probabilities
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(
+        self, token_embeddings: torch<span style="color:#f92672">.</span>tensor, encoded_document: torch<span style="color:#f92672">.</span>tensor
+    ) <span style="color:#f92672">-&gt;</span> Tuple[torch<span style="color:#f92672">.</span>tensor, List[int]]:
+        batch_size, _, _ <span style="color:#f92672">=</span> token_embeddings<span style="color:#f92672">.</span>shape
+        overall_probabilities <span style="color:#f92672">=</span> []
+        batch_identifier <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>arange(batch_size)<span style="color:#f92672">.</span>type(torch<span style="color:#f92672">.</span>LongTensor)
+
+        peak_indices <span style="color:#f92672">=</span> []
+        decoder_input <span style="color:#f92672">=</span> encoded_document
+        <span style="color:#66d9ef">for</span> step <span style="color:#f92672">in</span> range(self<span style="color:#f92672">.</span>max_seq_len):
+            hx, cx <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>lstm_cell(decoder_input)
+            hx <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>dropout(hx)
+            probabilities <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>attention(token_embeddings, hx)
+
+            _, peak_idx <span style="color:#f92672">=</span> probabilities<span style="color:#f92672">.</span>max(dim<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+            decoder_input <span style="color:#f92672">=</span> token_embeddings[batch_identifier, peak_idx, :]
+
+            overall_probabilities<span style="color:#f92672">.</span>append(probabilities)
+            peak_indices<span style="color:#f92672">.</span>append(peak_idx)
+
+        overall_probabilities <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>stack(overall_probabilities)<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>)
+        peak_indices <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>stack(peak_indices)<span style="color:#f92672">.</span>t()
+        <span style="color:#66d9ef">return</span> overall_probabilities, peak_indices</code></pre></div>
+<h3 id="54-模型">5.4 模型</h3>
+
 <p>将以上三个部分结合起来可以获得我们最终的模型，首先利用OCR获得每页发票上的文本信息，利用word embedder模块计算每个单词的embedding，获得当前页的embedding序列并作为encoder的输入，然后使用decoder接收encoder的输出作为输入，生成一系列token作为输出。</p>
+
 <h2 id="6-训练结果">6 训练结果</h2>
+
 
 
 <div class="box">
@@ -1155,12 +1195,16 @@
   </figure>
 </div>
 
+
 <ol>
 <li>红线代表训练损失</li>
 <li>蓝线代表验证损失</li>
 </ol>
+
 <p>可以观察到loss在训练初期快速下降，并在50个epoch左右达到收敛，在验证机上的表现说明模型并没有发生过拟合，这是因为我们在模型中使用了dropout。</p>
+
 <hr>
+
 <p>完整的代码放在了我的<a href="https://github.com/yshane-ai/yangxx_ML/tree/main/Basic/Pointer">Github</a>，你也可以按照以上流程，自己动手实现一个GCN模型，快动手试试吧！</p>
 
     </div>

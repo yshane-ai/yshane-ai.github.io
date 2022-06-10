@@ -18,6 +18,15 @@
     </item>
     
     <item>
+      <title>Python在训练时保存日志信息</title>
+      <link>https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/</link>
+      <pubDate>Fri, 03 Sep 2021 16:01:23 +0800</pubDate>
+      
+      <guid>https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/</guid>
+      <description>不知道大家在训练模型的时候有没有遇到类似这样的问题： 反复调试各种超参数组合，但是由于没有进行有效的记录到最后不知道那种参数组合的结果更好。 即</description>
+    </item>
+    
+    <item>
       <title>Python高阶函数、装饰器和匿名函数总结</title>
       <link>https://yshane-ai.github.io/post/17-python%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/</link>
       <pubDate>Sun, 01 Aug 2021 16:01:23 +0800</pubDate>

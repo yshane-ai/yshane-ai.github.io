@@ -23,7 +23,7 @@
       <pubDate>Sat, 02 Apr 2022 16:01:23 +0800</pubDate>
       
       <guid>https://yshane-ai.github.io/post/72-pointer-network/</guid>
-      <description>**Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。**在旅行商问题（tr</description>
+      <description>Pointer network用于解决从输入序列中选择合适的item作为输出的问题，例如经典旅行商问题，RL中目标选择，文献总结等。在旅行商问题（trav</description>
     </item>
     
     <item>

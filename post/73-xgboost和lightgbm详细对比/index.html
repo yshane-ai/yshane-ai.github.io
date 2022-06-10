@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.93.2" />
+<meta name="generator" content="Hugo 0.80.0" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/" />
@@ -62,15 +62,19 @@
 <meta property="og:title" content="XGBoost和LightGBM详细对比与Python实践" />
 <meta property="og:description" content="在做kaggle比赛时，XGBoost和LightGBM成为了大众竞赛者的首选方案，但他们有什么不同呢？其实从各方面来看。LightGBM都" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/73-xgboost%E5%92%8Clightgbm%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94/" />
 <meta property="article:published_time" content="2022-04-08T16:01:23+08:00" />
 <meta property="article:modified_time" content="2022-04-08T16:01:23+08:00" />
-
 <meta itemprop="name" content="XGBoost和LightGBM详细对比与Python实践">
-<meta itemprop="description" content="在做kaggle比赛时，XGBoost和LightGBM成为了大众竞赛者的首选方案，但他们有什么不同呢？其实从各方面来看。LightGBM都"><meta itemprop="datePublished" content="2022-04-08T16:01:23+08:00" />
+<meta itemprop="description" content="在做kaggle比赛时，XGBoost和LightGBM成为了大众竞赛者的首选方案，但他们有什么不同呢？其实从各方面来看。LightGBM都">
+<meta itemprop="datePublished" content="2022-04-08T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2022-04-08T16:01:23+08:00" />
-<meta itemprop="wordCount" content="2670">
-<meta itemprop="keywords" content="ML," /><meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="2659">
+
+
+
+<meta itemprop="keywords" content="ML," />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="XGBoost和LightGBM详细对比与Python实践"/>
 <meta name="twitter:description" content="在做kaggle比赛时，XGBoost和LightGBM成为了大众竞赛者的首选方案，但他们有什么不同呢？其实从各方面来看。LightGBM都"/>
 
@@ -224,6 +228,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/">Python中的断言assert和异常exception处理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/">Python在训练时保存日志信息</a>
               </li>
             
               <li>
@@ -595,6 +603,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/">Python在训练时保存日志信息</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/3-pythondict/">Python的字典dict原理</a>
               </li>
             
@@ -782,25 +794,14 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#1-背景">1 背景</a></li>
-    <li><a href="#2-xgboost-vs-lightgbm">2 XGBoost vs. LightGBM</a></li>
-    <li><a href="#3-模型初始化和目标">3 模型初始化和目标</a></li>
-    <li><a href="#4-控制模型的复杂度">4 控制模型的复杂度</a></li>
-    <li><a href="#4-early-stopping">4 Early stopping</a></li>
-    <li><a href="#5-baseline">5 Baseline</a></li>
-    <li><a href="#6-缺失值处理">6 缺失值处理</a></li>
-    <li><a href="#7-交叉验证">7 交叉验证</a></li>
-    <li><a href="#8-总结">8 总结</a></li>
-  </ul>
-</nav>
+    
   </div>
 </div>
 
     
     <div class="post-content">
       <p>在做kaggle比赛时，XGBoost和LightGBM成为了大众竞赛者的首选方案，但他们有什么不同呢？其实从各方面来看。LightGBM都胜过XGBoost，本文将针对他们之间的优劣进行深入比较。</p>
+
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -813,9 +814,13 @@
   </figure>
 </div>
 
+
 <h2 id="1-背景">1 背景</h2>
+
 <p><strong>XGBoost</strong>在2016年被首次提出并夺得多个数据竞赛的冠军，但次年Microsoft便开源了<strong>LightGBM（Light Gradient Boosting Machine）</strong>，使用20%的训练时间便可以达到与XGBoost相同的水准。</p>
+
 <p>通过本篇文章，最后你会收获到：</p>
+
 <ul>
 <li>如何为分类或者回归任务搭建一个LightGBM模型</li>
 <li>XGBoost和LGBM的结构差异</li>
@@ -823,9 +828,13 @@
 <li>LGBM的内置缺失值处理</li>
 <li>如何做交叉验证</li>
 </ul>
+
 <h2 id="2-xgboost-vs-lightgbm">2 XGBoost vs. LightGBM</h2>
+
 <p>XGBoost和LightGBM均属于集成算法。他们使用一系列弱学习模型，例如决策树，来构建更复杂的强学习模型。</p>
+
 <p><strong>在XGBoost中，决策树每次以层为单位进行构造</strong>，如下图所示：</p>
+
 
 
 <div class="box">
@@ -838,8 +847,11 @@
   </figure>
 </div>
 
+
 <p><strong>因为XGBoost一直以层为单位进行构造，直到达到最大深度，导致某些分裂增益很小的节点也一直被分裂，很容易产生不必要的节点，进而造成训练资源的一定浪费。</strong></p>
+
 <p>相反，<strong>LightBoost以叶子结点为单位进行构造</strong>，如下图所示：</p>
+
 
 
 <div class="box">
@@ -852,8 +864,11 @@
   </figure>
 </div>
 
+
 <p>每次LightGBM只选择分裂增益最大的叶子节点进行分裂，直到最后达到最大叶子数。这也是最初LightGBM被提出时就可以在时间效率上远远碾压XGBoost的原因。</p>
+
 <p>如下图所示，LightGBM的训练效率比XGBoost高了一个量级。</p>
+
 
 
 <div class="box">
@@ -866,12 +881,16 @@
   </figure>
 </div>
 
+
 <p>LGBM同时对连续特征使用了直方图（histogram binning）算法，基本思想是：先把连续的浮点特征值离散化成$k$个整数，同时构造一个宽度为$k$的直方图。在遍历数据的时候，根据离散化后的值作为索引在直方图中累积统计量，当遍历一次数据后，直方图累积了需要的统计量，然后根据直方图的离散值，遍历寻找最优的分割点。这样做有两个优点：</p>
+
 <ol>
 <li><strong>内存占用更小，计算代价更小</strong></li>
 <li><strong>利用差加速可以用非常小的代价获得兄弟叶子的直方图</strong></li>
 </ol>
+
 <p>因此，XGBoost借鉴LGBM的思想，提供了一个hist版本的XGBoost，但性能还没能追上LGBM，如下图所示。</p>
+
 
 
 <div class="box">
@@ -884,21 +903,25 @@
   </figure>
 </div>
 
+
 <h2 id="3-模型初始化和目标">3 模型初始化和目标</h2>
+
 <p>XGBoost和LGBM都有两种调用API，一种是原生API，另一种是与sklearn相兼容的API。本文针对后一种API进行讲解。</p>
-<p>Aklearn API提供了<code>LGBMRegressor</code>和<code>LGBMClassifier</code>两个类，并且配有&rsquo;fit/predict/predict_proba&rsquo;方法：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">import</span> lightgbm <span style="color:#66d9ef">as</span> lgbm  <span style="color:#75715e"># standard alias</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>clf <span style="color:#f92672">=</span> lgbm<span style="color:#f92672">.</span>LGBMClassifier(objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary&#34;</span>)  <span style="color:#75715e"># or &#39;mutliclass&#39;</span>
-</span></span><span style="display:flex;"><span>reg <span style="color:#f92672">=</span> lgbm<span style="color:#f92672">.</span>LGBMRegressor()  <span style="color:#75715e"># default - &#39;regression&#39;</span>
-</span></span></code></pre></div><p><code>objective</code>参数指明了任务的类型，一般包括<code>binary</code>，<code>multiclass</code>和<code>regression</code>三种任务。</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> reg<span style="color:#f92672">.</span>fit(X, y)
-</span></span><span style="display:flex;"><span>LGBMRegressor()
-</span></span></code></pre></div><h2 id="4-控制模型的复杂度">4 控制模型的复杂度</h2>
+
+<p>Aklearn API提供了<code>LGBMRegressor</code>和<code>LGBMClassifier</code>两个类，并且配有'fit/predict/predict_proba'方法：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">import</span> lightgbm <span style="color:#f92672">as</span> lgbm  <span style="color:#75715e"># standard alias</span>
+
+clf <span style="color:#f92672">=</span> lgbm<span style="color:#f92672">.</span>LGBMClassifier(objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary&#34;</span>)  <span style="color:#75715e"># or &#39;mutliclass&#39;</span>
+reg <span style="color:#f92672">=</span> lgbm<span style="color:#f92672">.</span>LGBMRegressor()  <span style="color:#75715e"># default - &#39;regression&#39;</span></code></pre></div>
+<p><code>objective</code>参数指明了任务的类型，一般包括<code>binary</code>，<code>multiclass</code>和<code>regression</code>三种任务。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">&gt;&gt;&gt;</span> reg<span style="color:#f92672">.</span>fit(X, y)
+LGBMRegressor()</code></pre></div>
+<h2 id="4-控制模型的复杂度">4 控制模型的复杂度</h2>
+
 <p>决策树的数量直接影响了模型的精度，你可以通过调整<code>n_eatimators</code>这个参数来设置决策树的数量，如下我们将在Kaggle TPS March数据集上构造1000棵决策树：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>tps_march <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>read_csv(<span style="color:#e6db74">&#34;data/train.csv&#34;</span>)
-</span></span><span style="display:flex;"><span>tps_march<span style="color:#f92672">.</span>head()
-</span></span></code></pre></div>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">tps_march <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>read_csv(<span style="color:#e6db74">&#34;data/train.csv&#34;</span>)
+tps_march<span style="color:#f92672">.</span>head()</code></pre></div>
+
 
 <div class="box">
 <figure  itemprop="associatedMedia"
@@ -910,165 +933,172 @@
   </figure>
 </div>
 
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> tps_march<span style="color:#f92672">.</span>shape
-</span></span><span style="display:flex;"><span>(<span style="color:#ae81ff">300000</span>, <span style="color:#ae81ff">32</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> tps_march<span style="color:#f92672">.</span>dtypes<span style="color:#f92672">.</span>value_counts()
-</span></span><span style="display:flex;"><span>object     <span style="color:#ae81ff">19</span>
-</span></span><span style="display:flex;"><span>float64    <span style="color:#ae81ff">11</span>
-</span></span><span style="display:flex;"><span>int64       <span style="color:#ae81ff">2</span>
-</span></span><span style="display:flex;"><span>dtype: int64
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> X, y <span style="color:#f92672">=</span> tps_march<span style="color:#f92672">.</span>drop(<span style="color:#e6db74">&#34;target&#34;</span>, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>), tps_march[[<span style="color:#e6db74">&#34;target&#34;</span>]]<span style="color:#f92672">.</span>values<span style="color:#f92672">.</span>flatten()
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># Encode categoricals</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> X_enc <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>get_dummies(X)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> clf <span style="color:#f92672">=</span> lgbm<span style="color:#f92672">.</span>LGBMClassifier(
-</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>    objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary&#34;</span>, n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>, random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">1121218</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>  )
-</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> clf<span style="color:#f92672">.</span>fit(X_enc, y)
-</span></span><span style="display:flex;"><span>LGBMClassifier(n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>, objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary&#39;</span>, random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">1121218</span>)
-</span></span></code></pre></div><p>增加更多的树容易使模型过拟合，为了防止过拟合，我们可以增加树数量的同时降低学习率。</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> clf <span style="color:#f92672">=</span> lgbm<span style="color:#f92672">.</span>LGBMClassifier(
-</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>    objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary&#34;</span>, n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">3000</span>, learning_rate<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>, random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">1121218</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> clf<span style="color:#f92672">.</span>fit(X_enc, y)
-</span></span><span style="display:flex;"><span>LGBMClassifier(n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">3000</span>, objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary&#39;</span>, random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">1121218</span>)
-</span></span></code></pre></div><h2 id="4-early-stopping">4 Early stopping</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">&gt;&gt;&gt;</span> tps_march<span style="color:#f92672">.</span>shape
+(<span style="color:#ae81ff">300000</span>, <span style="color:#ae81ff">32</span>)
+
+<span style="color:#f92672">&gt;&gt;&gt;</span> tps_march<span style="color:#f92672">.</span>dtypes<span style="color:#f92672">.</span>value_counts()
+object     <span style="color:#ae81ff">19</span>
+float64    <span style="color:#ae81ff">11</span>
+int64       <span style="color:#ae81ff">2</span>
+dtype: int64
+
+<span style="color:#f92672">&gt;&gt;&gt;</span> X, y <span style="color:#f92672">=</span> tps_march<span style="color:#f92672">.</span>drop(<span style="color:#e6db74">&#34;target&#34;</span>, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>), tps_march[[<span style="color:#e6db74">&#34;target&#34;</span>]]<span style="color:#f92672">.</span>values<span style="color:#f92672">.</span>flatten()
+
+<span style="color:#75715e"># Encode categoricals</span>
+<span style="color:#f92672">&gt;&gt;&gt;</span> X_enc <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>get_dummies(X)
+
+<span style="color:#f92672">&gt;&gt;&gt;</span> clf <span style="color:#f92672">=</span> lgbm<span style="color:#f92672">.</span>LGBMClassifier(
+<span style="color:#f92672">...</span>    objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary&#34;</span>, n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>, random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">1121218</span>
+<span style="color:#f92672">...</span>  )
+<span style="color:#f92672">&gt;&gt;&gt;</span> clf<span style="color:#f92672">.</span>fit(X_enc, y)
+LGBMClassifier(n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>, objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary&#39;</span>, random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">1121218</span>)</code></pre></div>
+<p>增加更多的树容易使模型过拟合，为了防止过拟合，我们可以增加树数量的同时降低学习率。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">&gt;&gt;&gt;</span> clf <span style="color:#f92672">=</span> lgbm<span style="color:#f92672">.</span>LGBMClassifier(
+<span style="color:#f92672">...</span>    objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary&#34;</span>, n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">3000</span>, learning_rate<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>, random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">1121218</span>
+<span style="color:#f92672">...</span>)
+
+<span style="color:#f92672">&gt;&gt;&gt;</span> clf<span style="color:#f92672">.</span>fit(X_enc, y)
+LGBMClassifier(n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">3000</span>, objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary&#39;</span>, random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">1121218</span>)</code></pre></div>
+<h2 id="4-early-stopping">4 Early stopping</h2>
+
 <p>在集成模型中，每棵树都是根据已有模型的误差进行构建，因此当模型的准确率在某个迭代次数后不再提升时，我们可以适当地停止训练。</p>
+
 <p>为了实现这个目标，LGBM提供了<code>early_stopping_rounds</code>参数用于提前停止训练。例如，我们将值设置为100，那么模型的准确率在过去100轮都没有上升时模型就停止训练。</p>
+
 <p>Early stopping仅有在<code>fit</code>方法输入测试集<code>eval_set</code>时有效，此时测试集用于对模型的效果进行评估。</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">from</span> sklearn.model_selection <span style="color:#f92672">import</span> tXGBClassifiertest_split
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>X_train, X_eval, y_train, y_eval <span style="color:#f92672">=</span> train_test_split(X_enc, y, test_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>clf <span style="color:#f92672">=</span> lgbm<span style="color:#f92672">.</span>LGBMClassifier(objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary&#34;</span>, n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>)
-</span></span><span style="display:flex;"><span>eval_set <span style="color:#f92672">=</span> [(X_eval, y_eval)]
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>clf<span style="color:#f92672">.</span>fit(
-</span></span><span style="display:flex;"><span>    X_train,
-</span></span><span style="display:flex;"><span>    y_train,
-</span></span><span style="display:flex;"><span>    eval_set<span style="color:#f92672">=</span>eval_set,
-</span></span><span style="display:flex;"><span>    early_stopping_rounds<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>,
-</span></span><span style="display:flex;"><span>    eval_metric<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary_logloss&#34;</span>,
-</span></span><span style="display:flex;"><span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">----------------------------------------------------------</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Training until validation scores don<span style="color:#e6db74">&#39;t improve for 100 rounds</span>
-</span></span><span style="display:flex;"><span>[<span style="color:#ae81ff">1</span>]	valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.542547</span>
-</span></span><span style="display:flex;"><span>[<span style="color:#ae81ff">2</span>]	valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.515902</span>
-</span></span><span style="display:flex;"><span>[<span style="color:#ae81ff">3</span>]	valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.494678</span>
-</span></span><span style="display:flex;"><span>[<span style="color:#ae81ff">4</span>]	valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.477235</span>
-</span></span><span style="display:flex;"><span>[<span style="color:#ae81ff">5</span>]	valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.462826</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>
-</span></span><span style="display:flex;"><span>[<span style="color:#ae81ff">737</span>]	valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.350179</span>
-</span></span><span style="display:flex;"><span>[<span style="color:#ae81ff">738</span>]	valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.350162</span>
-</span></span><span style="display:flex;"><span>Early stopping, best iteration <span style="color:#f92672">is</span>:
-</span></span><span style="display:flex;"><span>[<span style="color:#ae81ff">638</span>]	valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.350073</span>
-</span></span></code></pre></div><p>在构建新的弱学习器时，新的学习器，即决策树，调整参数来拟合<code>(X_train, y_train)</code>，同时在测试集<code>(X_eval, y_eval)</code>进行预测，最后使用测试指标<code>eval_metric</code>进行评测。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">from</span> sklearn.model_selection <span style="color:#f92672">import</span> tXGBClassifiertest_split
+
+X_train, X_eval, y_train, y_eval <span style="color:#f92672">=</span> train_test_split(X_enc, y, test_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>)
+
+clf <span style="color:#f92672">=</span> lgbm<span style="color:#f92672">.</span>LGBMClassifier(objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary&#34;</span>, n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>)
+eval_set <span style="color:#f92672">=</span> [(X_eval, y_eval)]
+
+clf<span style="color:#f92672">.</span>fit(
+    X_train,
+    y_train,
+    eval_set<span style="color:#f92672">=</span>eval_set,
+    early_stopping_rounds<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>,
+    eval_metric<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary_logloss&#34;</span>,
+)
+
+<span style="color:#f92672">----------------------------------------------------------</span>
+
+Training until validation scores don<span style="color:#e6db74">&#39;t improve for 100 rounds</span>
+[<span style="color:#ae81ff">1</span>] valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.542547</span>
+[<span style="color:#ae81ff">2</span>] valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.515902</span>
+[<span style="color:#ae81ff">3</span>] valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.494678</span>
+[<span style="color:#ae81ff">4</span>] valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.477235</span>
+[<span style="color:#ae81ff">5</span>] valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.462826</span>
+<span style="color:#f92672">...</span>
+[<span style="color:#ae81ff">737</span>]   valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.350179</span>
+[<span style="color:#ae81ff">738</span>]   valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.350162</span>
+Early stopping, best iteration <span style="color:#f92672">is</span>:
+[<span style="color:#ae81ff">638</span>]   valid_0<span style="color:#e6db74">&#39;s binary_logloss: 0.350073</span></code></pre></div>
+<p>在构建新的弱学习器时，新的学习器，即决策树，调整参数来拟合<code>(X_train, y_train)</code>，同时在测试集<code>(X_eval, y_eval)</code>进行预测，最后使用测试指标<code>eval_metric</code>进行评测。</p>
+
 <p>在上例代码中，由于模型自第638代后在验证集上的损失不再下降，模型选择在第738次迭代停止训练，此时我们构建了一个拥有638棵树的模型。</p>
+
 <h2 id="5-baseline">5 Baseline</h2>
+
 <p>让我们按照以上流程搭建一个模型作为baseline，同时再使用XGBoost也搭建一个相似的模型对比效果：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">import</span> xgboost <span style="color:#66d9ef">as</span> xgb
-</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> sklearn.metrics <span style="color:#f92672">import</span> log_loss
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>X, y <span style="color:#f92672">=</span> tps_march<span style="color:#f92672">.</span>drop(<span style="color:#e6db74">&#34;target&#34;</span>, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>), tps_march[[<span style="color:#e6db74">&#34;target&#34;</span>]]<span style="color:#f92672">.</span>values<span style="color:#f92672">.</span>flatten()
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># Encode categoricals</span>
-</span></span><span style="display:flex;"><span>X_enc <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>get_dummies(X)
-</span></span><span style="display:flex;"><span>X_train, X_eval, y_train, y_eval <span style="color:#f92672">=</span> train_test_split(
-</span></span><span style="display:flex;"><span>    X_enc, y, test_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.2</span>, stratify<span style="color:#f92672">=</span>y
-</span></span><span style="display:flex;"><span>  )
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>xgb_clf <span style="color:#f92672">=</span> xgb<span style="color:#f92672">.</span>XGBClassifier(
-</span></span><span style="display:flex;"><span>    objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary:logistic&#34;</span>,
-</span></span><span style="display:flex;"><span>    random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">1121218</span>,
-</span></span><span style="display:flex;"><span>    n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>,
-</span></span><span style="display:flex;"><span>    tree_method<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;hist&#34;</span>,  <span style="color:#75715e"># enable histogram binning in XGB</span>
-</span></span><span style="display:flex;"><span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>xgb_clf<span style="color:#f92672">.</span>fit(
-</span></span><span style="display:flex;"><span>    X_train,
-</span></span><span style="display:flex;"><span>    y_train,
-</span></span><span style="display:flex;"><span>    eval_set<span style="color:#f92672">=</span>[(X_eval, y_eval)],
-</span></span><span style="display:flex;"><span>    eval_metric<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;logloss&#34;</span>,
-</span></span><span style="display:flex;"><span>    early_stopping_rounds<span style="color:#f92672">=</span><span style="color:#ae81ff">150</span>,
-</span></span><span style="display:flex;"><span>    verbose<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>,  <span style="color:#75715e"># Disable logs</span>
-</span></span><span style="display:flex;"><span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>preds <span style="color:#f92672">=</span> xgb_clf<span style="color:#f92672">.</span>predict_proba(X_eval)
-</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;XGBoost logloss on the evaluation set: </span><span style="color:#e6db74">{</span>log_loss(y_eval, preds)<span style="color:#e6db74">:</span><span style="color:#e6db74">.5f</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">-----------------------------------------------------------</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>XGBoost logloss on the evaluation set: <span style="color:#ae81ff">0.35482</span>
-</span></span><span style="display:flex;"><span>Wall time: <span style="color:#ae81ff">1</span>min <span style="color:#ae81ff">22</span>s
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>lgbm_clf <span style="color:#f92672">=</span> lgbm<span style="color:#f92672">.</span>LGBMClassifier(
-</span></span><span style="display:flex;"><span>    objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary&#34;</span>,
-</span></span><span style="display:flex;"><span>    random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">1121218</span>,
-</span></span><span style="display:flex;"><span>    n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>,
-</span></span><span style="display:flex;"><span>    boosting<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;gbdt&#34;</span>,  <span style="color:#75715e"># default histogram binning of LGBM</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#     device=&#39;gpu&#39;  # uncomment to use GPU training</span>
-</span></span><span style="display:flex;"><span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>lgbm_clf<span style="color:#f92672">.</span>fit(
-</span></span><span style="display:flex;"><span>    X_train,
-</span></span><span style="display:flex;"><span>    y_train,
-</span></span><span style="display:flex;"><span>    eval_set<span style="color:#f92672">=</span>[(X_eval, y_eval)],
-</span></span><span style="display:flex;"><span>    eval_metric<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary_logloss&#34;</span>,
-</span></span><span style="display:flex;"><span>    early_stopping_rounds<span style="color:#f92672">=</span><span style="color:#ae81ff">150</span>,
-</span></span><span style="display:flex;"><span>    verbose<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>,  <span style="color:#75715e"># Disable logs</span>
-</span></span><span style="display:flex;"><span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>preds <span style="color:#f92672">=</span> lgbm_clf<span style="color:#f92672">.</span>predict_proba(X_eval)
-</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;LightGBM logloss on the evaluation set: </span><span style="color:#e6db74">{</span>log_loss(y_eval, preds)<span style="color:#e6db74">:</span><span style="color:#e6db74">.5f</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">----------------------------------------------</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>LightGBM logloss on the evaluation set: <span style="color:#ae81ff">0.35256</span>
-</span></span><span style="display:flex;"><span>Wall time: <span style="color:#ae81ff">17.2</span> s
-</span></span></code></pre></div><p>可以观察到，LGBM的训练时间只是XGBoost的1/4，但达到了更低的loss。最后在讨论交叉验证前，我们再来看一个LGBM使用到的技巧。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">import</span> xgboost <span style="color:#f92672">as</span> xgb
+<span style="color:#f92672">from</span> sklearn.metrics <span style="color:#f92672">import</span> log_loss
+
+X, y <span style="color:#f92672">=</span> tps_march<span style="color:#f92672">.</span>drop(<span style="color:#e6db74">&#34;target&#34;</span>, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>), tps_march[[<span style="color:#e6db74">&#34;target&#34;</span>]]<span style="color:#f92672">.</span>values<span style="color:#f92672">.</span>flatten()
+
+<span style="color:#75715e"># Encode categoricals</span>
+X_enc <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>get_dummies(X)
+X_train, X_eval, y_train, y_eval <span style="color:#f92672">=</span> train_test_split(
+    X_enc, y, test_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.2</span>, stratify<span style="color:#f92672">=</span>y
+  )</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">xgb_clf <span style="color:#f92672">=</span> xgb<span style="color:#f92672">.</span>XGBClassifier(
+    objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary:logistic&#34;</span>,
+    random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">1121218</span>,
+    n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>,
+    tree_method<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;hist&#34;</span>,  <span style="color:#75715e"># enable histogram binning in XGB</span>
+)
+
+xgb_clf<span style="color:#f92672">.</span>fit(
+    X_train,
+    y_train,
+    eval_set<span style="color:#f92672">=</span>[(X_eval, y_eval)],
+    eval_metric<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;logloss&#34;</span>,
+    early_stopping_rounds<span style="color:#f92672">=</span><span style="color:#ae81ff">150</span>,
+    verbose<span style="color:#f92672">=</span>False,  <span style="color:#75715e"># Disable logs</span>
+)
+
+preds <span style="color:#f92672">=</span> xgb_clf<span style="color:#f92672">.</span>predict_proba(X_eval)
+<span style="color:#66d9ef">print</span>(f<span style="color:#e6db74">&#34;XGBoost logloss on the evaluation set: {log_loss(y_eval, preds):.5f}&#34;</span>)
+
+<span style="color:#f92672">-----------------------------------------------------------</span>
+
+XGBoost logloss on the evaluation set: <span style="color:#ae81ff">0.35482</span>
+Wall time: <span style="color:#ae81ff">1</span>min <span style="color:#ae81ff">22</span>s</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">lgbm_clf <span style="color:#f92672">=</span> lgbm<span style="color:#f92672">.</span>LGBMClassifier(
+    objective<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary&#34;</span>,
+    random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">1121218</span>,
+    n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>,
+    boosting<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;gbdt&#34;</span>,  <span style="color:#75715e"># default histogram binning of LGBM</span>
+    <span style="color:#75715e">#     device=&#39;gpu&#39;  # uncomment to use GPU training</span>
+)
+
+lgbm_clf<span style="color:#f92672">.</span>fit(
+    X_train,
+    y_train,
+    eval_set<span style="color:#f92672">=</span>[(X_eval, y_eval)],
+    eval_metric<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary_logloss&#34;</span>,
+    early_stopping_rounds<span style="color:#f92672">=</span><span style="color:#ae81ff">150</span>,
+    verbose<span style="color:#f92672">=</span>False,  <span style="color:#75715e"># Disable logs</span>
+)
+
+preds <span style="color:#f92672">=</span> lgbm_clf<span style="color:#f92672">.</span>predict_proba(X_eval)
+<span style="color:#66d9ef">print</span>(f<span style="color:#e6db74">&#34;LightGBM logloss on the evaluation set: {log_loss(y_eval, preds):.5f}&#34;</span>)
+
+<span style="color:#f92672">----------------------------------------------</span>
+
+LightGBM logloss on the evaluation set: <span style="color:#ae81ff">0.35256</span>
+Wall time: <span style="color:#ae81ff">17.2</span> s</code></pre></div>
+<p>可以观察到，LGBM的训练时间只是XGBoost的1/4，但达到了更低的loss。最后在讨论交叉验证前，我们再来看一个LGBM使用到的技巧。</p>
+
 <h2 id="6-缺失值处理">6 缺失值处理</h2>
+
 <p>LGBM的直方图算法用于处理数据中的缺失值和特征。在TPS March数据集中，一共有19个类，我们使用one-hot方法来实现对缺失值的处理操作，这次我们使用LGBM的内置处理并与XGBoost进行比较：</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>X, y <span style="color:#f92672">=</span> tps_march<span style="color:#f92672">.</span>drop(<span style="color:#e6db74">&#34;target&#34;</span>, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>), tps_march[[<span style="color:#e6db74">&#34;target&#34;</span>]]<span style="color:#f92672">.</span>values<span style="color:#f92672">.</span>flatten()
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># Extract categoricals and their indices</span>
-</span></span><span style="display:flex;"><span>cat_features <span style="color:#f92672">=</span> X<span style="color:#f92672">.</span>select_dtypes(exclude<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>number)<span style="color:#f92672">.</span>columns<span style="color:#f92672">.</span>to_list()
-</span></span><span style="display:flex;"><span>cat_idx <span style="color:#f92672">=</span> [X<span style="color:#f92672">.</span>columns<span style="color:#f92672">.</span>get_loc(col) <span style="color:#66d9ef">for</span> col <span style="color:#f92672">in</span> cat_features]
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># Convert cat_features to pd.Categorical dtype</span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> col <span style="color:#f92672">in</span> cat_features:
-</span></span><span style="display:flex;"><span>    X[col] <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>Categorical(X[col])
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># Unencoded train/test sets</span>
-</span></span><span style="display:flex;"><span>X_train, X_eval, y_train, y_eval <span style="color:#f92672">=</span> train_test_split(
-</span></span><span style="display:flex;"><span>    X, y, test_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.2</span>, random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>, stratify<span style="color:#f92672">=</span>y
-</span></span><span style="display:flex;"><span>)
-</span></span></code></pre></div><p>为了指定类别特征，我们向<code>fit</code>方法传入类别特征的特征序号。</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#75715e"># Model initialization is the same</span>
-</span></span><span style="display:flex;"><span>eval_set <span style="color:#f92672">=</span> [(X_eval, y_eval)]
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>_ <span style="color:#f92672">=</span> lgbm_clf<span style="color:#f92672">.</span>fit(
-</span></span><span style="display:flex;"><span>    X_train,
-</span></span><span style="display:flex;"><span>    y_train,
-</span></span><span style="display:flex;"><span>    categorical_feature<span style="color:#f92672">=</span>cat_idx,  <span style="color:#75715e"># Specify the categoricals</span>
-</span></span><span style="display:flex;"><span>    eval_set<span style="color:#f92672">=</span>eval_set,
-</span></span><span style="display:flex;"><span>    early_stopping_rounds<span style="color:#f92672">=</span><span style="color:#ae81ff">150</span>,
-</span></span><span style="display:flex;"><span>    eval_metric<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;logloss&#34;</span>,
-</span></span><span style="display:flex;"><span>    verbose<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>,
-</span></span><span style="display:flex;"><span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>preds <span style="color:#f92672">=</span> lgbm_clf<span style="color:#f92672">.</span>predict_proba(X_eval)
-</span></span><span style="display:flex;"><span>loss <span style="color:#f92672">=</span> log_loss(y_eval, preds)
-</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;LGBM logloss with default cateogircal feature handling: </span><span style="color:#e6db74">{</span>loss<span style="color:#e6db74">:</span><span style="color:#e6db74">.5f</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">-----------------------------------------------------------------</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>LGBM logloss <span style="color:#66d9ef">with</span> default cateogircal feature handling: <span style="color:#ae81ff">0.34823</span>
-</span></span><span style="display:flex;"><span>Wall time: <span style="color:#ae81ff">15</span> s
-</span></span></code></pre></div><p>可以发现，使用LGBM内置的方法在精度和速度上均处于领先。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">X, y <span style="color:#f92672">=</span> tps_march<span style="color:#f92672">.</span>drop(<span style="color:#e6db74">&#34;target&#34;</span>, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>), tps_march[[<span style="color:#e6db74">&#34;target&#34;</span>]]<span style="color:#f92672">.</span>values<span style="color:#f92672">.</span>flatten()
+
+<span style="color:#75715e"># Extract categoricals and their indices</span>
+cat_features <span style="color:#f92672">=</span> X<span style="color:#f92672">.</span>select_dtypes(exclude<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>number)<span style="color:#f92672">.</span>columns<span style="color:#f92672">.</span>to_list()
+cat_idx <span style="color:#f92672">=</span> [X<span style="color:#f92672">.</span>columns<span style="color:#f92672">.</span>get_loc(col) <span style="color:#66d9ef">for</span> col <span style="color:#f92672">in</span> cat_features]
+
+<span style="color:#75715e"># Convert cat_features to pd.Categorical dtype</span>
+<span style="color:#66d9ef">for</span> col <span style="color:#f92672">in</span> cat_features:
+    X[col] <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>Categorical(X[col])
+
+<span style="color:#75715e"># Unencoded train/test sets</span>
+X_train, X_eval, y_train, y_eval <span style="color:#f92672">=</span> train_test_split(
+    X, y, test_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.2</span>, random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>, stratify<span style="color:#f92672">=</span>y
+)</code></pre></div>
+<p>为了指定类别特征，我们向<code>fit</code>方法传入类别特征的特征序号。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e"># Model initialization is the same</span>
+eval_set <span style="color:#f92672">=</span> [(X_eval, y_eval)]
+
+_ <span style="color:#f92672">=</span> lgbm_clf<span style="color:#f92672">.</span>fit(
+    X_train,
+    y_train,
+    categorical_feature<span style="color:#f92672">=</span>cat_idx,  <span style="color:#75715e"># Specify the categoricals</span>
+    eval_set<span style="color:#f92672">=</span>eval_set,
+    early_stopping_rounds<span style="color:#f92672">=</span><span style="color:#ae81ff">150</span>,
+    eval_metric<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;logloss&#34;</span>,
+    verbose<span style="color:#f92672">=</span>False,
+)
+
+preds <span style="color:#f92672">=</span> lgbm_clf<span style="color:#f92672">.</span>predict_proba(X_eval)
+loss <span style="color:#f92672">=</span> log_loss(y_eval, preds)
+<span style="color:#66d9ef">print</span>(f<span style="color:#e6db74">&#34;LGBM logloss with default cateogircal feature handling: {loss:.5f}&#34;</span>)
+
+<span style="color:#f92672">-----------------------------------------------------------------</span>
+
+LGBM logloss <span style="color:#66d9ef">with</span> default cateogircal feature handling: <span style="color:#ae81ff">0.34823</span>
+Wall time: <span style="color:#ae81ff">15</span> s</code></pre></div>
+<p>可以发现，使用LGBM内置的方法在精度和速度上均处于领先。</p>
+
 
 
 <div class="box">
@@ -1081,66 +1111,69 @@
   </figure>
 </div>
 
+
 <h2 id="7-交叉验证">7 交叉验证</h2>
+
 <p>交叉验证可以用于防止模型过拟合，通常是把数据集分为$k$份，其中在每次训练时，都会选择其中一份当做测试集，其他数据当做训练集，通过最后求取每次训练的测试集误差来判断模型是否过拟合并选择是否结束训练。</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#f92672">import</span> time
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> sklearn.model_selection <span style="color:#f92672">import</span> StratifiedKFold
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>N_SPLITS <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>
-</span></span><span style="display:flex;"><span>strat_kf <span style="color:#f92672">=</span> StratifiedKFold(n_splits<span style="color:#f92672">=</span>N_SPLITS, shuffle<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">1121218</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>scores <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>empty(N_SPLITS)
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> idx, (train_idx, test_idx) <span style="color:#f92672">in</span> enumerate(strat_kf<span style="color:#f92672">.</span>split(X, y)):
-</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;=&#34;</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">12</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Training fold </span><span style="color:#e6db74">{</span>idx<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">12</span> <span style="color:#f92672">*</span> <span style="color:#e6db74">&#34;=&#34;</span>)
-</span></span><span style="display:flex;"><span>    start <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time()
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    X_train, X_val <span style="color:#f92672">=</span> X<span style="color:#f92672">.</span>iloc[train_idx], X<span style="color:#f92672">.</span>iloc[test_idx]
-</span></span><span style="display:flex;"><span>    y_train, y_val <span style="color:#f92672">=</span> y[train_idx], y[test_idx]
-</span></span><span style="display:flex;"><span>    eval_set <span style="color:#f92672">=</span> [(X_val, y_val)]
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    lgbm_clf <span style="color:#f92672">=</span> lgbm<span style="color:#f92672">.</span>LGBMClassifier(n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>)
-</span></span><span style="display:flex;"><span>    lgbm_clf<span style="color:#f92672">.</span>fit(
-</span></span><span style="display:flex;"><span>        X_train,
-</span></span><span style="display:flex;"><span>        y_train,
-</span></span><span style="display:flex;"><span>        eval_set<span style="color:#f92672">=</span>eval_set,
-</span></span><span style="display:flex;"><span>        categorical_feature<span style="color:#f92672">=</span>cat_idx,
-</span></span><span style="display:flex;"><span>        early_stopping_rounds<span style="color:#f92672">=</span><span style="color:#ae81ff">200</span>,
-</span></span><span style="display:flex;"><span>        eval_metric<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary_logloss&#34;</span>,
-</span></span><span style="display:flex;"><span>        verbose<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>,
-</span></span><span style="display:flex;"><span>    )
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    preds <span style="color:#f92672">=</span> lgbm_clf<span style="color:#f92672">.</span>predict_proba(X_val)
-</span></span><span style="display:flex;"><span>    loss <span style="color:#f92672">=</span> log_loss(y_val, preds)
-</span></span><span style="display:flex;"><span>    scores[idx] <span style="color:#f92672">=</span> loss
-</span></span><span style="display:flex;"><span>    runtime <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time() <span style="color:#f92672">-</span> start
-</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Fold </span><span style="color:#e6db74">{</span>idx<span style="color:#e6db74">}</span><span style="color:#e6db74"> finished with score: </span><span style="color:#e6db74">{</span>loss<span style="color:#e6db74">:</span><span style="color:#e6db74">.5f</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> in </span><span style="color:#e6db74">{</span>runtime<span style="color:#e6db74">:</span><span style="color:#e6db74">.2f</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> seconds.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>)
-</span></span><span style="display:flex;"><span>    
-</span></span><span style="display:flex;"><span><span style="color:#f92672">-------------------------------------------------------------------</span>
-</span></span><span style="display:flex;"><span>    
-</span></span><span style="display:flex;"><span><span style="color:#f92672">============</span>Training fold <span style="color:#ae81ff">0</span><span style="color:#f92672">============</span>
-</span></span><span style="display:flex;"><span>Fold <span style="color:#ae81ff">0</span> finished <span style="color:#66d9ef">with</span> score: <span style="color:#ae81ff">0.34547</span> <span style="color:#f92672">in</span> <span style="color:#ae81ff">15.46</span> seconds<span style="color:#f92672">.</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">============</span>Training fold <span style="color:#ae81ff">1</span><span style="color:#f92672">============</span>
-</span></span><span style="display:flex;"><span>Fold <span style="color:#ae81ff">1</span> finished <span style="color:#66d9ef">with</span> score: <span style="color:#ae81ff">0.34824</span> <span style="color:#f92672">in</span> <span style="color:#ae81ff">14.90</span> seconds<span style="color:#f92672">.</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">============</span>Training fold <span style="color:#ae81ff">2</span><span style="color:#f92672">============</span>
-</span></span><span style="display:flex;"><span>Fold <span style="color:#ae81ff">2</span> finished <span style="color:#66d9ef">with</span> score: <span style="color:#ae81ff">0.34665</span> <span style="color:#f92672">in</span> <span style="color:#ae81ff">12.64</span> seconds<span style="color:#f92672">.</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">============</span>Training fold <span style="color:#ae81ff">3</span><span style="color:#f92672">============</span>
-</span></span><span style="display:flex;"><span>Fold <span style="color:#ae81ff">3</span> finished <span style="color:#66d9ef">with</span> score: <span style="color:#ae81ff">0.35015</span> <span style="color:#f92672">in</span> <span style="color:#ae81ff">14.78</span> seconds<span style="color:#f92672">.</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">============</span>Training fold <span style="color:#ae81ff">4</span><span style="color:#f92672">============</span>
-</span></span><span style="display:flex;"><span>Fold <span style="color:#ae81ff">4</span> finished <span style="color:#66d9ef">with</span> score: <span style="color:#ae81ff">0.34617</span> <span style="color:#f92672">in</span> <span style="color:#ae81ff">14.61</span> seconds<span style="color:#f92672">.</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">============</span>Training fold <span style="color:#ae81ff">5</span><span style="color:#f92672">============</span>
-</span></span><span style="display:flex;"><span>Fold <span style="color:#ae81ff">5</span> finished <span style="color:#66d9ef">with</span> score: <span style="color:#ae81ff">0.34833</span> <span style="color:#f92672">in</span> <span style="color:#ae81ff">13.24</span> seconds<span style="color:#f92672">.</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">============</span>Training fold <span style="color:#ae81ff">6</span><span style="color:#f92672">============</span>
-</span></span><span style="display:flex;"><span>Fold <span style="color:#ae81ff">6</span> finished <span style="color:#66d9ef">with</span> score: <span style="color:#ae81ff">0.35155</span> <span style="color:#f92672">in</span> <span style="color:#ae81ff">13.27</span> seconds<span style="color:#f92672">.</span>
-</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Average log loss: </span><span style="color:#e6db74">{</span>np<span style="color:#f92672">.</span>mean(scores)<span style="color:#e6db74">:</span><span style="color:#e6db74">.4f</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
-</span></span><span style="display:flex;"><span>Average log loss: <span style="color:#ae81ff">0.3481</span>
-</span></span></code></pre></div><h2 id="8-总结">8 总结</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">import</span> time
+
+<span style="color:#f92672">from</span> sklearn.model_selection <span style="color:#f92672">import</span> StratifiedKFold
+
+N_SPLITS <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>
+strat_kf <span style="color:#f92672">=</span> StratifiedKFold(n_splits<span style="color:#f92672">=</span>N_SPLITS, shuffle<span style="color:#f92672">=</span>True, random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">1121218</span>)
+
+scores <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>empty(N_SPLITS)
+<span style="color:#66d9ef">for</span> idx, (train_idx, test_idx) <span style="color:#f92672">in</span> enumerate(strat_kf<span style="color:#f92672">.</span>split(X, y)):
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;=&#34;</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">12</span> <span style="color:#f92672">+</span> f<span style="color:#e6db74">&#34;Training fold {idx}&#34;</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">12</span> <span style="color:#f92672">*</span> <span style="color:#e6db74">&#34;=&#34;</span>)
+    start <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time()
+
+    X_train, X_val <span style="color:#f92672">=</span> X<span style="color:#f92672">.</span>iloc[train_idx], X<span style="color:#f92672">.</span>iloc[test_idx]
+    y_train, y_val <span style="color:#f92672">=</span> y[train_idx], y[test_idx]
+    eval_set <span style="color:#f92672">=</span> [(X_val, y_val)]
+
+    lgbm_clf <span style="color:#f92672">=</span> lgbm<span style="color:#f92672">.</span>LGBMClassifier(n_estimators<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>)
+    lgbm_clf<span style="color:#f92672">.</span>fit(
+        X_train,
+        y_train,
+        eval_set<span style="color:#f92672">=</span>eval_set,
+        categorical_feature<span style="color:#f92672">=</span>cat_idx,
+        early_stopping_rounds<span style="color:#f92672">=</span><span style="color:#ae81ff">200</span>,
+        eval_metric<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;binary_logloss&#34;</span>,
+        verbose<span style="color:#f92672">=</span>False,
+    )
+
+    preds <span style="color:#f92672">=</span> lgbm_clf<span style="color:#f92672">.</span>predict_proba(X_val)
+    loss <span style="color:#f92672">=</span> log_loss(y_val, preds)
+    scores[idx] <span style="color:#f92672">=</span> loss
+    runtime <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time() <span style="color:#f92672">-</span> start
+    <span style="color:#66d9ef">print</span>(f<span style="color:#e6db74">&#34;Fold {idx} finished with score: {loss:.5f} in {runtime:.2f} seconds.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>)
+    
+<span style="color:#f92672">-------------------------------------------------------------------</span>
+    
+<span style="color:#f92672">============</span>Training fold <span style="color:#ae81ff">0</span><span style="color:#f92672">============</span>
+Fold <span style="color:#ae81ff">0</span> finished <span style="color:#66d9ef">with</span> score: <span style="color:#ae81ff">0.34547</span> <span style="color:#f92672">in</span> <span style="color:#ae81ff">15.46</span> seconds<span style="color:#f92672">.</span>
+
+<span style="color:#f92672">============</span>Training fold <span style="color:#ae81ff">1</span><span style="color:#f92672">============</span>
+Fold <span style="color:#ae81ff">1</span> finished <span style="color:#66d9ef">with</span> score: <span style="color:#ae81ff">0.34824</span> <span style="color:#f92672">in</span> <span style="color:#ae81ff">14.90</span> seconds<span style="color:#f92672">.</span>
+
+<span style="color:#f92672">============</span>Training fold <span style="color:#ae81ff">2</span><span style="color:#f92672">============</span>
+Fold <span style="color:#ae81ff">2</span> finished <span style="color:#66d9ef">with</span> score: <span style="color:#ae81ff">0.34665</span> <span style="color:#f92672">in</span> <span style="color:#ae81ff">12.64</span> seconds<span style="color:#f92672">.</span>
+
+<span style="color:#f92672">============</span>Training fold <span style="color:#ae81ff">3</span><span style="color:#f92672">============</span>
+Fold <span style="color:#ae81ff">3</span> finished <span style="color:#66d9ef">with</span> score: <span style="color:#ae81ff">0.35015</span> <span style="color:#f92672">in</span> <span style="color:#ae81ff">14.78</span> seconds<span style="color:#f92672">.</span>
+
+<span style="color:#f92672">============</span>Training fold <span style="color:#ae81ff">4</span><span style="color:#f92672">============</span>
+Fold <span style="color:#ae81ff">4</span> finished <span style="color:#66d9ef">with</span> score: <span style="color:#ae81ff">0.34617</span> <span style="color:#f92672">in</span> <span style="color:#ae81ff">14.61</span> seconds<span style="color:#f92672">.</span>
+
+<span style="color:#f92672">============</span>Training fold <span style="color:#ae81ff">5</span><span style="color:#f92672">============</span>
+Fold <span style="color:#ae81ff">5</span> finished <span style="color:#66d9ef">with</span> score: <span style="color:#ae81ff">0.34833</span> <span style="color:#f92672">in</span> <span style="color:#ae81ff">13.24</span> seconds<span style="color:#f92672">.</span>
+
+<span style="color:#f92672">============</span>Training fold <span style="color:#ae81ff">6</span><span style="color:#f92672">============</span>
+Fold <span style="color:#ae81ff">6</span> finished <span style="color:#66d9ef">with</span> score: <span style="color:#ae81ff">0.35155</span> <span style="color:#f92672">in</span> <span style="color:#ae81ff">13.27</span> seconds<span style="color:#f92672">.</span>
+<span style="color:#66d9ef">print</span>(f<span style="color:#e6db74">&#34;Average log loss: {np.mean(scores):.4f}&#34;</span>)
+Average log loss: <span style="color:#ae81ff">0.3481</span></code></pre></div>
+<h2 id="8-总结">8 总结</h2>
+
 <p>本文主要对XGBoost和LightGBM进行了比较，并使用Sklearn API对LightGBM进行了实践，大家可以按照以上流程，自己动手实现一个LightGBM模型，快动手试试吧！</p>
 
     </div>

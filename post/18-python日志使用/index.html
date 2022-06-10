@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>PPO的Pytorch实现 - Yang Xinxin&#39;s Blog</title>
+  <title>Python在训练时保存日志信息 - Yang Xinxin&#39;s Blog</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Xinxin Yang" />
-  <meta name="description" content="本文将使用pytorch从零实现PPO算法。 首先倒入一些必要的包，其中multiprocessing用于多进程， import multiprocessing import multiprocessing.connection from typing import Dict, List import cv2 import gym import" />
+  <meta name="description" content="不知道大家在训练模型的时候有没有遇到类似这样的问题： 反复调试各种超参数组合，但是由于没有进行有效的记录到最后不知道那种参数组合的结果更好。 即" />
 
   <meta name="keywords" content="RL, ML, " />
 
@@ -35,7 +35,7 @@
 <meta name="generator" content="Hugo 0.80.0" />
 
 
-<link rel="canonical" href="https://yshane-ai.github.io/post/12-ppo/" />
+<link rel="canonical" href="https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/" />
 
 
 
@@ -59,24 +59,24 @@
 
 
 
-<meta property="og:title" content="PPO的Pytorch实现" />
-<meta property="og:description" content="本文将使用pytorch从零实现PPO算法。 首先倒入一些必要的包，其中multiprocessing用于多进程， import multiprocessing import multiprocessing.connection from typing import Dict, List import cv2 import gym import" />
+<meta property="og:title" content="Python在训练时保存日志信息" />
+<meta property="og:description" content="不知道大家在训练模型的时候有没有遇到类似这样的问题： 反复调试各种超参数组合，但是由于没有进行有效的记录到最后不知道那种参数组合的结果更好。 即" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/12-ppo/" />
-<meta property="article:published_time" content="2020-05-14T16:01:23+08:00" />
-<meta property="article:modified_time" content="2020-05-14T16:01:23+08:00" />
-<meta itemprop="name" content="PPO的Pytorch实现">
-<meta itemprop="description" content="本文将使用pytorch从零实现PPO算法。 首先倒入一些必要的包，其中multiprocessing用于多进程， import multiprocessing import multiprocessing.connection from typing import Dict, List import cv2 import gym import">
-<meta itemprop="datePublished" content="2020-05-14T16:01:23+08:00" />
-<meta itemprop="dateModified" content="2020-05-14T16:01:23+08:00" />
-<meta itemprop="wordCount" content="243">
+<meta property="og:url" content="https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/" />
+<meta property="article:published_time" content="2021-09-03T16:01:23+08:00" />
+<meta property="article:modified_time" content="2021-09-03T16:01:23+08:00" />
+<meta itemprop="name" content="Python在训练时保存日志信息">
+<meta itemprop="description" content="不知道大家在训练模型的时候有没有遇到类似这样的问题： 反复调试各种超参数组合，但是由于没有进行有效的记录到最后不知道那种参数组合的结果更好。 即">
+<meta itemprop="datePublished" content="2021-09-03T16:01:23+08:00" />
+<meta itemprop="dateModified" content="2021-09-03T16:01:23+08:00" />
+<meta itemprop="wordCount" content="2852">
 
 
 
-<meta itemprop="keywords" content="RL,Pytorch," />
+<meta itemprop="keywords" content="Python," />
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="PPO的Pytorch实现"/>
-<meta name="twitter:description" content="本文将使用pytorch从零实现PPO算法。 首先倒入一些必要的包，其中multiprocessing用于多进程， import multiprocessing import multiprocessing.connection from typing import Dict, List import cv2 import gym import"/>
+<meta name="twitter:title" content="Python在训练时保存日志信息"/>
+<meta name="twitter:description" content="不知道大家在训练模型的时候有没有遇到类似这样的问题： 反复调试各种超参数组合，但是由于没有进行有效的记录到最后不知道那种参数组合的结果更好。 即"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -769,15 +769,14 @@
           <article class="post bg-white">
     
     <header class="post-header">
-      <h1 class="post-title">PPO的Pytorch实现</h1>
+      <h1 class="post-title">Python在训练时保存日志信息</h1>
       
       <div class="post-meta">
-        <time datetime="2020-05-14" class="post-time">
-          2020-05-14
+        <time datetime="2021-09-03" class="post-time">
+          2021-09-03
         </time>
         <div class="post-category">
-            <a href="https://yshane-ai.github.io/categories/rl/"> RL </a>
-            <a href="https://yshane-ai.github.io/categories/pytorch/"> Pytorch </a>
+            <a href="https://yshane-ai.github.io/categories/python/"> Python </a>
             
           </div>
         
@@ -801,72 +800,171 @@
 
     
     <div class="post-content">
-      <p>本文将使用pytorch从零实现PPO算法。</p>
+      <p>不知道大家在训练模型的时候有没有遇到类似这样的问题：</p>
 
-<p>首先倒入一些必要的包，其中multiprocessing用于多进程，</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">import</span> multiprocessing
-<span style="color:#f92672">import</span> multiprocessing.connection
-<span style="color:#f92672">from</span> typing <span style="color:#f92672">import</span> Dict, List
+<ul>
+<li>反复调试各种超参数组合，但是由于没有进行有效的记录到最后不知道那种参数组合的结果更好。</li>
+<li>即使是做了相应的统计与记录，但是由于超参数太多，或者时不时的又会引入新的超参数，导致最后的记录结果很乱。</li>
+<li>每次改动都要手动记录特别麻烦，而且记录的要素可能还会包括评估结果、epoch数量，甚至最后还要分析损失值以及某些权重参数等等。</li>
+<li>多个模型在调用过程中希望输出相应的处理信息。</li>
+</ul>
 
-<span style="color:#f92672">import</span> cv2
-<span style="color:#f92672">import</span> gym
-<span style="color:#f92672">import</span> numpy <span style="color:#f92672">as</span> np
-<span style="color:#f92672">import</span> torch
-<span style="color:#f92672">from</span> labml <span style="color:#f92672">import</span> monit, tracker, logger, experiment
-<span style="color:#f92672">from</span> torch <span style="color:#f92672">import</span> nn
-<span style="color:#f92672">from</span> torch <span style="color:#f92672">import</span> optim
-<span style="color:#f92672">from</span> torch.distributions <span style="color:#f92672">import</span> Categorical
-<span style="color:#f92672">from</span> torch.nn <span style="color:#f92672">import</span> functional <span style="color:#66d9ef">as</span> F
+<p>那有没有什么比较好的方法来保存这些信息呢？当然有，那就是将整个训练过程中的相关信息都打印成日志保存到本地，然后再按需取相关部分的信息进行分析。</p>
 
-<span style="color:#66d9ef">if</span> torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>is_available():
-    device <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>device(<span style="color:#e6db74">&#34;cuda:1&#34;</span>)
-<span style="color:#66d9ef">else</span>:
-    device <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>device(<span style="color:#e6db74">&#34;cpu&#34;</span>)</code></pre></div>
-<p>我们需要对环境做一个封装：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Game</span>:
-    <span style="color:#66d9ef">def</span> __init__(self, seed: int):
-        self<span style="color:#f92672">.</span>env <span style="color:#f92672">=</span> gym<span style="color:#f92672">.</span>make(<span style="color:#e6db74">&#39;BreakoutNoFrameskip-v4&#39;</span>)
-        self<span style="color:#f92672">.</span>env<span style="color:#f92672">.</span>seed(seed)
-        self<span style="color:#f92672">.</span>obs_4 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros((<span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">84</span>, <span style="color:#ae81ff">84</span>))
-        self<span style="color:#f92672">.</span>rewards <span style="color:#f92672">=</span> []
-        self<span style="color:#f92672">.</span>lives <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+<p>那怎么快速高效的在工程的各个模块中将相关信息打印到同一个日志文件中呢？</p>
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">step</span>(self, action):
-        reward <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.</span>
-        done <span style="color:#f92672">=</span> None
-        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">4</span>):
-            obs, r, done, info <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>env<span style="color:#f92672">.</span>step(action)
-            reward <span style="color:#f92672">+=</span> r
-            lives <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>env<span style="color:#f92672">.</span>unwrapped<span style="color:#f92672">.</span>ale<span style="color:#f92672">.</span>lives()
-            <span style="color:#66d9ef">if</span> lives <span style="color:#f92672">&lt;</span> self<span style="color:#f92672">.</span>lives:
-                done <span style="color:#f92672">=</span> True
-                <span style="color:#66d9ef">break</span>
-        obs <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>_process_obs(obs)
-        self<span style="color:#f92672">.</span>rewards<span style="color:#f92672">.</span>append(reward)
-        <span style="color:#66d9ef">if</span> done:
-            episode_info <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#34;reward&#34;</span>: sum(self<span style="color:#f92672">.</span>rewards), <span style="color:#e6db74">&#34;length&#34;</span>: len(self<span style="color:#f92672">.</span>rewards)}
-            self<span style="color:#f92672">.</span>reset()
-        <span style="color:#66d9ef">else</span>:
-            episode_info <span style="color:#f92672">=</span> None
-            self<span style="color:#f92672">.</span>obs_4 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>roll(self<span style="color:#f92672">.</span>obs_4, shift<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
-            self<span style="color:#f92672">.</span>obs_4[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> obs
-        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>obs_4, reward, done, episode_info
+<h2 id="参数管理">参数管理</h2>
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">reset</span>(self):
-        obs <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>env<span style="color:#f92672">.</span>reset()
-        obs <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>_process_obs(obs)
-        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">4</span>):
-            self<span style="color:#f92672">.</span>obs_4[i] <span style="color:#f92672">=</span> obs
-        self<span style="color:#f92672">.</span>rewards <span style="color:#f92672">=</span> []
+<p>在模型的实现过程中，通常来说我们都会定义一个Config类并用类的成员变量来保存各个模型参数的值。当然，如果你需要从本地文件中读取参数（例如bert的config.json文件），那么只需要将读取后的结果赋值到Config类的各个成员变量即可。</p>
 
-        self<span style="color:#f92672">.</span>lives <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>env<span style="color:#f92672">.</span>unwrapped<span style="color:#f92672">.</span>ale<span style="color:#f92672">.</span>lives()
+<p>如下所示便是我们定义的一个ModelConfig类，里面的各个成员变量就是模型中的各个超参数。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"> <span style="color:#ae81ff">1</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ModelConfig</span>:
+ <span style="color:#ae81ff">2</span>     <span style="color:#66d9ef">def</span> __init__(self):
+ <span style="color:#ae81ff">3</span>         self<span style="color:#f92672">.</span>project_dir <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>dirname(os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>dirname(os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>abspath(__file__)))
+ <span style="color:#ae81ff">4</span>         self<span style="color:#f92672">.</span>dataset_dir <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(self<span style="color:#f92672">.</span>project_dir, <span style="color:#e6db74">&#39;data&#39;</span>)
+ <span style="color:#ae81ff">5</span>         self<span style="color:#f92672">.</span>pretrained_model_dir <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(self<span style="color:#f92672">.</span>project_dir, <span style="color:#e6db74">&#34;pretrained_model&#34;</span>)
+ <span style="color:#ae81ff">6</span>         self<span style="color:#f92672">.</span>vocab_path <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(self<span style="color:#f92672">.</span>pretrained_model_dir, <span style="color:#e6db74">&#39;vocab.txt&#39;</span>)
+ <span style="color:#ae81ff">7</span>         self<span style="color:#f92672">.</span>device <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>device(<span style="color:#e6db74">&#39;cuda:0&#39;</span> <span style="color:#66d9ef">if</span> torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>is_available() <span style="color:#66d9ef">else</span> <span style="color:#e6db74">&#39;cpu&#39;</span>)
+ <span style="color:#ae81ff">8</span>         self<span style="color:#f92672">.</span>batch_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">64</span>
+ <span style="color:#ae81ff">9</span>         self<span style="color:#f92672">.</span>max_sen_len <span style="color:#f92672">=</span> None
+<span style="color:#ae81ff">10</span>         self<span style="color:#f92672">.</span>num_labels <span style="color:#f92672">=</span> <span style="color:#ae81ff">15</span>
+<span style="color:#ae81ff">11</span>         self<span style="color:#f92672">.</span>epochs <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span></code></pre></div>
+<p>在上述代码中，第3行用来获取当前工程的目录，这个需要根据自己的实际情况和ModelConfig这个类所在的目录层级来获取；其中<code>os.path.abspath(__file__)</code>表示取当前ModelConfig所在文件的绝对路径，<code>os.path.dirname()</code>函数用来取对应的目录路径。第4-6行代码分别用来指定数据集、预训练模型和词表所在的目录。这里之所以要把这些目录或者路径都定义出来是为了方便后续的使用，当然也可以根据自己的实际情况来进行处理。</p>
 
-        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>obs_4
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_process_obs</span>(obs):
-        obs <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>cvtColor(obs, cv2<span style="color:#f92672">.</span>COLOR_RGB2GRAY)
-        obs <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>resize(obs, (<span style="color:#ae81ff">84</span>, <span style="color:#ae81ff">84</span>), interpolation<span style="color:#f92672">=</span>cv2<span style="color:#f92672">.</span>INTER_AREA)
-        <span style="color:#66d9ef">return</span> obs</code></pre></div>
+<link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
+<div class="box">
+<figure  itemprop="associatedMedia"
+  itemscope itemtype="http://schema.org/ImageObject" >
+    <div class="img">
+      <img itemprop="thumbnail" src="/image/18-Logging/001.jpg" />
+    </div>
+    <a href="/image/18-Logging/001.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+
+<p>如图1所示便是上面代码示例中的目录结构，其中ModelConfig这个类在Tasks文件夹中的某个文件中。</p>
+
+<p>在完成上述步骤后，我们便可以通过实例化ModelConfig这个类，然后将实例化后的对象作为参数传入到相关模块中进行使用即可，示例如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#ae81ff">1</span> <span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;__main__&#39;</span>:
+<span style="color:#ae81ff">2</span>     model_config <span style="color:#f92672">=</span> ModelConfig()
+<span style="color:#ae81ff">3</span>     <span style="color:#75715e"># train(model_config)</span></code></pre></div>
+<p>此时便可以通过以访问类成员变量model_config.max_sen_len来访问各个模型参数；同时在向各个模块传递参数时也不需要像之前那样写一大串，而只需要传入model_config即可。</p>
+
+<h2 id="定义日志初始化函数">定义日志初始化函数</h2>
+
+<p>在打印日志的过程中主要使用到的是logging这个Python包，如果没有的话通过pip install logging命令安装即可。同时，为了满足相同的训练信息在保存到日志的同时也能同时输出到控制端等功能，下面我们需要基于logging再改进一下，代码如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"> <span style="color:#ae81ff">1</span> <span style="color:#f92672">import</span> logging
+ <span style="color:#ae81ff">2</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">logger_init</span>(log_file_name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;monitor&#39;</span>,
+ <span style="color:#ae81ff">3</span>                 log_level<span style="color:#f92672">=</span>logging<span style="color:#f92672">.</span>DEBUG,
+ <span style="color:#ae81ff">4</span>                 log_dir<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./logs/&#39;</span>,
+ <span style="color:#ae81ff">5</span>                 only_file<span style="color:#f92672">=</span>False):
+ <span style="color:#ae81ff">6</span>     <span style="color:#75715e"># 指定路径</span>
+ <span style="color:#ae81ff">7</span>     <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>exists(log_dir):
+ <span style="color:#ae81ff">8</span>         os<span style="color:#f92672">.</span>makedirs(log_dir)
+ <span style="color:#ae81ff">9</span> 
+<span style="color:#ae81ff">10</span>     log_path <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(log_dir, log_file_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;_&#39;</span> <span style="color:#f92672">+</span> str(datetime<span style="color:#f92672">.</span>now())[:<span style="color:#ae81ff">10</span>] <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;.txt&#39;</span>)
+<span style="color:#ae81ff">11</span>     formatter <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;[</span><span style="color:#e6db74">%(asctime)s</span><span style="color:#e6db74">] - </span><span style="color:#e6db74">%(levelname)s</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%(message)s</span><span style="color:#e6db74">&#39;</span>
+<span style="color:#ae81ff">12</span>     <span style="color:#66d9ef">if</span> only_file:
+<span style="color:#ae81ff">13</span>         logging<span style="color:#f92672">.</span>basicConfig(filename<span style="color:#f92672">=</span>log_path,
+<span style="color:#ae81ff">14</span>                             level<span style="color:#f92672">=</span>log_level,
+<span style="color:#ae81ff">15</span>                             format<span style="color:#f92672">=</span>formatter,
+<span style="color:#ae81ff">16</span>                             datefmt<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;%Y-</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">-%m %H:%M:%S&#39;</span>)
+<span style="color:#ae81ff">17</span>     <span style="color:#66d9ef">else</span>:
+<span style="color:#ae81ff">18</span>         logging<span style="color:#f92672">.</span>basicConfig(level<span style="color:#f92672">=</span>log_level,
+<span style="color:#ae81ff">19</span>                             format<span style="color:#f92672">=</span>formatter,
+<span style="color:#ae81ff">20</span>                             datefmt<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;%Y-</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">-%m %H:%M:%S&#39;</span>,
+<span style="color:#ae81ff">21</span>                             handlers<span style="color:#f92672">=</span>[logging<span style="color:#f92672">.</span>FileHandler(log_path),
+<span style="color:#ae81ff">22</span>                                       logging<span style="color:#f92672">.</span>StreamHandler(sys<span style="color:#f92672">.</span>stdout)]
+<span style="color:#ae81ff">23</span>                             )</code></pre></div>
+<p>在上述代码中，第7-8行用来创建logs文件夹用于存放日志；第10行用来构造一个日志保存路径，文件名还包含有日期；第12-16行是用于只将日志文件输出到文件；第18-23行则是同时将日志输出到文件和终端。最后，logs文件中将会生成一个类似名为monitor_2021-10-14.txt的日志文件。</p>
+
+<h3 id="打印日志示例">打印日志示例</h3>
+
+<p>在完成上述两步工作后，我们便可以在任意模块或者文件中使用logging来进行日志记录。</p>
+
+<p>首先在classA.py中新建了一个名为classA的类，代码如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#ae81ff">1</span> <span style="color:#f92672">import</span> logging
+<span style="color:#ae81ff">2</span> 
+<span style="color:#ae81ff">3</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">classA</span>(object):
+<span style="color:#ae81ff">4</span>     <span style="color:#66d9ef">def</span> __init__(self):
+<span style="color:#ae81ff">5</span>         logging<span style="color:#f92672">.</span>info(f<span style="color:#e6db74">&#34;我在{__name__}中！&#34;</span>)
+<span style="color:#ae81ff">6</span>         logging<span style="color:#f92672">.</span>debug(f<span style="color:#e6db74">&#34;我在{__name__}中，这是一条debug信息！&#34;</span>)</code></pre></div>
+<p>接着在classB.py中新建了一个名为classB的类，代码如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#ae81ff">1</span> <span style="color:#f92672">import</span> logging
+<span style="color:#ae81ff">2</span> 
+<span style="color:#ae81ff">3</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">classB</span>(object):
+<span style="color:#ae81ff">4</span>     <span style="color:#66d9ef">def</span> __init__(self):
+<span style="color:#ae81ff">5</span>         logging<span style="color:#f92672">.</span>info(f<span style="color:#e6db74">&#34;我在{__name__}中！&#34;</span>)
+<span style="color:#ae81ff">6</span>         logging<span style="color:#f92672">.</span>debug(f<span style="color:#e6db74">&#34;我在{__name__}中，这是一条debug信息！&#34;</span>)</code></pre></div>
+<p>最后在main.py中调用这两个类，并输出相应的日志信息，代码如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"> <span style="color:#ae81ff">1</span> <span style="color:#f92672">from</span> classA <span style="color:#f92672">import</span> classA
+ <span style="color:#ae81ff">2</span> <span style="color:#f92672">from</span> classB <span style="color:#f92672">import</span> classB
+ <span style="color:#ae81ff">3</span> <span style="color:#f92672">from</span> log_helper <span style="color:#f92672">import</span> logger_init
+ <span style="color:#ae81ff">4</span> <span style="color:#f92672">import</span> logging
+ <span style="color:#ae81ff">5</span> 
+ <span style="color:#ae81ff">6</span> <span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;__main__&#39;</span>:
+ <span style="color:#ae81ff">7</span>     logger_init(<span style="color:#e6db74">&#39;nulls&#39;</span>, log_level<span style="color:#f92672">=</span>logging<span style="color:#f92672">.</span>INFO, log_dir<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./logs&#39;</span>)
+ <span style="color:#ae81ff">8</span>     a <span style="color:#f92672">=</span> classA()
+ <span style="color:#ae81ff">9</span>     b <span style="color:#f92672">=</span> classB()
+<span style="color:#ae81ff">10</span>     logging<span style="color:#f92672">.</span>info(f<span style="color:#e6db74">&#34;我在{__name__}中！&#34;</span>)</code></pre></div>
+<p>在运行完上述代码后，日志文件和终端里就会输出如下所示的日志信息：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#ae81ff">1</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">07</span>:<span style="color:#ae81ff">54</span>:<span style="color:#ae81ff">23</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#960050;background-color:#1e0010">我在</span>classA中<span style="color:#960050;background-color:#1e0010">！</span>
+<span style="color:#ae81ff">2</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">07</span>:<span style="color:#ae81ff">54</span>:<span style="color:#ae81ff">23</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#960050;background-color:#1e0010">我在</span>classB中<span style="color:#960050;background-color:#1e0010">！</span>
+<span style="color:#ae81ff">3</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">07</span>:<span style="color:#ae81ff">54</span>:<span style="color:#ae81ff">23</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#960050;background-color:#1e0010">我在</span>__main__中<span style="color:#960050;background-color:#1e0010">！</span></code></pre></div>
+<p>可以发现，classA和classB这两个模块中的日志信息都有被打印出来，而这也就满足了我们跨模块日志打印的需求。但是可以发现，logging.debug这样的信息并没有打印出来，其原因就在于通过logger_init()函数初始化时指定的日志输出等级为logging.INFO，这就意味着不会输出Debug的信息。当然，只需要将log_level指定为logging.DEBUG即可输出所有信息。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#ae81ff">1</span> logger_init(<span style="color:#e6db74">&#39;nulls&#39;</span>, log_level<span style="color:#f92672">=</span>logging<span style="color:#f92672">.</span>DEBUG, log_dir<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./logs&#39;</span>)
+<span style="color:#ae81ff">2</span> 
+<span style="color:#ae81ff">3</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">00</span>:<span style="color:#ae81ff">12</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#960050;background-color:#1e0010">我在</span>classA中<span style="color:#960050;background-color:#1e0010">！</span>
+<span style="color:#ae81ff">4</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">00</span>:<span style="color:#ae81ff">12</span>] <span style="color:#f92672">-</span> DEBUG: <span style="color:#960050;background-color:#1e0010">我在</span>classA中<span style="color:#960050;background-color:#1e0010">，这是一条</span>debug信息<span style="color:#960050;background-color:#1e0010">！</span>
+<span style="color:#ae81ff">5</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">00</span>:<span style="color:#ae81ff">12</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#960050;background-color:#1e0010">我在</span>classB中<span style="color:#960050;background-color:#1e0010">！</span>
+<span style="color:#ae81ff">6</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">00</span>:<span style="color:#ae81ff">12</span>] <span style="color:#f92672">-</span> DEBUG: <span style="color:#960050;background-color:#1e0010">我在</span>classB中<span style="color:#960050;background-color:#1e0010">，这是一条</span>debug信息<span style="color:#960050;background-color:#1e0010">！</span>
+<span style="color:#ae81ff">7</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">00</span>:<span style="color:#ae81ff">12</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#960050;background-color:#1e0010">我在</span>__main__中<span style="color:#960050;background-color:#1e0010">！</span></code></pre></div>
+<h2 id="打印模型参数">打印模型参数</h2>
+
+<p>在介绍完日志的打印输出方法后，进一步只需要在上面的ModelConfig类定义中加入如下几行代码便可以在模型训练时打印相关的模型信息：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#ae81ff">1</span> self<span style="color:#f92672">.</span>logs_save_dir <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(self<span style="color:#f92672">.</span>project_dir, <span style="color:#e6db74">&#39;logs&#39;</span>)
+<span style="color:#ae81ff">2</span> logger_init(<span style="color:#e6db74">&#39;nulls&#39;</span>, log_level<span style="color:#f92672">=</span>logging<span style="color:#f92672">.</span>INFO, 
+<span style="color:#ae81ff">3</span>                      log_dir<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./logs&#39;</span>,
+<span style="color:#ae81ff">4</span>                      only_file<span style="color:#f92672">=</span>False)
+<span style="color:#ae81ff">5</span> 
+<span style="color:#ae81ff">6</span> logging<span style="color:#f92672">.</span>info(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n\n\n\n\n</span><span style="color:#e6db74">########  &lt;-----------------------&gt;&#34;</span>)
+<span style="color:#ae81ff">7</span> <span style="color:#66d9ef">for</span> key, value <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>__dict__<span style="color:#f92672">.</span>items():
+<span style="color:#ae81ff">8</span>     logging<span style="color:#f92672">.</span>info(f<span style="color:#e6db74">&#34;########  {key} = {value}&#34;</span>)</code></pre></div>
+<p>此时，我们便可以通过类似logging.info()的方式来进行相关信息的打印和写入日志。第7-8行便是用来将类ModelConfig中所有的成员变量写入到日志中，也就达到了将所有参数保存下来的目的。</p>
+
+<p>例如现在我们定义了一个函数来训练某个模型，其部分代码如下所示[1]：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"> <span style="color:#ae81ff">1</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">train</span>(config):
+ <span style="color:#ae81ff">2</span>     classification_model <span style="color:#f92672">=</span> BertForSequenceClassification(config,
+ <span style="color:#ae81ff">3</span>                                                          config<span style="color:#f92672">.</span>num_labels,
+ <span style="color:#ae81ff">4</span>                                                          config<span style="color:#f92672">.</span>pretrained_model_dir)
+ <span style="color:#ae81ff">5</span>     model_save_path <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(config<span style="color:#f92672">.</span>model_save_dir, <span style="color:#e6db74">&#39;model.pt&#39;</span>)
+ <span style="color:#ae81ff">6</span>     <span style="color:#66d9ef">if</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>exists(model_save_path):
+ <span style="color:#ae81ff">7</span>         loaded_paras <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>load(model_save_path)
+ <span style="color:#ae81ff">8</span>         classification_model<span style="color:#f92672">.</span>load_state_dict(loaded_paras)
+ <span style="color:#ae81ff">9</span>         logging<span style="color:#f92672">.</span>info(<span style="color:#e6db74">&#34;## 成功载入已有模型，进行追加训练......&#34;</span>)
+<span style="color:#ae81ff">10</span>         logging<span style="color:#f92672">.</span>debug(<span style="color:#e6db74">&#34;## 成功载入已有模型，进行追加训练......&#34;</span>)
+<span style="color:#ae81ff">11</span> <span style="color:#f92672">......</span>
+<span style="color:#ae81ff">12</span> 
+<span style="color:#ae81ff">13</span> <span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;__main__&#39;</span>:
+<span style="color:#ae81ff">14</span>     model_config <span style="color:#f92672">=</span> ModelConfig()
+<span style="color:#ae81ff">15</span>     train(model_config)</code></pre></div>
+<p>从上述代码中可以看到，可以通过以第9-10行的方式来打印输出相关的训练信息；同时，在BertForSequenceClassification类中我们依旧可以通过logging.info()来对其中的相关信息进行打印输出。第9行和第10行的区别在于，当log_level=logging.INFO时，只有第9行的信息会被打印出来同时写到日志文件中，当log_level=logging.DEBUG时，两行的信息都会被打印及写入到日志中。</p>
+
+<p>最后，在控制台和日志文件中便会输出类似如下的信息：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"> <span style="color:#ae81ff">1</span> <span style="color:#75715e">########  &lt;-----------------------&gt;</span>
+ <span style="color:#ae81ff">2</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">10</span>:<span style="color:#ae81ff">12</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#75715e">########  project_dir = ~/BertWithPretrained</span>
+ <span style="color:#ae81ff">3</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">10</span>:<span style="color:#ae81ff">12</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#75715e">########  dataset_dir = ~/BertWithPretrained/data</span>
+ <span style="color:#ae81ff">4</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">10</span>:<span style="color:#ae81ff">12</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#75715e">########  pretrained_model_dir = ~/BertWithPretrained/pretrained_model</span>
+ <span style="color:#ae81ff">5</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">10</span>:<span style="color:#ae81ff">13</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#75715e">########  vocab_path = ~/BertWithPretrained/pretrained_model/vocab.txt</span>
+ <span style="color:#ae81ff">6</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">10</span>:<span style="color:#ae81ff">13</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#75715e">########  logs_save_dir = ~/BertWithPretrained/logs</span>
+ <span style="color:#ae81ff">7</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">10</span>:<span style="color:#ae81ff">13</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#75715e">########  split_sep = _!_</span>
+ <span style="color:#ae81ff">8</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">10</span>:<span style="color:#ae81ff">13</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#75715e">########  batch_size = 64</span>
+ <span style="color:#ae81ff">9</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">10</span>:<span style="color:#ae81ff">13</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#75715e">########  max_sen_len = None</span>
+<span style="color:#ae81ff">10</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">10</span>:<span style="color:#ae81ff">13</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#75715e">########  num_labels = 15</span>
+<span style="color:#ae81ff">11</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">10</span>:<span style="color:#ae81ff">13</span>] <span style="color:#f92672">-</span> INFO: <span style="color:#75715e">########  epochs = 10</span>
+<span style="color:#ae81ff">12</span> [<span style="color:#ae81ff">2021</span><span style="color:#f92672">-</span><span style="color:#ae81ff">11</span><span style="color:#f92672">-</span><span style="color:#ae81ff">07</span> <span style="color:#ae81ff">08</span>:<span style="color:#ae81ff">10</span>:<span style="color:#ae81ff">14</span>] <span style="color:#f92672">-</span> INFO:   <span style="color:#75715e">## 成功载入已有模型，进行追加训练......</span></code></pre></div>
     </div>
 
     
@@ -879,7 +977,7 @@
   <p class="copyright-item">
     <span class="item-title">LastMod</span>
     <span class="item-content">
-      2020-05-14
+      2021-09-03
       
     </span>
   </p>
@@ -896,15 +994,14 @@
 
     <footer class="post-footer">
       <div class="post-tags">
-          <a href="https://yshane-ai.github.io/tags/rl/">RL</a>
-          <a href="https://yshane-ai.github.io/tags/pytorch/">Pytorch</a>
+          <a href="https://yshane-ai.github.io/tags/python/">Python</a>
           
         </div>
 
       
       <nav class="post-nav">
         
-          <a class="prev" href="/post/13-ddpg/">
+          <a class="prev" href="/post/5-rl%E6%80%BB%E7%BB%93/">
             
             <i class="iconfont">
               <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
@@ -914,12 +1011,12 @@
 </svg>
 
             </i>
-            <span class="prev-text nav-default">DDPG的Pytorch实现</span>
+            <span class="prev-text nav-default">DRL总结：DQN，RainBow，DDPG，PPO和A3C等</span>
             <span class="prev-text nav-mobile">Prev</span>
           </a>
         
-          <a class="next" href="/post/11-dqn/">
-            <span class="next-text nav-default">DQN的Pytorch实现</span>
+          <a class="next" href="/post/17-python%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93/">
+            <span class="next-text nav-default">Python高阶函数、装饰器和匿名函数总结</span>
             <span class="prev-text nav-mobile">Next</span>
             
             <i class="iconfont">

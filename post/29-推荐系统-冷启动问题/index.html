@@ -32,7 +32,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.93.2" />
+<meta name="generator" content="Hugo 0.80.0" />
 
 
 <link rel="canonical" href="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%86%B7%E5%90%AF%E5%8A%A8%E9%97%AE%E9%A2%98/" />
@@ -62,15 +62,19 @@
 <meta property="og:title" content="推荐系统之冷启动问题" />
 <meta property="og:description" content="本章的思维导图如下： 1 背景 如何在没有大量用户数据的情况下设计个性化推荐系统并且让用户对推荐结果满意从而愿意使用推荐系统， 就是冷启动的问题。冷" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%86%B7%E5%90%AF%E5%8A%A8%E9%97%AE%E9%A2%98/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://yshane-ai.github.io/post/29-%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%86%B7%E5%90%AF%E5%8A%A8%E9%97%AE%E9%A2%98/" />
 <meta property="article:published_time" content="2020-12-30T16:01:23+08:00" />
 <meta property="article:modified_time" content="2020-12-30T16:01:23+08:00" />
-
 <meta itemprop="name" content="推荐系统之冷启动问题">
-<meta itemprop="description" content="本章的思维导图如下： 1 背景 如何在没有大量用户数据的情况下设计个性化推荐系统并且让用户对推荐结果满意从而愿意使用推荐系统， 就是冷启动的问题。冷"><meta itemprop="datePublished" content="2020-12-30T16:01:23+08:00" />
+<meta itemprop="description" content="本章的思维导图如下： 1 背景 如何在没有大量用户数据的情况下设计个性化推荐系统并且让用户对推荐结果满意从而愿意使用推荐系统， 就是冷启动的问题。冷">
+<meta itemprop="datePublished" content="2020-12-30T16:01:23+08:00" />
 <meta itemprop="dateModified" content="2020-12-30T16:01:23+08:00" />
 <meta itemprop="wordCount" content="2203">
-<meta itemprop="keywords" content="Recommendation System," /><meta name="twitter:card" content="summary"/>
+
+
+
+<meta itemprop="keywords" content="Recommendation System," />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="推荐系统之冷启动问题"/>
 <meta name="twitter:description" content="本章的思维导图如下： 1 背景 如何在没有大量用户数据的情况下设计个性化推荐系统并且让用户对推荐结果满意从而愿意使用推荐系统， 就是冷启动的问题。冷"/>
 
@@ -224,6 +228,10 @@
             
               <li>
                 <a href="https://yshane-ai.github.io/post/14-python%E4%B8%AD%E6%96%AD%E8%A8%80assert%E5%92%8C%E5%BC%82%E5%B8%B8try%E7%9A%84%E4%BD%BF%E7%94%A8/">Python中的断言assert和异常exception处理</a>
+              </li>
+            
+              <li>
+                <a href="https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/">Python在训练时保存日志信息</a>
               </li>
             
               <li>
@@ -595,6 +603,10 @@
               </li>
             
               <li>
+                <a href="https://yshane-ai.github.io/post/18-python%E6%97%A5%E5%BF%97%E4%BD%BF%E7%94%A8/">Python在训练时保存日志信息</a>
+              </li>
+            
+              <li>
                 <a href="https://yshane-ai.github.io/post/3-pythondict/">Python的字典dict原理</a>
               </li>
             
@@ -782,20 +794,14 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">Table of Contents</h2>
   <div class="post-toc-content">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#1-背景">1 背景</a></li>
-    <li><a href="#2-利用用户注册信息">2 利用用户注册信息</a></li>
-    <li><a href="#3-选择合适的物品启动用户的兴趣">3 选择合适的物品启动用户的兴趣</a></li>
-    <li><a href="#4-利用物品的内容信息">4 利用物品的内容信息</a></li>
-  </ul>
-</nav>
+    
   </div>
 </div>
 
     
     <div class="post-content">
       <p>本章的思维导图如下：</p>
+
 
 <link rel="stylesheet" href="/css/hugo-easy-gallery.css" />
 <div class="box">
@@ -808,14 +814,19 @@
   </figure>
 </div>
 
+
 <h2 id="1-背景">1 背景</h2>
+
 <p>如何在没有大量用户数据的情况下设计个性化推荐系统并且让用户对推荐结果满意从而愿意使用推荐系统， 就是冷启动的问题。冷启动问题主要分为三类：</p>
+
 <ol>
 <li>用户冷启动:用户冷启动主要解决如何给新用户做个性化推荐的问题。</li>
 <li>系统冷启动:系统冷启动主要解决如何在一个新开发的网站上(还没有用户，也没有用户行为，只有一些物品的信息)设计个性化推荐系统。</li>
 <li>物品冷启动:物品冷启动主要解决如何将新的物品推荐给可能对它感兴趣的用户这一问题。</li>
 </ol>
+
 <p>对于这3种不同的冷启动问题，有不同的解决方案。一般来说，可以参考如下解决方案。</p>
+
 <ol>
 <li>提供非个性化的推荐，非个性化推荐的最简单例子就是热门排行榜。</li>
 <li>利用用户注册时提供的年龄、性别等数据做粗粒度的个性化。</li>
@@ -824,29 +835,42 @@
 <li>对于新加入的物品，可以利用内容信息，将它们推荐给喜欢过和它们相似的物品的用户。</li>
 <li>在系统冷启动时，可以引入专家的知识，通过一定的高效方式迅速建立起物品的相关度表。</li>
 </ol>
+
 <h2 id="2-利用用户注册信息">2 利用用户注册信息</h2>
+
 <p>用户的注册信息分3种。</p>
+
 <ol>
 <li>人口统计学信息 ，包括年龄、性别、职业、民族、学历和居住地。</li>
 <li>用户兴趣的描述，有一些网站会让用户用文字描述他们的兴趣。</li>
 <li>从其他网站导入的用户站外行为数据，比如一些来自豆瓣或新浪微博的行为数据和社交网络数据</li>
 </ol>
+
 <p>基于用户注册信息的推荐算法其核心问题是计算每种特征的用户喜欢的物品。也就是说，对于每种特征f，计算具有这种特征的用户对各个物品的喜好程度p(f, i)。p(f,i) 可以简单地定义为物品i在具有f的特征的用户中的热门程度:</p>
-<p>$$
+
+<p><span  class="math">\[
 p(f,i) = |N(i)\cap U(f)|
-$$</p>
+\]</span></p>
+
 <p>其中 N(i) 是喜欢物品i的用户集合，U(f) 是具有特征f的用户集合。上面这种定义可以比较准确地预测具有某种特征的用户是否喜欢某个物品。但是，在这种定义下，往往热门的物品会在各种特征的用户中都具有比较高的权重。也就是说具有比较高的N(i)的物品会在每一类用户中都有比较高的p(f,i)。给用户推荐热门物品并不是推荐系统的主要任务，推荐系统应该帮助用户发现他们不容易发现的物品。因此，我们可以将 p(f,i) 定义为喜欢物品i的用户中具有特征f的比例：</p>
-<p>$$
+
+<p><span  class="math">\[
 p(f,i) = \frac{|N(i)\cap U(f)|}{N(i)| + \alpha}
-$$</p>
+\]</span></p>
+
 <p>这里使用$\alpha$的目的是解决系数问题，比如一个物品只被一个用户喜欢过，而这个用户刚好就有特征f，那么有$p(f,i)=1$。但是这种情况没有统计意义，因此我们为分母加上一个比较大的数，可以避免这样的物品产生比较大的权重。</p>
+
 <h2 id="3-选择合适的物品启动用户的兴趣">3 选择合适的物品启动用户的兴趣</h2>
+
 <p>解决用户冷启动问题的另一个方法是在新用户第一次访问推荐系统时，不立即给用户展示推荐结果，而是给用户推荐一些物品，让用户反馈他们对这些物品的兴趣，然后根据用户反馈提供个性化推荐。一般来说，能够来启动用户兴趣的物品需要具有以下的特点：
 比较热门：如果要让用户对一个物品进行反馈，前提是用户知道这个物品是什么东西。
 具有代表性和区分性：启动用户兴趣的物品不能是大众化或老少咸宜的，因为这样的物品 对用户的兴趣没有区分性。
 启动物品集合需要有多样性：在冷启动时，我们不知道用户的兴趣，而用户兴趣的可能 性非常多，为了匹配多样的兴趣，我们需要提供具有很高覆盖率的启动物品集合，这些物品能覆盖几乎所有主流的用户兴趣。</p>
+
 <h2 id="4-利用物品的内容信息">4 利用物品的内容信息</h2>
+
 <p>物品冷启动需要解决的问题是如何将新加入的物品推荐给对它感兴趣的用户。物品冷启动在 新闻网站等时效性很强的网站中非常重要。一般来说，物品的内容可以通过向量空间模型1表示，该模型会将物品表示成一个关键词向 量。如果物品的内容是一些诸如导演、演员等实体的话，可以直接将这些实体作为关键词。但如 果内容是文本的形式，则需要引入一些理解自然语言的技术抽取关键词。下图展示了从文本生 成关键词向量的主要步骤。对于中文，首先要对文本进行分词，将字流变成词流，然后从词流中检测出命名实体(如人名、地名、组织名等)，这些实体和一些其他重要的词将组成关键词集合，最后对关键词进行排名，计算每个关键词的权重，从而生成关键词向量。</p>
+
 
 
 <div class="box">
@@ -859,7 +883,9 @@ $$</p>
   </figure>
 </div>
 
+
 <p>对于物品d，它的内容表示成一个关键词向量如下：</p>
+
 
 
 <div class="box">
@@ -872,7 +898,9 @@ $$</p>
   </figure>
 </div>
 
+
 <p>其中，ei 就是关键词，wi 是关键词对应的权重。如果物品是文本，我们可以用信息检索领域著 名的TF-IDF公式计算词的权重:</p>
+
 
 
 <div class="box">
@@ -885,8 +913,10 @@ $$</p>
   </figure>
 </div>
 
+
 <p>如果物品是电影，可以根据演员在剧中的重要程度赋予他们权重。向量空间模型的优点是简单，缺点是丢失了一些信息，比如关键词之间的关系信息。不过在绝大多数应用中，向量空间模型对于文本的分类、聚类、相似度计算已经可以给出令人满意的结果。
 在给定物品内容的关键词向量后，物品的内容相似度可以通过向量之间的余弦相似度计算:</p>
+
 
 
 <div class="box">
@@ -899,7 +929,9 @@ $$</p>
   </figure>
 </div>
 
+
 <p>得到物品的相似度之后，可以利用ItemCF算法的思想，给用户推荐和他历史上 喜欢的物品内容相似的物品。</p>
+
 <p>一般来说，基于物品的内容信息进行推荐，忽视了用户行为，从而也忽视了物品的流行度以及用户行为中所包含的规律，所以它的精度比较低，但结果的新颖度却比较高，因为它可能推荐出用户所没有听说过的物品。但有时，基于物品内容的推荐的精度可能超过协同过滤算法，如果用户的行为强 烈受某一内容属性的影响，那么内容过滤的算法还是可以在精度上超过协同过滤算法的。不过这 种强的内容特征不是所有物品都具有的，而且需要丰富的领域知识才能获得，所以很多时候内容 过滤算法的精度比协同过滤算法差。</p>
 
     </div>
